@@ -63,7 +63,7 @@ function at_most_one_photon_per_bin(occupancy_vector::Vector{Int})
 	all(in([0,1]).(occupancy_vector))
 end
 
-check_at_most_one_particle_per_mode(occ) = at_most_one_photon_per_bin(occ) ? error("more than one input per mode") : nothing
+check_at_most_one_particle_per_mode(occ) = at_most_one_photon_per_bin(occ) ? nothing : error("more than one input per mode")
 
 function occupancy_vector_to_partition(occupancy_vector)
 
