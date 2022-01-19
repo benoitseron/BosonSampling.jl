@@ -34,6 +34,8 @@ end
 
 
 at_most_one_photon_per_bin(r::ModeOccupation) = all(r.state[:] .<= 1)
+isa_subset(subset_modes::ModeOccupation) = at_most_one_photon_per_bin(subset_modes)
+# this last function is defined to avoid the abuse of language
 first_modes(n::Int,m::Int) = ModeOccupation([i <= n ? 1 : 0 for i in 1:m])
 
 abstract type InputType end

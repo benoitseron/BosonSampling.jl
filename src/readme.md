@@ -1,1 +1,2 @@
-This is a project to compute matrix permanents in Julia.
+This project implements standard and scattershot BosonSampling in Julia,
+including boson samplers and certification tools.

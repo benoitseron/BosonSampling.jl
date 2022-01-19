@@ -24,11 +24,9 @@ using ProgressMeter
 const ATOL = 1e-10
 
 include("special_matrices.jl")
-include("permanents.jl")
 include("matrix_tests.jl")
 include("proba_tools.jl")
 include("types.jl")
 include("scattering.jl")
-include("classical_sampler.jl")
 
 permanent = ryser
