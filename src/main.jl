@@ -1,0 +1,31 @@
+using Plots
+using Test
+using Combinatorics
+using Random
+using IterTools
+using Statistics
+using LinearAlgebra #removed so as to be able to use generic types such as BigFloats, can be put back if needed
+using GenericLinearAlgebra
+using PolynomialRoots
+using FFTW
+using StatsBase
+using JLD
+using CSV
+using DataFrames
+using Tables
+using Plots#; plotly() #plotly allows to make "dynamic" plots where you can point the mouse and see the values, they can also be saved like that but note that this makes them heavy (and html instead of png)
+using PrettyTables #to display large matrices
+using Roots
+using BenchmarkTools
+using Optim
+using ProgressMeter
+
+const ATOL = 1e-10
+
+include("special_matrices.jl")
+include("permanents.jl")
+include("matrix_tests.jl")
+include("proba_tools.jl")
+include("types.jl")
+
+permanent = permanent_ryser
