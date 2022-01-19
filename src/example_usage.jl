@@ -12,7 +12,6 @@ compute_probability!(ev)
 
 ### bunching ###
 
-
 m = 5
 n = 3
 
@@ -26,3 +25,7 @@ ppd = full_bunching_probability(interf, ipd, subset_modes)
 
 @test pb/ppd > 1. # this doesn't HAVE TO pass but will pass in nearly all
 # cases
+
+### sampling ###
+
+classical_sampler(U = rand_haar(16), m = 16, n = 3)

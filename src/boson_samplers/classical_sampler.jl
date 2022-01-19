@@ -16,5 +16,3 @@ function classical_sampler(;U,n,m)
 
     output_state
 end
-
-# classical_sampler(U = rand_haar(16), m = 16, n = 3)

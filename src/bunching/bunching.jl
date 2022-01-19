@@ -7,11 +7,11 @@ function H_matrix(U, input_state, partition_occupancy_vector)
 
 	number_photons = sum(input_state)
 	if number_photons == 0
-		throw(DomainError("number_photons = 0"))
+		error("no input photons")
 	end
 
 	if size(U,1) < number_photons
-		println("WARNING : more photons than modes (trivially gives the identity as photons are conserved)")
+		@warn "more photons than modes (trivially gives the identity as photons are conserved)"
 	end
 
 	H = Matrix{ComplexF64}(undef,number_photons,number_photons)
@@ -37,4 +37,42 @@ function full_bunching_probability(interf::Interferometer, i::Input, subset_mode
 
 	return clean_proba(permanent(H_matrix(interf,i,subset_modes) .* i.G.S))
 
+end
+
+
+
+function bunching_probability_brute_force_bosonic(U, input_state, output_state; print_output = false)
+
+    """bosonic bunching probability by direct summation of all possible cases
+
+    bunching_event_proba gives the probability to get the event of [1^n 0^(m-n)]"""
+
+    n = sum(input_state)
+    m = size(U,1)
+
+    bunching_proba = 0
+    bunching_proba_array = []
+    bunching_event_proba = nothing
+
+    print_output ? println("bunching probabilities : ") : nothing
+
+    for t in reverse.(Iterators.product(fill(0:n,n)...))[:]
+        if sum(t) == n # cases where t is physical
+            output_state = zeros(Int,m)
+            output_state[1:n] .= t[1:n]
+            this_proba = process_probability(U, input_state, output_state)
+            bunching_proba += this_proba
+            push!(bunching_proba_array,[t, this_proba])
+            print_output ? println("output = ", t, " p = ", this_proba) : nothing
+
+            if output_state[1:n] == ones(Int, n)
+                bunching_event_proba = this_proba
+            end
+        end
+    end
+
+    H = H_matrix(U,input_state,partition)
+    @test bunching_proba ≈ real(permanent(H))
+
+    return bunching_proba, bunching_proba_array, bunching_event_proba
 end
