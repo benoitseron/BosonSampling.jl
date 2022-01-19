@@ -1,3 +1,4 @@
+using Permanents
 using Plots
 using Test
 using Combinatorics
@@ -27,5 +28,7 @@ include("permanents.jl")
 include("matrix_tests.jl")
 include("proba_tools.jl")
 include("types.jl")
+include("scattering.jl")
+include("classical_sampler.jl")
 
-permanent = permanent_ryser
+permanent = ryser
