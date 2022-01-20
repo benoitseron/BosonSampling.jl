@@ -21,8 +21,8 @@ function choose_subset_size(;m,n, minimal_bunching_proba = 0.25)
         end
     end
 
-    subset_size_max_ratio, max_ratio
+    proba_dist, proba_bosonic = subset_expectation_value(subset_size_max_ratio,n,n,m)
+
+    subset_size_max_ratio, max_ratio, tvd([proba_dist, 1-proba_dist], [proba_bosonic, 1-proba_bosonic])
 
 end
-
-choose_subset_size(m = 20,n = 4)

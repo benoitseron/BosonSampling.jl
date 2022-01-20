@@ -45,60 +45,112 @@ end
 
 function subset_relative_distance_of_averages(subset_size,n,m)
 
-    """returns the distance between ∑ₖ|<P_B(k) - P_D(k)>|"""
+    """returns the distance between 0.5 ∑ₖ|<P_B(k) - P_D(k)>|"""
 
+    @warn "check tvd conventions"
     0.5*abs(sum([abs(subset_expectation_value(subset_size, k,n,m)[1] - subset_expectation_value(subset_size, k,n,m)[2]) for k in 0:n]))
+
 
 end
 
-# ### now various plots to see how it evolves ###
-#
-# ### evolution with n ###
-#
-# n_array = collect(1:40)
-#
-# m_array = 5 .* n_array
-# subset_size_array = map(x-> Int(ceil(x/2)), m_array)
-#
-# const_density = @. subset_relative_distance_of_averages(subset_size_array, n_array,m_array)
-#
-# m_array = n_array .^2
-# subset_size_array = map(x-> Int(ceil(x/2)), m_array)
-#
-# no_collision = @. subset_relative_distance_of_averages(subset_size_array, n_array,m_array)
-#
-# scatter(n_array, const_density)
-# scatter!(no_collision)
-#
-# # this shows that the previous haar averaging was very effective !
-#
-# ### evolution with partition size ###
-#
-# n_array = 20
-#
-# m_array = 5 .* n_array
-# subset_size_array = collect(1:m_array-1)
-#
-# const_density = @. subset_relative_distance_of_averages(subset_size_array, n_array,m_array)
-#
-# m_array = n_array .^2
-# subset_size_array = collect(1:m_array-1)
-#
-# no_collision = @. subset_relative_distance_of_averages(subset_size_array, n_array,m_array)
-#
-# scatter(const_density)
-# scatter(no_collision)
-#
-# # this shows that above 1.5 the number of photons, this is pretty much constant
-#
-# ### evolution with density ###
-#
-#
-# n_array = 20
-#
-# m_array = collect(n_array:n_array^3)
-# subset_size_array = map(x-> Int(ceil(x/2)), m_array)
-#
-# density_evolution = @. subset_relative_distance_of_averages(subset_size_array, n_array,m_array)
-#
-# scatter(log10.(density_evolution))
+function choose_best_average_subset(;m,n, distance = tvd)
+
+    """returns the ideal subset size on average and its TVD,
+    to compare with the full bunching test of shsnovitch"""
+
+    function distance_this_subset_size(subset_size)
+
+        proba_dist = [subset_expectation_value(subset_size,k,n,m)[1] for k in 0:n]
+        proba_bos = [subset_expectation_value(subset_size,k,n,m)[2] for k in 0:n]
+
+        distance(proba_dist, proba_bos)
+
+    end
+
+    max_distance = 0
+    subset_size_max_ratio = nothing
+
+    for subset_size in 1:m-1
+
+        if distance_this_subset_size(subset_size) > max_distance
+            max_distance = distance_this_subset_size(subset_size)
+            subset_size_max_ratio = subset_size
+        end
+    end
+
+    subset_size_max_ratio, distance_this_subset_size(subset_size_max_ratio)
+
+end
+
+
+
+
+
+
+### now various plots to see how it evolves ###
+
+### ideal subset size ###
+
+
+n_array = collect(2:20)
+
+m_array = 5 .* n_array
+
+const_density = [choose_best_average_subset(n = n_array[i],m = m_array[i])[2] for i in 1:length(n_array)]
+
+m_array = n_array .^2
+
+no_collision = [choose_best_average_subset(n = n_array[i],m = m_array[i])[2] for i in 1:length(n_array)]
+
+scatter(n_array, const_density)
+scatter!(no_collision)
+
+### evolution with n ###
+
+n_array = collect(1:40)
+
+m_array = 5 .* n_array
+subset_size_array = map(x-> Int(ceil(x/2)), m_array)
+
+const_density = @. subset_relative_distance_of_averages(subset_size_array, n_array,m_array)
+
+m_array = n_array .^2
+subset_size_array = map(x-> Int(ceil(x/2)), m_array)
+
+no_collision = @. subset_relative_distance_of_averages(subset_size_array, n_array,m_array)
+
+scatter(n_array, const_density)
+scatter!(no_collision)
+
+# this shows that the previous haar averaging was very effective !
+
+### evolution with partition size ###
+
+n_array = 20
+
+m_array = 5 .* n_array
+subset_size_array = collect(1:m_array-1)
+
+const_density = @. subset_relative_distance_of_averages(subset_size_array, n_array,m_array)
+
+m_array = n_array .^2
+subset_size_array = collect(1:m_array-1)
+
+no_collision = @. subset_relative_distance_of_averages(subset_size_array, n_array,m_array)
+
+scatter(const_density)
+scatter(no_collision)
+
+# this shows that above 1.5 the number of photons, this is pretty much constant
+
+### evolution with density ###
+
+
+n_array = 20
+
+m_array = collect(n_array:n_array^3)
+subset_size_array = map(x-> Int(ceil(x/2)), m_array)
+
+density_evolution = @. subset_relative_distance_of_averages(subset_size_array, n_array,m_array)
+
+scatter(log10.(density_evolution))

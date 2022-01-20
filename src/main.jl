@@ -28,5 +28,9 @@ include("matrix_tests.jl")
 include("proba_tools.jl")
 include("types.jl")
 include("scattering.jl")
+include("bunching/bunching.jl")
+include("certification/stat_tools.jl")
+include("partitions/partition_expectation_values.jl")
+
 
 permanent = ryser

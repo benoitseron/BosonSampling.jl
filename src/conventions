@@ -37,3 +37,7 @@ Warning about precision :
   although it is of course larger and this should be implemented
   with permanent approximations, see for instance
   https://arxiv.org/abs/1904.06229
+
+Distances :
+
+  Beware of the different TVD conventions (1/2 in front or not)
