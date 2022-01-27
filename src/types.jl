@@ -32,9 +32,10 @@ struct ModeOccupation
     ModeOccupation(state) = all(state[:] .>= 0) ? new(sum(state), length(state), state) : error("negative photon counts")
 end
 
-
-at_most_one_photon_per_bin(r::ModeOccupation) = all(r.state[:] .<= 1)
+at_most_one_photon_per_bin(state) = all(state[:] .<= 1)
+at_most_one_photon_per_bin(r::ModeOccupation) = at_most_one_photon_per_bin(r.state)
 isa_subset(subset_modes::ModeOccupation) = at_most_one_photon_per_bin(subset_modes)
+isa_subset(state) = at_most_one_photon_per_bin(state)
 # this last function is defined to avoid the abuse of language
 first_modes(n::Int,m::Int) = ModeOccupation([i <= n ? 1 : 0 for i in 1:m])
 

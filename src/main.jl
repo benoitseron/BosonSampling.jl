@@ -1,7 +1,7 @@
 using Permanents
 using Plots
 using Test
-using Combinatorics
+using Combinatorics::permutations
 using Random
 using IterTools
 using Statistics
