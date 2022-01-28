@@ -64,29 +64,31 @@ set2[3:4] .= 1
 
 part = Partition([Subset(set1), Subset(set2)])
 
-p = 5
+function all_mode_configurations(n,n_subset; only_photon_number_conserving = false)
 
-
-function all_mode_configuration(n,n_subset; only_photon_number_conserving = false)
-
-        """prints all possible output modes configurations for n photons
+        """generates all possible output modes configurations for n photons
         in n_subset outputs
 
         does not take into account photon number conservation by default"""
+
+        array = []
         for i in 1:(n+1)^(n_subset)
 
                 this_vector = digits(i-1, base = n+1, pad = n_subset)
 
                 if only_photon_number_conserving
                         if sum(this_vector) == n
-                                println(this_vector)
+                                push!(array,this_vector)
                         end
                 else
-                        println(this_vector)
+                        push!(array,this_vector)
                 end
 
         end
+        array
 
 end
 
-all_mode_configuration(n,part.n_subset, only_photon_number_conserving  = true)
+for config in all_mode_configurations(n,part.n_subset, only_photon_number_conserving  = false)
+        println(config)
+end
