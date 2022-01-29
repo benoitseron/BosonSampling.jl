@@ -1,7 +1,7 @@
 using Permanents
 using Plots
 using Test
-using Combinatorics::permutations
+using Combinatorics:permutations
 using Random
 using IterTools
 using Statistics
@@ -31,6 +31,5 @@ include("scattering.jl")
 include("bunching/bunching.jl")
 include("certification/stat_tools.jl")
 include("partitions/partition_expectation_values.jl")
-
 
 permanent = ryser

@@ -55,15 +55,6 @@ struct PartitionCountingInterferometer <: Interferometer
 
 end
 
-m = 6
-n = 4
-set1 = zeros(Int,m)
-set2 = zeros(Int,m)
-set1[1:2] .= 1
-set2[3:4] .= 1
-
-part = Partition([Subset(set1), Subset(set2)])
-
 function all_mode_configurations(n,n_subset; only_photon_number_conserving = false)
 
         """generates all possible output modes configurations for n photons
@@ -89,6 +80,18 @@ function all_mode_configurations(n,n_subset; only_photon_number_conserving = fal
 
 end
 
-for config in all_mode_configurations(n,part.n_subset, only_photon_number_conserving  = false)
-        println(config)
+m = 6
+n = 4
+set1 = zeros(Int,m)
+set2 = zeros(Int,m)
+set1[1:2] .= 1
+set2[3:4] .= 1
+
+part = Partition([Subset(set1), Subset(set2)])
+
+fourier_indexes = all_mode_configurations(n,part.n_subset)
+probas_fourier = Array{ComplexF64}(undef, length(fourier_indexes))
+
+for (i, fourier_index) in enumerate(fourier_indexes)
+        probas_fourier[i] = permanent(PartitionCountingInterferometer(partition_occupancy, physical_interferometer, fourier_index).virtual_interferometer.U)
 end
