@@ -21,9 +21,9 @@ struct PartitionOccupancy
         partition::Partition
         n::Int
         m::Int
-        function PartitionOccupancy(counts, partition)
+        function PartitionOccupancy(counts::ModeOccupation, n::Int, partition::Partition)
                 if counts.m == partition.n_subset
-                        new(counts, partition, counts.n, subset.m)
+                        new(counts, partition, n, partition.subsets[1].m)
                 else
                         error("counts do not have as many modes as parition has subsets")
                 end
@@ -45,7 +45,7 @@ struct PartitionCountingInterferometer <: Interferometer
                 photons in partition_occupancy.partition"""
 
                 virtual_interferometer_matrix = copy(physical_interferometer.U)
-                for i in length(partition_occupancy.subsets)
+                for i in length(partition_occupancy.partition.subsets)
                         virtual_interferometer_matrix *= Diagonal(@. exp(2*pi*1im/(partition_occupancy.n+1) * fourier_indexes))
                 end
                 virtual_interferometer_matrix *= U'
@@ -87,11 +87,60 @@ set2 = zeros(Int,m)
 set1[1:2] .= 1
 set2[3:4] .= 1
 
+physical_interferometer = RandHaar(m)
 part = Partition([Subset(set1), Subset(set2)])
+partition_occupancy = PartitionOccupancy(ModeOccupation([1,2]), n, part)
+
 
 fourier_indexes = all_mode_configurations(n,part.n_subset)
 probas_fourier = Array{ComplexF64}(undef, length(fourier_indexes))
+virtual_interferometer_matrix = similar(physical_interferometer.U)
+#
+# for (i, fourier_index) in enumerate(fourier_indexes)
+#         probas_fourier[i] = permanent(PartitionCountingInterferometer(partition_occupancy, physical_interferometer, fourier_index).virtual_interferometer.U)
+# end
+#
+# virtual_interferometer_matrix = copy(physical_interferometer.U)
+# v = 1
+#
+# this_diag = [one(eltype(virtual_interferometer_matrix)) for i in 1:m]
+# this_diag *= subset .* this_phase
+#
 
-for (i, fourier_index) in enumerate(fourier_indexes)
-        probas_fourier[i] = permanent(PartitionCountingInterferometer(partition_occupancy, physical_interferometer, fourier_index).virtual_interferometer.U)
+partition_occupancy.partition.subsets
+
+for (index_fourier_array, fourier_index) in enumerate(fourier_indexes)
+
+        # for each fourier index, we recompute the virtual interferometer
+        virtual_interferometer_matrix  = physical_interferometer.U'
+        diag = [one(eltype(virtual_interferometer_matrix)) for i in 1:m]
+
+        @show fourier_index
+        for (i,fourier_element) in enumerate(fourier_index)
+
+                this_phase = exp(2*pi*1im/(partition_occupancy.n+1) * fourier_element)
+                @show this_phase
+                @show partition_occupancy.partition.subsets[i].subset
+                for j in 1:length(diag)
+                        @show j
+                        if partition_occupancy.partition.subsets[i].subset[j] == 1
+                                diag[j] *= this_phase
+                                @show diag[j]
+                        end
+                end
+
+        end
+        @show diag
+        virtual_interferometer_matrix *= Diagonal(diag)
+        virtual_interferometer_matrix *= physical_interferometer.U
+        #@show virtual_interferometer_matrix
+
+        probas_fourier[index_fourier_array] = permanent(virtual_interferometer_matrix)
 end
+
+probas_fourier
+new(partition_occupancy, physical_interferometer, virtual_interferometer_matrix, fourier_indexes, virtual_interferometer_matrix)
+
+exp.([1,2])
+
+v
