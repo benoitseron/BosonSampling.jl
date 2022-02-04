@@ -40,7 +40,7 @@ fill_arrangement(r::ModeOccupation) = fill_arrangement(r.state)
 function random_occupancy(n::Int, m::Int)
 
 	""" returns a vector of size m with n randomly placed ones """
-	@warn "swapped argument orders"
+#	@warn "swapped argument orders"
 	if n > m
 		throw(ArgumentError("Implemented at most one photon per mode"))
 	else
