@@ -7,7 +7,7 @@
         U = ones(Int64, n, n)
         @test permanent_ryser(U) == factorial(n)
         U = fourier_matrix(n, normalized=false)
-        @test ryser_fast(U) ⩳ theoretical_permanent_fourier_matrix[n] atol=1e-2
+        @test ryser_fast(U) ≈ theoretical_permanent_fourier_matrix[n] atol=1e-2
     end
 
 end
@@ -32,7 +32,7 @@ end
     @testset "normalization" begin
 
         for n = 2:5
-            occupation = ModeOccupation(random_occupancy(n^2, n))
+            occupation = ModeOccupation(random_occupancy(n, n^2))
             input = Input{Bosonic}(occupation)
             interf = RandHaar(input.r.m)
             p_theo = theoretical_distribution(input=input, distinguishability=1, interf=interf, gram_matrix=input.G)
@@ -46,7 +46,7 @@ end
 
         p = Progress(4, 1, "check positivity...", 50)
         for n = 2:5
-            occupation = ModeOccupation(random_occupancy(n^2, n))
+            occupation = ModeOccupation(random_occupancy(n, n^2))
             input = Input{Bosonic}(occupation)
             interf = RandHaar(input.r.m)
             p_theo = theoretical_distribution(input=input, distinguishability=1, interf=interf, gram_matrix=input.G)
@@ -76,15 +76,15 @@ end
     end
 end
 
-@testset "output statistics" begin
+@testset "noisy statistics" begin
 
     @testset "normalization" begin
 
         for n = 2:4
-            occupation = ModeOccupation(random_occupancy(2n, n))
+            occupation = ModeOccupation(random_occupancy(n, 2n))
             input = Input{RandomModel}(occupation)
             interf = RandHaar(input.r.m)
-            p_exact, p_approx, p_samp = output_statistics(input=input, distinguishability=0.5, reflectivity=0.5, interf=interf)
+            p_exact, p_approx, p_samp = noisy_distribution(input=input, distinguishability=0.5, reflectivity=0.5, interf=interf)
 
             @test sum(p_exact) ≈ 1 atol=1e-9
             @test sum(p_approx) ≈ 1 atol=1e-9
@@ -96,10 +96,10 @@ end
     @testset "positivity" begin
 
         for n = 2:4
-            occupation = ModeOccupation(random_occupancy(2n, n))
+            occupation = ModeOccupation(random_occupancy(n, 2n))
             input = Input{RandomModel}(occupation)
             interf = RandHaar(input.r.m)
-            p_exact, p_approx, p_samp = output_statistics(input=input, distinguishability=0.5, reflectivity=0.5, interf=interf)
+            p_exact, p_approx, p_samp = noisy_distribution(input=input, distinguishability=0.5, reflectivity=0.5, interf=interf)
 
             @test all(p->p>=0, p_exact)
             @test all(p->p>=0, p_approx)
@@ -117,7 +117,7 @@ end
             occupation = ModeOccupation(random_occupancy(n,n))
             input = Input{Bosonic}(occupation)
             interf = Fourier(input.r.m)
-            O = output_statistics(input=input, distinguishability=1, reflectivity=0.5, interf=interf, approx=false, samp=false)
+            O = noisy_distribution(input=input, distinguishability=1, reflectivity=0.5, interf=interf, approx=false, samp=false)
             p_exact = O[1]
 
             output_events = generate_events(n,n)
@@ -136,13 +136,13 @@ end
 @testset "consistency" begin
 
     for n = 2:4
-        occupation = ModeOccupation(random_occupancy(2n, n))
+        occupation = ModeOccupation(random_occupancy(n, 2n))
         input = Input{Bosonic}(occupation)
 
         for i = 1:10
             interf = RandHaar(input.r.m)
             p_theo = theoretical_distribution(input=input, distinguishability=1, interf=interf, gram_matrix=input.G)
-            O = output_statistics(input=input, distinguishability=1, reflectivity=0.999, interf=interf, approx=false, samp=false)
+            O = noisy_distribution(input=input, distinguishability=1, reflectivity=0.999, interf=interf, approx=false, samp=false)
             p_exact = O[1]
 
             for j = 1:length(p_theo)
