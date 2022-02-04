@@ -1,4 +1,4 @@
-function output_statistics(;input, distinguishability, reflectivity, interf, exact=true, approx=true, samp=true)
+function noisy_distribution(;input, distinguishability, reflectivity, interf, exact=true, approx=true, samp=true)
 
     # https://arxiv.org/pdf/1809.01953.pdf
 
@@ -134,3 +134,20 @@ function output_statistics(;input, distinguishability, reflectivity, interf, exa
     return output
 
 end
+
+# n = 4
+# m = 8
+#
+# x = 0.7
+# η = 0.8
+#
+# G = GramMatrix{ToyModel}(n, gram_matrix_from_x(n, x))
+# input = Input{ToyModel}(first_modes(n,m), G)
+#
+# interf = RandHaar(m)
+#
+# O = noisy_distribution(input=input, distinguishability=x, reflectivity=η, interf=interf)
+#
+# plot(O[1], label="p_exact")
+# plot!(O[2], label="p_approx")
+# plot!(O[3], label="p_sample")
