@@ -12,7 +12,7 @@ function theoretical_distribution(;input::Input, distinguishability::Real, inter
     function compute_pi(event)
 
         M = U[input_event, event]
-        output_modes = mode_occupacy_to_occupancy_vector(event, number_modes)
+        output_modes = fill_arrangement(event)
 
         if distinguishability == 1 ||distinguishability == 0
             return abs(ryser_fast(M)).^2
