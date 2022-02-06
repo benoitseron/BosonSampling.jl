@@ -51,7 +51,7 @@ struct ModeOccupation
 end
 
 at_most_one_photon_per_bin(r::ModeOccupation) = all(r.state[:] .<= 1)
-first_modes(m::Int, n::Int) = ModeOccupation([i <= n ? 1 : 0 for i in 1:m])
+first_modes(n::Int, m::Int) = ModeOccupation([i <= n ? 1 : 0 for i in 1:m])
 
 abstract type InputType end
 
