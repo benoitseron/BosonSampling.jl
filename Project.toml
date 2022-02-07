@@ -3,6 +3,9 @@ uuid = "4f11539d-f4e6-47f3-a15e-0809978c3ed1"
 authors = ["Benoît Seron <benoitseron@gmail.com> and Antoine Restivo <antoinerestivo@hotmail.fr>"]
 version = "0.1.0"
 
+[deps]
+Permanents = "e0809bc7-674c-4283-bd35-3a6d484c6d12"
+
 [compat]
 julia = "1"
 
