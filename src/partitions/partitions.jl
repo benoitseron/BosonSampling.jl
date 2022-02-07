@@ -91,7 +91,6 @@ physical_interferometer = RandHaar(m)
 part = Partition([Subset(set1), Subset(set2)])
 partition_occupancy = PartitionOccupancy(ModeOccupation([1,2]), n, part)
 
-
 fourier_indexes = all_mode_configurations(n,part.n_subset)
 probas_fourier = Array{ComplexF64}(undef, length(fourier_indexes))
 virtual_interferometer_matrix = similar(physical_interferometer.U)
@@ -107,7 +106,6 @@ virtual_interferometer_matrix = similar(physical_interferometer.U)
 # this_diag *= subset .* this_phase
 #
 
-partition_occupancy.partition.subsets
 
 for (index_fourier_array, fourier_index) in enumerate(fourier_indexes)
 
@@ -118,7 +116,7 @@ for (index_fourier_array, fourier_index) in enumerate(fourier_indexes)
         @show fourier_index
         for (i,fourier_element) in enumerate(fourier_index)
 
-                this_phase = exp(2*pi*1im/(partition_occupancy.n+1) * fourier_element)
+                this_phase = exp(2*pi*1im/(partition_occupancy.n+1)^(partition_occupancy.partition.n_subset) * fourier_element)
                 @show this_phase
                 @show partition_occupancy.partition.subsets[i].subset
                 for j in 1:length(diag)
@@ -139,8 +137,12 @@ for (index_fourier_array, fourier_index) in enumerate(fourier_indexes)
 end
 
 probas_fourier
-new(partition_occupancy, physical_interferometer, virtual_interferometer_matrix, fourier_indexes, virtual_interferometer_matrix)
 
-exp.([1,2])
+physical_indexes = copy(fourier_indexes)
 
-v
+probas_physical(physical_index) = 1/(partition_occupancy.n+1)^(partition_occupancy.partition.n_subset) * sum([probas_fourier[i] * exp(-2*pi*1im/(partition_occupancy.n+1)^(partition_occupancy.partition.n_subset) * dot(physical_index, fourier_indexes[i])) for i in 1:length(fourier_indexes)])
+
+sum(probas_physical(physical_index) for physical_index in physical_indexes)
+
+probas_physical([5,5])
+##########3 doesnt work

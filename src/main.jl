@@ -6,9 +6,7 @@ using Random
 using IterTools
 using Statistics
 using LinearAlgebra #removed so as to be able to use generic types such as BigFloats, can be put back if needed
-using GenericLinearAlgebra
 using PolynomialRoots
-using FFTW
 using StatsBase
 using JLD
 using CSV
