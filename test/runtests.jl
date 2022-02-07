@@ -37,23 +37,26 @@ using Test
 		U = fourier_matrix(2)
 
 		occupancy_vector = [1, 0]
-		@test proba_partition(U, occupancy_vector) ≈ [0.5,0,0.5] atol = 1e-5
+		@test proba_partition_bosonic(U = U, occupancy_vector = occupancy_vector) ≈ [0.5,0,0.5] atol = 1e-5
 
 		occupancy_vector = [0, 1]
-		@test proba_partition(U, occupancy_vector) ≈ [0.5,0,0.5] atol = 1e-5
+		@test proba_partition_bosonic(U = U, occupancy_vector = occupancy_vector) ≈ [0.5,0,0.5] atol = 1e-5
 
 		occupancy_vector = [1, 1]
-		@test proba_partition(U, occupancy_vector) ≈ [0,0,1.] atol = 1e-5
+		@test proba_partition_bosonic(U = U, occupancy_vector = occupancy_vector) ≈ [0,0,1.] atol = 1e-5
 
 	end
+
 
 	@testset "probability distribution of distinguishable photons in modes : HOM" begin
 
-		U = fourier_matrix(2)
-		part = [1]
-		@test partition_probability_distribution_distinguishable(part, U) ≈ [0.25,0.5,0.25] atol = 1e-8
+	    U = fourier_matrix(2)
+	    part = [1,0]
+	    @test proba_partition_distinguishable(occupancy_vector = part, U = U) ≈ [0.25,0.5,0.25] atol = 1e-8
 
 	end
+
+
 
 	@testset "partial distinguishability partitions" begin
 
@@ -68,9 +71,8 @@ using Test
 
 		U = fourier_matrix(10)
 
-		@test proba_partition_partial(U = U, S = ones(n, n), occupancy_vector = occupancy_vector, input_state = input_state) == proba_partition(U, occupancy_vector, input_state = input_state)
-	    @test proba_partition_partial(U = U,  S = Matrix{Float64}(I, n, n), occupancy_vector = occupancy_vector, input_state = input_state) ≈ partition_probability_distribution_distinguishable([1], U; number_photons = n)
+		@test proba_partition_partial(U = U, S = ones(n, n), occupancy_vector = occupancy_vector, input_state = input_state) == proba_partition_bosonic(U = U, occupancy_vector = occupancy_vector, input_state = input_state)
+	    @test proba_partition_partial(U = U,  S = Matrix{Float64}(I, n, n), occupancy_vector = occupancy_vector, input_state = input_state) ≈ proba_partition_distinguishable(occupancy_vector = occupancy_vector, U = U, input_state = input_state)
 
 	end
-
 end
