@@ -314,7 +314,7 @@ function sub_permanent_matrix(A)
 	for i in 1 : n
 		for j in 1 : n
 
-			sub_permanents[i,j] = permanent_ryser(remove_row_col(A, [i], [j]))
+			sub_permanents[i,j] = ryser(remove_row_col(A, [i], [j]))
 
 		end
 	end

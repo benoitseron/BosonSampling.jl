@@ -4,7 +4,7 @@
 
 include("scattering.jl")
 
-permanent = permanent_ryser
+permanent = ryser
 
 
 

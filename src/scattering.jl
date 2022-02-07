@@ -133,14 +133,14 @@ vector_factorial(r::ModeOccupation) = vector_factorial(r.state)
 vector_factorial(i::Input) = vector_factorial(i.r)
 vector_factorial(o::FockDetection) = vector_factorial(o.s)
 
-function bosonic_amplitude(U, input_state, output_state, permanent = permanent_ryser)
+function bosonic_amplitude(U, input_state, output_state, permanent = ryser)
 
     """event amplitude"""
 
     permanent(scattering_matrix(U, input_state, output_state))/sqrt(vector_factorial(input_state) * vector_factorial(output_state))
 end
 
-function process_amplitude(U, input_state, output_state, permanent = permanent_ryser)
+function process_amplitude(U, input_state, output_state, permanent = ryser)
 
 	bosonic_amplitude(U, input_state, output_state, permanent)
 end
@@ -158,7 +158,7 @@ function process_probability(U, input_state, output_state)
 	bosonic_probability(U, input_state, output_state)
 end
 
-function distinguishable_probability(U, input_state, output_state, permanent = permanent_ryser)
+function distinguishable_probability(U, input_state, output_state, permanent = ryser)
 
 	"""distinguishable (or classical) process_probability"""
 
@@ -168,7 +168,7 @@ end
 
 
 
-function process_probability_distinguishable(U, input_state, output_state, permanent = permanent_ryser)
+function process_probability_distinguishable(U, input_state, output_state, permanent = ryser)
 
 	#@warn "obsolete function, use distinguishable_probability or probability"
 
