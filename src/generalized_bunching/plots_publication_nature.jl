@@ -82,8 +82,8 @@ sum(p_mode_1_b)
 
 ###### mode distribution output of the DFT ######
 
-q_min = 5
-q_max = 15
+q_min = 7
+q_max = 7
 q_array = q_min:q_max
 
 function star_state(q)
@@ -156,9 +156,10 @@ function plot_top_two_mode_distribution_star_state_normalized(n)
 
 	plt = plot()
 
-	scatter!([0:n], dists[1], label = "bosonic");
-	scatter!([0:n], dists[2], label = "distinguishable");
-	scatter!([0:n], dists[3], label = "star state");
+	scatter!([0:n], dists[1], label = "bosonic", legend = :right);
+	scatter!([0:n], dists[2], label = "distinguishable", legend = :right);
+	scatter!([0:n], dists[3], label = "star state", legend = :right);
+
 	#title!("probability to have k photons in the first mode upon vacuum in the last $(n-2) of a DFT");
 
 	plt
@@ -173,18 +174,34 @@ plt_array = []
 	display(this_plt)
 end
 
+plt_array[1]
+
+
 ###### bunching probability compared to lower bound ######
+#
+# n_bunching = [i for i in 3:12]
+# bunching_ratio = [0.75, 0.75, 0.8125, 0.933333, 1.07378, 1.22366, 1.37848, 1.53623, 1.69585, 1.85678, 2.01865, 2.18124, 2.34439][1:length(n_bunching)]
+# lower_bound = [0.5, 0.583333, 0.6875, 0.8, 0.916667, 1.03571, 1.15625, 1.27778, 1.4, 1.52273, 1.64583, 1.76923, 1.89286][1:length(n_bunching)]
 
-n_bunching = [i for i in 3:12]
-bunching_ratio = [0.75, 0.75, 0.8125, 0.933333, 1.07378, 1.22366, 1.37848, 1.53623, 1.69585, 1.85678, 2.01865, 2.18124, 2.34439][1:length(n_bunching)]
-lower_bound = [0.5, 0.583333, 0.6875, 0.8, 0.916667, 1.03571, 1.15625, 1.27778, 1.4, 1.52273, 1.64583, 1.76923, 1.89286][1:length(n_bunching)]
+include("counter_example_larger_violation_circuits.jl")
 
-plt = scatter(n_bunching, bunching_ratio, dpi = 600);
-scatter!(n_bunching, lower_bound);
+
+n_min = 4
+n_max = 30
+n_array = collect(n_min:n_max)
+violation_array = violation_ratio.(n_array,2)
+lower_bound_array = lower_bound.(n_array)
+
+plt = scatter(n_array, violation_array, dpi = 600, markershape = :cross, color = :blue)
+scatter!(n_array, lower_bound_array, markershape = :cross, color = :orange)
+plot!(n_array, violation_array, color = :blue)
+plot!(n_array, lower_bound_array, color = :orange)
+
+
 plot!(legend = false)
 hline!([1], linestyle=:dash)
 savefig(plt, "images/nature_plots/bunching_ratio.png")
-
+plt
 ###### interpolating model ######
 
 function interpolation_S_matrix(x; S_violation = S)

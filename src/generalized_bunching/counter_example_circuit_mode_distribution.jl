@@ -1,7 +1,7 @@
 include("counter_example_circuit.jl")
 
 
-println("WARNING this needs to be clarified : U or U'")
+@warn "WARNING this needs to be clarified : U or U'"
 
 input_state = [1 for i in 1:7]
 partition_occupancy_vector = [0 for i in 1:7]
@@ -27,7 +27,7 @@ n = 7
 p_mode_1_pd = zeros(ComplexF64, n+1)
 p_mode_1_b = zeros(ComplexF64, n+1)
 
-println("WARNING this needs to be clarified : U or U' etc")
+@warn "WARNING this needs to be clarified : U or U' etc"
 
 W = conj!(U)
 
