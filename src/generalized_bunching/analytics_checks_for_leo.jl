@@ -1,6 +1,6 @@
 function leo_ratio(n)
 
-    numerator(n) = (factorial(n) + n^2 * factorial(n-2))/(n^n)
+    numerator(n) = (factorial(n) + 0.25*n^2 * factorial(n-2))/(n^n)
 
     U = fourier_matrix(n)
     H = H_matrix(U, [1 for i in 1:n], [i <= 2 ? 1 : 0 for i in 1:n])
