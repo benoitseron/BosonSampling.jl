@@ -25,3 +25,6 @@ plotly();
 plt = plot(n_array, leo_ratio.(n_array))
 
 @show (n_array, leo_ratio.(n_array))
+plt
+
+savefig(plt,"src/generalized_bunching/analytics_checks_for_leo.html")
