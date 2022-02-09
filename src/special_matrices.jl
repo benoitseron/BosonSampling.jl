@@ -337,3 +337,11 @@ function gram_from_n_r_vectors(M)
 	M' * M # our rank r n*n gram matrix
 
 end
+
+
+function column_normalize(M)
+   for col in 1:size(M,2) #column normalize
+	   M[:, col] = M[:, col]./norm(M[:, col])
+   end
+   M
+end
