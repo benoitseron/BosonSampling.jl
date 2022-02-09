@@ -345,3 +345,40 @@ function column_normalize(M)
    end
    M
 end
+
+
+function perturbed_gram_matrix(M, epsilon)
+
+    """M defines the set of vectors generating the gram matrix
+
+    each column is a generating vector for the gram matrix
+    we perturb them by some random gaussian amount with set variance epsilon once normalized """
+
+    M = column_normalize(M)
+
+    d = Normal(0.0, epsilon)
+
+    perturbation_vector = rand(d,size(M))
+
+    M += perturbation_vector
+
+    M = column_normalize(M)
+
+    M' * M
+end
+
+function perturbed_unitary(U, epsilon)
+
+    """U a unitary matrix each column is a generating vector
+    we perturb them by some random gaussian amount with set variance epsilon once normalized """
+
+    d = Normal(0.0, epsilon)
+
+    perturbation_vector = rand(d,size(U))
+
+    U += perturbation_vector
+
+    U = modified_gram_schmidt(U)
+
+    U
+end
