@@ -34,6 +34,8 @@ include("partitions/legacy.jl")
 
 include("boson_samplers/classical_sampler.jl")
 
+include("circuits/circuits_elements.jl")
+
 include("permanent_conjectures/bapat_sunder.jl")
 include("permanent_conjectures/counter_example_functions.jl")
 include("permanent_conjectures/counter_example_numerical_search.jl")
