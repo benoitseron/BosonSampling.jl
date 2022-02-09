@@ -24,37 +24,6 @@ function cholesky_semi_definite_positive(A)
 
 end
 
-function modified_gram_schmidt(input_vectors)
-	"""does the modified gram schmidt (numerically stable) on the columns of the matrix input_vectors"""
-
-	function projector(a, u)
-		"""projector of a on u"""
-		dot(u,a)/dot(u,u) .* u
-	end
-
-	final_vectors = copy(input_vectors)
-
-	for i in 1:size(input_vectors)[2]
-
-		if i == 1
-			#normalize first vector
-			final_vectors[:,1] /= norm(final_vectors[:, 1])
-		else
-			for j in 1:i-1
-				final_vectors[:, i] -= projector(final_vectors[:, i], final_vectors[:, j])
-			end
-			final_vectors[:, i] /= norm(final_vectors[:, i])
-
-		end
-
-	end
-
-	is_orthonormal(final_vectors)
-
-	final_vectors
-
-end
-
 function incorporate_in_a_unitary(X)
 	"""incorporates the renormalized matrix X in a double sized unitary through the proof of Lemma 29  of Aaronson Arkipov seminal https://arxiv.org/abs/1011.3245"""
 

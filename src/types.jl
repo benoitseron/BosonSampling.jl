@@ -1,7 +1,3 @@
-include("special_matrices.jl")
-include("matrix_tests.jl")
-include("type_functions.jl")
-
 abstract type Interferometer end
 
 struct UserDefinedInterferometer <: Interferometer
@@ -140,9 +136,6 @@ mutable struct EventProbability
     precision::Union{Number,Nothing} # see remarks in conventions
     failure_probability::Union{Number,Nothing}
 
-    function EventProbability()
-        new(nothing,nothing,nothing)
-    end
 
     function EventProbability(probability = nothing)
 

@@ -1,8 +1,4 @@
 # search for counter examples to bapat sunder to show that it is hard
-
-include("counter_example_functions.jl")
-
-
 function search_until_user_stop(search_function)
 
     n_trials = 1
