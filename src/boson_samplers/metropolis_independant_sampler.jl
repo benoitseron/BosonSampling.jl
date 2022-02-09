@@ -4,7 +4,6 @@
 # the paper is limited to collisionless events so we keep track of this in the
 # following through iterate_until_collisionless
 
-include("classical_sampler.jl")
 
 function metropolis_sampler(;target_pdf, known_pdf, known_sampler, starting_state, n_iter, n_burn = 100, n_thinning = 100)
 

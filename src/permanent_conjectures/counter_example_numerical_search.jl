@@ -1,8 +1,4 @@
 # search for counter examples to bapat sunder to show that it is hard
-
-include("counter_example_functions.jl")
-
-
 function search_until_user_stop(search_function)
 
     n_trials = 1
@@ -47,18 +43,3 @@ function random_search_counter_example_bapat_sunder(;m,n,r, physical_H = true)
 
 
 end
-
-##### practical tests #####
-
-# m = 7
-# n = 7
-# r = 2
-# 20 000 000 trials and no counter example
-
-m = 7
-n = 7
-r = 7
-
-f = ()-> random_search_counter_example_bapat_sunder(m=m,n=n,r=r)
-
-search_until_user_stop(f)

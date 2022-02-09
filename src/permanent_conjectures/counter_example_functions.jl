@@ -1,19 +1,5 @@
-function violates_bapat_sunder(A,B, tol = 1e-5)
-
-	diagonal_el_product = prod([B[i,i] for i in 1:size(B)[1]])
-
-	# @test (imag(diagonal_el_product) ≈ 0.)
-
-
-	if !(imag(diagonal_el_product) ≈ 0.)
-		throw(Exception("product of diagonal elements of B is not real"))
-	elseif !(is_positive_semidefinite(A) && is_positive_semidefinite(B))
-		throw(Exception("A or B not semidefinitepositive"))
-	else
-		return abs(permanent_ryser(A .* B)) / (abs(permanent_ryser(A)) * real(prod([B[i,i] for i in 1:size(B)[1]]))) > 1+tol
-	end
-	return nothing
-end
+# functions relating to counter examples of the bapat sunder conjecture
+# and its physical realization
 
 function cholesky_semi_definite_positive(A)
 
@@ -35,37 +21,6 @@ function cholesky_semi_definite_positive(A)
 		# println(R)
 		# pretty_table(R)
 	end
-
-end
-
-function modified_gram_schmidt(input_vectors)
-	"""does the modified gram schmidt (numerically stable) on the columns of the matrix input_vectors"""
-
-	function projector(a, u)
-		"""projector of a on u"""
-		dot(u,a)/dot(u,u) .* u
-	end
-
-	final_vectors = copy(input_vectors)
-
-	for i in 1:size(input_vectors)[2]
-
-		if i == 1
-			#normalize first vector
-			final_vectors[:,1] /= norm(final_vectors[:, 1])
-		else
-			for j in 1:i-1
-				final_vectors[:, i] -= projector(final_vectors[:, i], final_vectors[:, j])
-			end
-			final_vectors[:, i] /= norm(final_vectors[:, i])
-
-		end
-
-	end
-
-	is_orthonormal(final_vectors)
-
-	final_vectors
 
 end
 
