@@ -24,9 +24,15 @@ const ATOL = 1e-10
 include("special_matrices.jl")
 include("matrix_tests.jl")
 include("proba_tools.jl")
+include("type_functions.jl")
 include("types.jl")
 include("scattering.jl")
 include("bunching/bunching.jl")
-include("partitions/partition_expectation_values.jl")
+include("partitions/legacy.jl")
+
+include("permanent_conjectures/bapat_sunder.jl")
+include("permanent_conjectures/counter_example_functions.jl")
+include("permanent_conjectures/counter_example_numerical_search.jl")
+include("permanent_conjectures/permanent_on_top.jl")
 
 permanent = ryser
