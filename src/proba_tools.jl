@@ -31,3 +31,18 @@ function sqr(a,b)
 	"""euclidian distance"""
 	sqrt(sum((a-b).^2))
 end
+
+function clean_pdf!(A::Array, atol = ATOL)
+
+	"""checks if an array has all elements as acceptable probabilities within atol
+	and converts them to that and summing to one within length(A) * atol
+	and renormalizes"""
+
+	A = clean_proba.(A)
+	normalization = sum(A)
+	if isapprox(normalization, 1, atol = length(A) * atol)
+		A = 1/normalization * A
+	else
+		error("A not normalized")
+	end
+end
