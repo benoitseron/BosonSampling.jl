@@ -8,39 +8,39 @@ function permanent_def(U::AbstractMatrix{T}) where {T}
     return sum(sum_diag(perm, U) for perm in permutations(collect(1:n)))
 end
 
-function ryser_slow(U::AbstractMatrix{T}) where {T}
-
-    """ computes the permanent using Ryser formula O(n^2×2^n) """
-
-    n = size(U)[1]
-
-    function submatrix(k::Integer)::Matrix{typeof(U[1,1])}[]
-
-        """ returns the set of n×k submatrices of U """
-
-        set = Matrix{typeof(U[1,1])}[]
-        x = vcat(ones(Int8, k), zeros(Int8, n-k))
-        perms = unique(collect(permutations(x)))
-
-        for i = 1:length(perms)
-            count = 0
-            submat = zeros(typeof(U[1,1]), n, k)
-            for j = 1:length(perms[i])
-                if perms[i][j]≠0
-                    count+=1
-                    submat[:,count] = U[:,j]
-                end
-            end
-            push!(set, submat)
-        end
-
-        return set
-    end
-
-    sum_rows(k::Integer) = sum(prod(sum(u[j,l] for l = 1:k) for j = 1:n) for u in submatrix(U, k))
-
-    return sum((-1)^k * sum_rows(U, n-k) for k = 0:n-1)
-end
+# function ryser_slow(U::AbstractMatrix{T}) where {T}
+#
+#     """ computes the permanent using Ryser formula O(n^2×2^n) """
+#
+#     n = size(U)[1]
+#
+#     function submatrix(k::Integer)::Matrix{typeof(U[1,1])}[]
+#
+#         """ returns the set of n×k submatrices of U """
+#
+#         set = Matrix{typeof(U[1,1])}[]
+#         x = vcat(ones(Int8, k), zeros(Int8, n-k))
+#         perms = unique(collect(permutations(x)))
+#
+#         for i = 1:length(perms)
+#             count = 0
+#             submat = zeros(typeof(U[1,1]), n, k)
+#             for j = 1:length(perms[i])
+#                 if perms[i][j]≠0
+#                     count+=1
+#                     submat[:,count] = U[:,j]
+#                 end
+#             end
+#             push!(set, submat)
+#         end
+#
+#         return set
+#     end
+#
+#     sum_rows(k::Integer) = sum(prod(sum(u[j,l] for l = 1:k) for j = 1:n) for u in submatrix(U, k))
+#
+#     return sum((-1)^k * sum_rows(U, n-k) for k = 0:n-1)
+# end
 
 function ryser_fast(U::AbstractMatrix{T}) where T
 
