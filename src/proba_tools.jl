@@ -22,16 +22,6 @@ function clean_proba(probability, atol=ATOL)
     end
 end
 
-function tvd(a,b)
-	"""total variation distance"""
-	0.5*sum(abs.(a-b))
-end
-
-function sqr(a,b)
-	"""euclidian distance"""
-	sqrt(sum((a-b).^2))
-end
-
 function clean_pdf!(A::Array, atol = ATOL)
 
 	"""checks if an array has all elements as acceptable probabilities within atol
@@ -45,4 +35,14 @@ function clean_pdf!(A::Array, atol = ATOL)
 	else
 		error("A not normalized")
 	end
+end
+
+function tvd(a,b)
+	"""total variation distance"""
+	0.5*sum(abs.(a-b))
+end
+
+function sqr(a,b)
+	"""euclidian distance"""
+	sqrt(sum((a-b).^2))
 end
