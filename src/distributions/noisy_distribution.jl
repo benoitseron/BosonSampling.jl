@@ -44,7 +44,7 @@ function noisy_distribution(;input, distinguishability, reflectivity, interf, ex
                 if ans == true
 
                     pterm =
-                        distinguishability^korder * ryser_fast(
+                        distinguishability^korder * permanent_ryser(
                             U[combs[j], nlist[i]] .* conj(U[perm[l], nlist[i]]),
                         )
                     pterm = real(
@@ -55,7 +55,7 @@ function noisy_distribution(;input, distinguishability, reflectivity, interf, ex
                 elseif ans == false && korder <= kmax
 
                     pterm =
-                        distinguishability^korder * ryser_fast(
+                        distinguishability^korder * permanent_ryser(
                             U[combs[j], nlist[i]] .* conj(U[perm[l], nlist[i]]),
                         )
                     pterm = real(
@@ -93,7 +93,7 @@ function noisy_distribution(;input, distinguishability, reflectivity, interf, ex
 
                 count = sum(collect(Int(k - sum(perm[j]) == comb_test)))
                 if count <= kmax
-                    prob_test += ryser_fast(
+                    prob_test += permanent_ryser(
                         U[comb_test, b_test] .* conj(U[perm[j], b_test]),
                     )
                 end
@@ -134,20 +134,3 @@ function noisy_distribution(;input, distinguishability, reflectivity, interf, ex
     return output
 
 end
-
-# n = 4
-# m = 8
-#
-# x = 0.7
-# η = 0.8
-#
-# G = GramMatrix{ToyModel}(n, gram_matrix_from_x(n, x))
-# input = Input{ToyModel}(first_modes(n,m), G)
-#
-# interf = RandHaar(m)
-#
-# O = noisy_distribution(input=input, distinguishability=x, reflectivity=η, interf=interf)
-#
-# plot(O[1], label="p_exact")
-# plot!(O[2], label="p_approx")
-# plot!(O[3], label="p_sample")
