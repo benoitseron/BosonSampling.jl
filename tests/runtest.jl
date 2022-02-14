@@ -7,7 +7,7 @@
         U = ones(Int64, n, n)
         @test permanent_ryser(U) == factorial(n)
         U = fourier_matrix(n, normalized=false)
-        @test ryser_fast(U) ≈ theoretical_permanent_fourier_matrix[n] atol=1e-2
+        @test permanent_ryser(U) ≈ theoretical_permanent_fourier_matrix[n] atol=1e-2
     end
 
 end
@@ -18,11 +18,11 @@ end
         U = fourier_matrix(m)
         res = permanent_def(U)
 
-        @test ryser_fast(U) ≈ res atol=1e-9
         @test permanent_ryser(U) ≈ res atol=1e-9
         @test multi_dim_ryser(U, gram_matrix_from_x(m, 1)) ≈ abs(res)^2 atol=1e-9
         @test fast_glynn_perm(U) ≈ res atol=1e-9
         @test gurvits(U, 1e-3) ≈ res atol=1e-2
+
     end
 
 end
@@ -153,13 +153,25 @@ end
 
 end
 
-@testset "suppression law Cliffords sampler" begin
+@testset "suppression law boson samplers" begin
 
-    for n = 5:10
-        input = Input{Bosonic}(first_modes(n,n))
+    for n = 3:10
+
         interf = Fourier(n)
-        out = cliffords_sampler(input=input, interf=interf)
-        @test !is_forbidden(out)
+        reflectivity = 1
+        distinguishability = 1
+        G = GramMatrix{ToyModel}(n, gram_matrix_from_x(n, distinguishability))
+
+        input_clifford_sampler = Input{Bosonic}(first_modes(n,n))
+        input_noisy_sampler = Input{ToyModel}(first_modes(n,n), G)
+
+        out_clifford_sampler = cliffords_sampler(input=input_clifford_sampler, interf=interf)
+        out_noisy_sampler = noisy_sampling(input=input_noisy_sampler, distinguishability=distinguishability, reflectivity=reflectivity, interf=interf)
+
+        @test !is_forbidden(out_clifford_sampler)
+        @test !is_forbidden(out_noisy_sampler)
+
     end
 
 end
+
