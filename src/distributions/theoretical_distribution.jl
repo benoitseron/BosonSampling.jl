@@ -15,7 +15,7 @@ function theoretical_distribution(;input::Input, distinguishability::Real, inter
         output_modes = fill_arrangement(event)
 
         if distinguishability == 1 ||distinguishability == 0
-            return abs(ryser_fast(M)).^2
+            return abs(permanent_ryser(M)).^2
         else
             return multi_dim_ryser(M, S)
         end
