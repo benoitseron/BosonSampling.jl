@@ -46,7 +46,7 @@ function noisy_distribution(;input, distinguishability, reflectivity, interf, ex
                 if ans == true
 
                     pterm =
-                        distinguishability^korder * naive(
+                        distinguishability^korder * ryser(
                             U[combs[j], nlist[i]] .* conj(U[perm[l], nlist[i]]),
                         )
                     pterm = real(
@@ -57,7 +57,7 @@ function noisy_distribution(;input, distinguishability, reflectivity, interf, ex
                 elseif ans == false && korder <= kmax
 
                     pterm =
-                        distinguishability^korder * naive(
+                        distinguishability^korder * ryser(
                             U[combs[j], nlist[i]] .* conj(U[perm[l], nlist[i]]),
                         )
                     pterm = real(
@@ -95,7 +95,7 @@ function noisy_distribution(;input, distinguishability, reflectivity, interf, ex
 
                 count = sum(collect(Int(k - sum(perm[j]) == comb_test)))
                 if count <= kmax
-                    prob_test += naive(
+                    prob_test += ryser(
                         U[comb_test, b_test] .* conj(U[perm[j], b_test]),
                     )
                 end
@@ -136,26 +136,3 @@ function noisy_distribution(;input, distinguishability, reflectivity, interf, ex
     return output
 
 end
-
-number_photons = 3
-number_modes = 6
-
-x = 0.7
-η = 0.8
-
-G = GramMatrix{ToyModel}(number_photons, gram_matrix_toy_model(number_photons,x))
-input = Input{ToyModel}(first_modes(number_photons,number_modes), G)
-
-interf = RandHaar(input.r.m)
-
-out = noisy_distribution(input=input, interf=interf, distinguishability=x, reflectivity=η)
-
-p_exact = out[1]
-p_approx = out[2]
-p_samp = out[3]
-
-sum(p_exact)
-
-sum(p_approx)
-
-sum(p_samp)
