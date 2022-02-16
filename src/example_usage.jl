@@ -48,3 +48,23 @@ known_sampler = () -> iterate_until_collisionless(() -> classical_sampler(U = U,
 
 
 samples = metropolis_sampler(;target_pdf = target_pdf, known_pdf = known_pdf , known_sampler = known_sampler , starting_state = starting_state, n_iter = 100)
+
+### Noisy distribution ###
+
+n = 3
+m = 6
+x = 0.8
+η = 0.8
+
+G = GramMatrix{ToyModel}(n, gram_matrix_toy_model(n, x))
+input = Input{ToyModel}(first_modes(n,m), G)
+interf = RandHaar(m)
+
+output_statistics = noisy_distribution(input=input, distinguishability=x, reflectivity=η, interf=interf)
+p_exact = output_statistics[1]
+p_approx = output_statistics[2]
+p_sampled = output_statistics[3]
+
+plot(p_exact, label="p_exact")
+plot!(p_approx, label="p_approx")
+plot!(p_sampled, label="p_sampled")
