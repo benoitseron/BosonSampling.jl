@@ -75,4 +75,5 @@ function bunching_probability_brute_force_bosonic(U, input_state, output_state; 
     @test bunching_proba ≈ real(permanent(H))
 
     return bunching_proba, bunching_proba_array, bunching_event_proba
+	
 end

@@ -1,7 +1,6 @@
 abstract type Interferometer end
 
 struct UserDefinedInterferometer <: Interferometer
-
     #actively checks unitarity, inefficient if outputing many matrices that are known to be unitary
     m::Int
     U::Matrix
@@ -17,9 +16,28 @@ end
 struct Fourier <: Interferometer
     m::Int
     U::Matrix{ComplexF64}
-    FourierMatrix(U) = new(m,fourier_matrix(m))
+    Fourier(m) = new(m, fourier_matrix(m))
 end
 
+struct BeamSplitter <: Interferometer
+    transmission_amplitude::Float64
+    U::Matrix
+    BeamSplitter(transmission_amplitude) = new(transmission_amplitude, beam_splitter(transmission_amplitude))
+end
+
+struct Rotation <: Interferometer
+    angle::Float64
+    U::Matrix
+    Rotation(angle) = new(angle, rotation_matrix(angle))
+end
+
+struct PhaseShift <: Interferometer
+    shifted_modes::Array
+    param_::Array
+    m::Int
+    U::Matrix
+    PhaseShift(shifted_modes, param_) = new(shifted_modes, param_, length(shifted_modes), phase_shift(shifted_modes, param_))
+end
 
 struct ModeOccupation
     n::Int
@@ -37,19 +55,25 @@ first_modes(n::Int,m::Int) = ModeOccupation([i <= n ? 1 : 0 for i in 1:m])
 
 abstract type InputType end
 
-struct Bosonic <:InputType
-end
-struct PartDist <:InputType
-end
-struct Distinguishable <:InputType
-end
-struct Undef <:InputType
-end
+abstract type Bosonic <: InputType end
+
+abstract type PartDist <: InputType end
+
+abstract type ToyModel <: PartDist end
+
+abstract type RandomModel <: PartDist end
+
+abstract type Distinguishable <: InputType end
+
+abstract type Undef <: InputType end
 
 mutable struct OrthonormalBasis
+
     """basis of vectors v_1,...,v_n stored as columns in a n*r matrix
     possibly empty"""
+
     vectors_matrix::Union{Matrix,Nothing}
+
     function OrthonormalBasis(vectors_matrix = nothing)
         if vectors_matrix == nothing
             new(nothing)
@@ -57,6 +81,7 @@ mutable struct OrthonormalBasis
             is_orthonormal(vectors_matrix, atol = ATOL) ? new(vectors_matrix) : error("invalid orthonormal basis")
         end
     end
+
 end
 
 struct GramMatrix{T<:InputType}
@@ -67,46 +92,57 @@ struct GramMatrix{T<:InputType}
     generating_vectors::OrthonormalBasis
 
     function GramMatrix{T}(n::Int) where {T<:InputType}
+
         if T == Bosonic
-            return new{T}(n,ones(ComplexF64,n,n), nothing, OrthonormalBasis())
+            return new{T}(n, ones(ComplexF64,n,n), nothing, OrthonormalBasis())
         elseif T == Distinguishable
-            return new{T}(n,Matrix{ComplexF64}(I,n,n), nothing, OrthonormalBasis())
+            return new{T}(n, Matrix{ComplexF64}(I,n,n), nothing, OrthonormalBasis())
+        elseif T == RandomModel
+            return new{T}(n, rand_gram_matrix(n), nothing, OrthonormalBasis())
         elseif T == Undef
-            return new{T}(n,Matrix{ComplexF64}(undef,n,n), nothing, OrthonormalBasis())
+            return new{T}(n, Matrix{ComplexF64}(undef,n,n), nothing, OrthonormalBasis())
         else
             error("type ", T, " not implemented")
         end
+
     end
-    function GramMatrix{T}(n::Int,S::Matrix) where {T<:InputType}
-        if T in [Bosonic, Distinguishable, Undef]
-            error("S matrix should not be specified for [Bosonic, Distinguishable, Undef] types")
-            ########### to be made better
-        elseif T == PartDist
-            return new{T}(n,S, nothing, OrthonormalBasis())
+
+    function GramMatrix{T}(n::Int, S::Matrix) where {T<:InputType}
+
+        if T <: PartDist && T != RandomModel
+            return new{T}(n, S, nothing, OrthonormalBasis())
         else
-            error("type ", T, " not implemented")
+            T in [Bosonic, Distinguishable, Undef, RandomModel] ? error("S matrix should not be specified for type ", T) : error("Type ", T, " not implemented")
         end
+
     end
+
 end
 
 struct Input{T<:InputType}
+
     r::ModeOccupation
     G::GramMatrix
+
     function Input{T}(r::ModeOccupation) where {T<:InputType}
-        if T in [Bosonic, Distinguishable, Undef]
-            return new{T}(r,GramMatrix{T}(r.n))
+
+        if T in [Bosonic, Distinguishable, Undef, RandomModel]
+            return new{T}(r, GramMatrix{T}(r.n))
         else
             error("type ", T, " not implemented")
         end
     end
+
     function Input{T}(r::ModeOccupation, G::GramMatrix) where {T<:InputType}
 
-        if T == PartDist
-            return new{T}(r,G)
+        if T <: PartDist && T != RandomModel
+            return new{T}(r, G)
         else
-            error("type ", T, " not implemented")
+            error("Type ", T, " not implemented")
         end
+
     end
+
 end
 
 abstract type OutputMeasurementType end

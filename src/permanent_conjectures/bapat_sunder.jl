@@ -4,7 +4,6 @@ function violates_bapat_sunder(A,B, tol = ATOL)
 
 	# @test (imag(diagonal_el_product) ≈ 0.)
 
-
 	if !(imag(diagonal_el_product) ≈ 0.)
 		throw(Exception("product of diagonal elements of B is not real"))
 	elseif !(is_positive_semidefinite(A) && is_positive_semidefinite(B))
@@ -12,5 +11,7 @@ function violates_bapat_sunder(A,B, tol = ATOL)
 	else
 		return abs(ryser(A .* B)) / (abs(ryser(A)) * real(prod([B[i,i] for i in 1:size(B)[1]]))) > 1+tol
 	end
+
 	return nothing
+
 end

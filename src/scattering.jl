@@ -13,7 +13,9 @@ function iterate_until_collisionless(f)
         if is_collisionless(state)
             return state
         end
+
     end
+
 end
 
 function fill_arrangement(occupation_vector)
@@ -33,6 +35,7 @@ function fill_arrangement(occupation_vector)
     end
 
     arrangement
+
 end
 
 fill_arrangement(r::ModeOccupation) = fill_arrangement(r.state)
@@ -40,7 +43,7 @@ fill_arrangement(r::ModeOccupation) = fill_arrangement(r.state)
 function random_occupancy(n::Int, m::Int)
 
 	""" returns a vector of size m with n randomly placed ones """
-	@warn "swapped argument orders"
+
 	if n > m
 		throw(ArgumentError("Implemented at most one photon per mode"))
 	else
@@ -51,9 +54,9 @@ function random_occupancy(n::Int, m::Int)
 	return occupancy_vector
 end
 
-random_mode_occupation(n::Int,m::Int) = ModeOccupation(random_occupancy(n,m))
+random_mode_occupation(n::Int, m::Int) = ModeOccupation(random_occupancy(n,m))
 
-function random_mode_occupation_collisionless(n::Int,m::Int)
+function random_mode_occupation_collisionless(n::Int, m::Int)
 
 	n<=m ? iterate_until_collisionless(() -> random_mode_occupation(n,m)) : error("n>m cannot make for collisionless mode occupations")
 
@@ -244,6 +247,34 @@ function compute_probability!(ev::Event{TIn,TOut}) where {TIn<:InputType, TOut<:
 	else
 		error(TOut, " not implemented")
 	end
+end
+
+function output_mode_occupation(number_photons, number_modes)
+
+	nlist = collect(1:number_modes)
+
+	for i = 1:number_photons-1
+		sublist = []
+		for j = 1:length(nlist)
+			for k = 1:number_modes
+				push!(sublist, vcat(nlist[j], k))
+			end
+		end
+		nlist = sublist
+	end
+
+	nlist
+
+end
+
+function check_suppression_law(event)
+
+	if mod(sum(event), length(event)) != 0
+		return true
+	else
+		return false
+	end
+	
 end
 
 
