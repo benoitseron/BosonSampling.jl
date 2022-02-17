@@ -25,7 +25,6 @@ function find_permutation_index(this_perm, permutation_array)
 end
 
 function multiply_permutations(a,b)
-
     a[b[:]]
 end
 

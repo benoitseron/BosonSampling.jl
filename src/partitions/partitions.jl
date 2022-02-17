@@ -31,6 +31,7 @@ struct PartitionOccupancy
 end
 
 struct PartitionCountingInterferometer <: Interferometer
+
         partition_occupancy::PartitionOccupancy
         physical_interferometer::Interferometer
         fourier_indexes::Vector{Complex}
@@ -51,6 +52,7 @@ struct PartitionCountingInterferometer <: Interferometer
                 virtual_interferometer_matrix *= U'
 
                 new(partition_occupancy, physical_interferometer, virtual_interferometer_matrix, fourier_indexes, virtual_interferometer_matrix)
+
         end
 
 end
@@ -76,6 +78,7 @@ function all_mode_configurations(n,n_subset; only_photon_number_conserving = fal
                 end
 
         end
+
         array
 
 end
@@ -134,6 +137,7 @@ for (index_fourier_array, fourier_index) in enumerate(fourier_indexes)
         #@show virtual_interferometer_matrix
 
         probas_fourier[index_fourier_array] = permanent(virtual_interferometer_matrix)
+        
 end
 
 probas_fourier

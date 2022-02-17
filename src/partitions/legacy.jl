@@ -29,6 +29,7 @@ function matrix_phi(k, U, occupancy_vector, n)
 	end
 
 	mat
+
 end
 
 function proba_partition_partial(; U, S, occupancy_vector, input_state, checks = true)
@@ -49,6 +50,7 @@ function proba_partition_partial(; U, S, occupancy_vector, input_state, checks =
 	S_{ij} = <phi_{d_i}|phi_{d_j}>
 	this is not a problem as it does not depend on the output partition but be aware of it
 	"""
+
 	m = size(U,1)
 	n = sum(input_state)
 
@@ -117,6 +119,7 @@ function proba_partition_distinguishable(;U, occupancy_vector, input_state = one
 
 end
 function partition_probability_distribution_distinguishable_rand_walk(part, U)
+
 	"""generates a vector giving the probability to have k photons in
 	the partition part for the interferometer U by the random walk method
 	discussed in a 22/02/21 email
@@ -140,6 +143,7 @@ function partition_probability_distribution_distinguishable_rand_walk(part, U)
 		end
 
 		new_probability_vector
+
 	end
 
 	n = size(U)[1]
@@ -155,4 +159,5 @@ function partition_probability_distribution_distinguishable_rand_walk(part, U)
 	end
 
 	probability_vector
+	
 end

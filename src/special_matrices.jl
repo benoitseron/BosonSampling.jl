@@ -1,4 +1,4 @@
-function fourier_matrix(n; normalized = true)
+function fourier_matrix(n::Int; normalized = true)
 
     U = Array{ComplexF64}(undef, n, n)
 
@@ -16,9 +16,11 @@ function fourier_matrix(n; normalized = true)
 end
 
 function sylvester_matrix(p; normalized = true)
+
     """returns the sylvester matrix of size 2^p"""
 
     function sylvester_element(i,j,p)
+
         """returns the element A(i,j) for the sylvester matrix of size 2^p"""
         # following https://arxiv.org/abs/1502.06372
         if p == 0
@@ -41,14 +43,15 @@ function sylvester_matrix(p; normalized = true)
 
 end
 
-function rand_haar(n)
+function rand_haar(n::Int)
+
     """generates a Haar distributed unitary matrix of size n*n"""
     # follows https://case.edu/artsci/math/esmeckes/Meckes_SAMSI_Lecture2.pdf
 
     qr(randn(ComplexF64, n,n)).Q
 end
 
-function matrix_test(n)
+function matrix_test(n::Int)
 
     """matrix of 1,2,3... for testing your code"""
 
@@ -61,11 +64,12 @@ function matrix_test(n)
     end
 
     U
+
 end
 
+function antihermitian_test_matrix(n::Int)
 
-function antihermitian_test_matrix(n)
-    h = randn(ComplexF64, n,n)
+    h = randn(ComplexF64, n, n)
 
     for i = 1:n
         h[i,i] = 1im*imag(h[i,i])
@@ -78,9 +82,11 @@ function antihermitian_test_matrix(n)
     end
 
     h
+
 end
 
-function hermitian_test_matrix(n)
+function hermitian_test_matrix(n::Int)
+
     h = randn(ComplexF64, n,n)
 
     for i = 1:n
@@ -94,11 +100,13 @@ function hermitian_test_matrix(n)
     end
 
     h
+
 end
 
-function permutation_matrix_special_partition_fourier(n)
+function permutation_matrix_special_partition_fourier(n::Int)
 
     """P * [1,1,1,1,1,0,0,0,0,0] = [1, 0, 1, 0, 1, 0, 1, 0, 1, 0]"""
+
     P = zeros(Int, n,n)
 
     for i in 1:2:n
@@ -112,8 +120,6 @@ function permutation_matrix_special_partition_fourier(n)
     P
 
 end
-
-
 
 function rand_gram_matrix_from_orthonormal_basis(n,r)
 
@@ -146,6 +152,7 @@ end
 
 
 function modified_gram_schmidt(input_vectors)
+
 	"""does the modified gram schmidt (numerically stable) on the columns of the matrix input_vectors"""
 
 	function projector(a, u)
@@ -176,7 +183,7 @@ function modified_gram_schmidt(input_vectors)
 
 end
 
-function rand_gram_matrix(n)
+function rand_gram_matrix(n::Int)
 
 	"""random gram matrix with full rank """
 
@@ -232,7 +239,7 @@ function rand_gram_matrix_real(n)
 
 end
 
-function rand_gram_matrix_positive(n)
+function rand_gram_matrix_positive(n::Int)
 
 	"""random gram matrix with full rank and positive el"""
 
@@ -250,9 +257,6 @@ function rand_gram_matrix_positive(n)
 	generating_vectors' * generating_vectors
 
 end
-
-
-
 
 # functions to clear matrices for better readability of a matrix by a human
 
@@ -291,9 +295,10 @@ function remove_row_col(A, rows_to_remove, cols_to_remove)
 	to have A(1,2) in the notations of Minc"""
 
 	n = size(A)[1]
+	m = size(A)[2]
 
 	range_rows = collect(1:n)
-	range_col = collect(1:n)
+	range_col = collect(1:m)
 
 	setdiff!(range_rows, rows_to_remove)
 	setdiff!(range_col, cols_to_remove)
@@ -338,6 +343,20 @@ function gram_from_n_r_vectors(M)
 
 end
 
+function gram_matrix_toy_model(n::Int, x::Real)
+
+	S = 1.0 * Matrix(I, n, n)
+
+	for i in 1:n
+		for j in 1:n
+			i!=j ? S[i,j] = x : continue
+		end
+	end
+
+	S
+
+end
+
 
 function column_normalize(M)
    for col in 1:size(M,2) #column normalize
@@ -350,7 +369,6 @@ end
 function perturbed_gram_matrix(M, epsilon)
 
     """M defines the set of vectors generating the gram matrix
-
     each column is a generating vector for the gram matrix
     we perturb them by some random gaussian amount with set variance epsilon once normalized """
 
@@ -365,6 +383,7 @@ function perturbed_gram_matrix(M, epsilon)
     M = column_normalize(M)
 
     M' * M
+
 end
 
 function perturbed_unitary(U, epsilon)
@@ -381,4 +400,5 @@ function perturbed_unitary(U, epsilon)
     U = modified_gram_schmidt(U)
 
     U
+
 end

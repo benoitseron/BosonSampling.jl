@@ -25,6 +25,7 @@ function cholesky_semi_definite_positive(A)
 end
 
 function incorporate_in_a_unitary(X)
+
 	"""incorporates the renormalized matrix X in a double sized unitary through the proof of Lemma 29  of Aaronson Arkipov seminal https://arxiv.org/abs/1011.3245"""
 
 	Y = X / norm(X)
@@ -49,6 +50,7 @@ function incorporate_in_a_unitary(X)
 	@test is_unitary(W)
 
 	W
+	
 end
 
 function incorporate_in_a_unitary_non_square(X)

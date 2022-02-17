@@ -107,7 +107,6 @@ function minimize_over_unitary_matrices(;euclidian_gradient, q, n, p=5, tol = 1e
         w_k = w_k_plus_1
         h_k = h_k_plus_1
 
-
     end
 
     if optimization_success == false
@@ -162,4 +161,5 @@ function run_brockett_optimization_test(;maxiter = 100)
     end
 
     this_test
+
 end
