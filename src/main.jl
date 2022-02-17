@@ -23,6 +23,8 @@ const ATOL = 1e-10
 include("special_matrices.jl")
 include("matrix_tests.jl")
 include("proba_tools.jl")
+include("tools.jl")
+
 include("type_functions.jl")
 include("types.jl")
 include("scattering.jl")
