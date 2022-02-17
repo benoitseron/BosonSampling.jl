@@ -2,8 +2,6 @@ function noisy_distribution(;input, distinguishability, reflectivity, interf, ex
 
     # https://arxiv.org/pdf/1809.01953.pdf
 
-    @warn "changed ryser->naive since actual ryser does not support non square matrix"
-
     output = []
     ϵ = 1e-4
     δ = 1e-4
@@ -136,3 +134,4 @@ function noisy_distribution(;input, distinguishability, reflectivity, interf, ex
     return output
 
 end
+
