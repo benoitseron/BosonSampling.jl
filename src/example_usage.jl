@@ -26,9 +26,39 @@ ppd = full_bunching_probability(interf, ipd, subset_modes)
 @test pb/ppd > 1. # this doesn't HAVE TO pass but will pass in nearly all
 # cases
 
-### classical sampling ###
+### Classical sampling ###
 
-classical_sampler(U = rand_haar(16), m = 16, n = 3)
+m = 16
+n = 3
+
+input = Input{Distinguishable}(first_modes(n,m))
+interf = RandHaar(m)
+
+out = classical_sampler(input=input, interf=interf)
+
+### Cliffords sampler ###
+
+# m = 16
+# n = 3
+# input = Input{Bosonic}(first_modes(n,m))
+# interf = RandHaar(m)
+# out = cliffords_sampler(input=input, interf=interf)
+#
+# classical_sampler(U = rand_haar(16), m = 16, n = 3)
+
+### Noisy sampling ###
+
+# m = 16
+# n = 3
+#
+# x = 0.8 # distinguishability
+# η = 0.8 # reflectivity
+#
+# G = GramMatrix{ToyModel}(n, gram_matrix_toy_model(n,x))
+# input = Input{ToyModel}(first_modes(n,m), G)
+# interf = RandHaar(m)
+#
+# out = noisy_sampling(input=input, distinguishability=x, reflectivity=η, interf=interf)
 
 ### MIS sampling ###
 
@@ -46,5 +76,42 @@ known_pdf(state) = process_probability_distinguishable(U, input_state, state)
 target_pdf(state) = process_probability(U, input_state, state)
 known_sampler = () -> iterate_until_collisionless(() -> classical_sampler(U = U, m = m, n = n)) # gives a classical sampler
 
-
 samples = metropolis_sampler(;target_pdf = target_pdf, known_pdf = known_pdf , known_sampler = known_sampler , starting_state = starting_state, n_iter = 100)
+
+### Noisy distribution ###
+
+n = 3
+m = 6
+x = 0.8
+η = 0.8
+
+G = GramMatrix{ToyModel}(n, gram_matrix_toy_model(n, x))
+input = Input{ToyModel}(first_modes(n,m), G)
+interf = RandHaar(m)
+
+output_statistics = noisy_distribution(input=input, distinguishability=x, reflectivity=η, interf=interf)
+p_exact = output_statistics[1]
+p_approx = output_statistics[2]
+p_sampled = output_statistics[3]
+
+fig_approx = plot(title="approximated distribution", xlabel="output events", ylabel="probability")
+plot!(fig_approx, p_exact, label=L"$p_{exact}$");
+plot!(fig_approx, p_approx, label=L"$p_{approx}$");
+
+fig_sample = plot(title="sampled distribution", xlabel="output events", ylabel="probability");
+plot!(fig_sample, p_exact, label=L"$p_{exact}$");
+plot!(fig_sample, p_sampled, label=L"$p_{sampled}$");
+
+plot(fig_approx, fig_sample, layout=(2,1))
+
+### Theoretical distribution ###
+
+n = 3
+m = 6
+x = 0.7 # distinguishability
+
+G = GramMatrix{ToyModel}(n, gram_matrix_toy_model(n, x))
+input = Input{ToyModel}(first_modes(n,m), G)
+interf = RandHaar(m)
+
+output_distribution = theoretical_distribution(input=input, distinguishability=x, interf=interf, gram_matrix=G)
