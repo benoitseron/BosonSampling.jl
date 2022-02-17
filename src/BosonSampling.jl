@@ -19,6 +19,7 @@ using Roots
 using BenchmarkTools
 using Optim
 using ProgressMeter
+using LaTeXStrings
 
 const ATOL = 1e-10
 
