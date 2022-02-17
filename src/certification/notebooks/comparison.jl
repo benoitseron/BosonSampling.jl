@@ -20,7 +20,7 @@ no_collision = [choose_best_average_subset(n = n_array[i],m = m_array[i])[2] for
 no_collision_full_bunching = [choose_subset_size(n = n_array[i],m = m_array[i])[3] for i in 1:length(n_array)]
 
 scatter(n_array, no_collision, label = "partitions");
-scatter!(no_collision_full_bunching, label = "full bunching");
+scatter!(n_array, no_collision_full_bunching, label = "full bunching");
 #title!("tvd no collision density m = n^2")
 savefig("src/certification/notebooks/images/tvd_no_collision.png")
 
@@ -77,7 +77,9 @@ subset_size_array = collect(1:m_array-1)
 no_collision = @. subset_relative_distance_of_averages(subset_size_array, n_array,m_array)
 
 scatter(const_density)
-scatter(no_collision)
+plt = scatter(no_collision, legend = false)
+savefig(plt,"src/certification/notebooks/images/tvd_with_partition_size.png")
+
 
 # this shows that above 1.5 the number of photons, this is pretty much constant
 
