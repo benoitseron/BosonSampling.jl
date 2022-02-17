@@ -23,9 +23,6 @@ function classical_sampler(;input::Input, interf::Interferometer)
 end
 
 function classical_sampler(;U,n,m)
-    """outputs a sample of output mode of the classical distribution
-    (distinguishable particles) form the input of [1^n O^(m-n)]
-    according to section 8.1 of https://arxiv.org/abs/1309.7460"""
 
     output_state = zeros(Int,m)
     output_modes = collect(1:m)
