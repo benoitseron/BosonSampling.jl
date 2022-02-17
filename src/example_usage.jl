@@ -78,7 +78,6 @@ known_pdf(state) = process_probability_distinguishable(U, input.r, state)
 target_pdf(state) = process_probability(U, input.r, state)
 known_sampler = () -> iterate_until_collisionless(() -> classical_sampler(input=input, interf=interf)) # gives a classical sampler
 
-
 samples = metropolis_sampler(;target_pdf = target_pdf, known_pdf = known_pdf , known_sampler = known_sampler , starting_state = starting_state, n_iter = 100)
 
 ### Noisy distribution ###
