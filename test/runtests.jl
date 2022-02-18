@@ -75,153 +75,155 @@ using Test
 	    @test proba_partition_partial(U = U,  S = Matrix{Float64}(I, n, n), occupancy_vector = occupancy_vector, input_state = input_state) ≈ proba_partition_distinguishable(occupancy_vector = occupancy_vector, U = U, input_state = input_state)
 
 	end
-end
 
-@testset "theoretical distribution" begin
+	@testset "theoretical distribution" begin
 
-    @testset "normalization" begin
+	    @testset "normalization" begin
 
-        for n = 2:5
-            occupation = ModeOccupation(random_occupancy(n, n^2))
-            input = Input{Bosonic}(occupation)
-            interf = RandHaar(input.r.m)
-            p_theo = theoretical_distribution(input=input, distinguishability=1, interf=interf, gram_matrix=input.G)
+	        for n = 2:5
+	            occupation = ModeOccupation(random_occupancy(n, n^2))
+	            input = Input{Bosonic}(occupation)
+	            interf = RandHaar(input.r.m)
+	            p_theo = theoretical_distribution(input=input, distinguishability=1, interf=interf, gram_matrix=input.G)
 
-            @test sum(p_theo) ≈ 1 atol=1e-9
-        end
+	            @test sum(p_theo) ≈ 1 atol=1e-9
+	        end
 
-    end
+	    end
 
-    @testset "positivity" begin
+	    @testset "positivity" begin
 
-        p = Progress(4, 1, "check positivity...", 50)
-        for n = 2:5
-            occupation = ModeOccupation(random_occupancy(n, n^2))
-            input = Input{Bosonic}(occupation)
-            interf = RandHaar(input.r.m)
-            p_theo = theoretical_distribution(input=input, distinguishability=1, interf=interf, gram_matrix=input.G)
+	        p = Progress(4, 1, "check positivity...", 50)
+	        for n = 2:5
+	            occupation = ModeOccupation(random_occupancy(n, n^2))
+	            input = Input{Bosonic}(occupation)
+	            interf = RandHaar(input.r.m)
+	            p_theo = theoretical_distribution(input=input, distinguishability=1, interf=interf, gram_matrix=input.G)
 
-            @test all(p->p>=0, p_theo)
-            next!(p)
-        end
+	            @test all(p->p>=0, p_theo)
+	            next!(p)
+	        end
 
-    end
+	    end
 
-    @testset "suppression law" begin
+	    @testset "suppression law" begin
 
-        for n = 2:5
-            occupation = ModeOccupation(random_occupancy(n,n))
-            input = Input{Bosonic}(occupation)
-            interf = Fourier(input.r.n)
-            p_theo = theoretical_distribution(input=input, distinguishability=1, interf=interf, gram_matrix=input.G)
+	        for n = 2:5
+	            occupation = ModeOccupation(random_occupancy(n,n))
+	            input = Input{Bosonic}(occupation)
+	            interf = Fourier(input.r.n)
+	            p_theo = theoretical_distribution(input=input, distinguishability=1, interf=interf, gram_matrix=input.G)
 
-            output_events = output_mode_occupation(n,n)
-            for i = 1:length(output_events)
-                if check_suppression_law(output_events[i])
-                    @test p_theo[i] ≈ 0 atol=1e-6
-                end
-            end
-        end
+	            output_events = output_mode_occupation(n,n)
+	            for i = 1:length(output_events)
+	                if check_suppression_law(output_events[i])
+	                    @test p_theo[i] ≈ 0 atol=1e-6
+	                end
+	            end
+	        end
 
-    end
-end
+	    end
 
-@testset "noisy statistics" begin
+		@testset "noisy statistics" begin
 
-    @testset "normalization" begin
+		    @testset "normalization" begin
 
-        for n = 2:4
-            occupation = ModeOccupation(random_occupancy(n, 2n))
-            input = Input{RandomModel}(occupation)
-            interf = RandHaar(input.r.m)
-            p_exact, p_approx, p_samp = noisy_distribution(input=input, distinguishability=0.5, reflectivity=0.5, interf=interf)
+		        for n = 2:4
+		            occupation = ModeOccupation(random_occupancy(n, 2n))
+		            input = Input{RandomModel}(occupation)
+		            interf = RandHaar(input.r.m)
+		            p_exact, p_approx, p_samp = noisy_distribution(input=input, distinguishability=0.5, reflectivity=0.5, interf=interf)
 
-            @test sum(p_exact) ≈ 1 atol=1e-9
-            @test sum(p_approx) ≈ 1 atol=1e-9
-            @test sum(p_samp) ≈ 1 atol=1e-9
-        end
+		            @test sum(p_exact) ≈ 1 atol=1e-9
+		            @test sum(p_approx) ≈ 1 atol=1e-9
+		            @test sum(p_samp) ≈ 1 atol=1e-9
+		        end
 
-    end
+		    end
 
-    @testset "positivity" begin
+		    @testset "positivity" begin
 
-        for n = 2:4
-            occupation = ModeOccupation(random_occupancy(n, 2n))
-            input = Input{RandomModel}(occupation)
-            interf = RandHaar(input.r.m)
-            p_exact, p_approx, p_samp = noisy_distribution(input=input, distinguishability=0.5, reflectivity=0.5, interf=interf)
+		        for n = 2:4
+		            occupation = ModeOccupation(random_occupancy(n, 2n))
+		            input = Input{RandomModel}(occupation)
+		            interf = RandHaar(input.r.m)
+		            p_exact, p_approx, p_samp = noisy_distribution(input=input, distinguishability=0.5, reflectivity=0.5, interf=interf)
 
-            @test all(p->p>=0, p_exact)
-            @test all(p->p>=0, p_approx)
-            @test all(p->p>=0, p_samp)
-        end
+		            @test all(p->p>=0, p_exact)
+		            @test all(p->p>=0, p_approx)
+		            @test all(p->p>=0, p_samp)
+		        end
 
-    end
+		    end
 
-    @testset "suppression law" begin
+		    @testset "suppression law" begin
 
-        # https://arxiv.org/pdf/1002.5038.pdf
+		        # https://arxiv.org/pdf/1002.5038.pdf
 
-        for n = 2:4
+		        for n = 2:4
 
-            occupation = ModeOccupation(random_occupancy(n,n))
-            input = Input{Bosonic}(occupation)
-            interf = Fourier(input.r.m)
-            O = noisy_distribution(input=input, distinguishability=1, reflectivity=0.5, interf=interf, approx=false, samp=false)
-            p_exact = O[1]
+		            occupation = ModeOccupation(random_occupancy(n,n))
+		            input = Input{Bosonic}(occupation)
+		            interf = Fourier(input.r.m)
+		            O = noisy_distribution(input=input, distinguishability=1, reflectivity=0.5, interf=interf, approx=false, samp=false)
+		            p_exact = O[1]
 
-            output_events = output_mode_occupation(n,n)
-            for i = 1:length(output_events)
-                if check_suppression_law(output_events[i])
-                    @test p_exact[i] ≈ 0 atol=1e-6
-                end
-            end
+		            output_events = output_mode_occupation(n,n)
+		            for i = 1:length(output_events)
+		                if check_suppression_law(output_events[i])
+		                    @test p_exact[i] ≈ 0 atol=1e-6
+		                end
+		            end
 
-        end
+		        end
 
-    end
+		    end
 
-end
+		end
 
-@testset "consistency" begin
+		@testset "consistency" begin
 
-    for n = 2:4
-        occupation = ModeOccupation(random_occupancy(n, 2n))
-        input = Input{Bosonic}(occupation)
+		    for n = 2:4
+		        occupation = ModeOccupation(random_occupancy(n, 2n))
+		        input = Input{Bosonic}(occupation)
 
-        for i = 1:10
-            interf = RandHaar(input.r.m)
-            p_theo = theoretical_distribution(input=input, distinguishability=1, interf=interf, gram_matrix=input.G)
-            O = noisy_distribution(input=input, distinguishability=1, reflectivity=0.999, interf=interf, approx=false, samp=false)
-            p_exact = O[1]
+		        for i = 1:10
+		            interf = RandHaar(input.r.m)
+		            p_theo = theoretical_distribution(input=input, distinguishability=1, interf=interf, gram_matrix=input.G)
+		            O = noisy_distribution(input=input, distinguishability=1, reflectivity=0.999, interf=interf, approx=false, samp=false)
+		            p_exact = O[1]
 
-            for j = 1:length(p_theo)
-                @test abs(p_theo[i]-p_exact[i]) ≈ 0 atol=1e-9
-            end
-        end
-    end
+		            for j = 1:length(p_theo)
+		                @test abs(p_theo[i]-p_exact[i]) ≈ 0 atol=1e-9
+		            end
+		        end
+		    end
 
-end
+		end
 
-@testset "suppression law boson samplers" begin
-	@warn "need to include Permanents.jl to export fast_glynn_pern"
+		@testset "suppression law boson samplers" begin
+			@warn "need to include Permanents.jl to export fast_glynn_pern"
 
-    for n = 3:10
+		    for n = 3:10
 
-        interf = Fourier(n)
-        reflectivity = 1
-        distinguishability = 1
-        G = GramMatrix{ToyModel}(n, gram_matrix_toy_model(n, distinguishability))
+		        interf = Fourier(n)
+		        reflectivity = 1
+		        distinguishability = 1
+		        G = GramMatrix{ToyModel}(n, gram_matrix_toy_model(n, distinguishability))
 
-        input_clifford_sampler = Input{Bosonic}(first_modes(n,n))
-        input_noisy_sampler = Input{ToyModel}(first_modes(n,n), G)
+		        input_clifford_sampler = Input{Bosonic}(first_modes(n,n))
+		        input_noisy_sampler = Input{ToyModel}(first_modes(n,n), G)
 
-        out_clifford_sampler = cliffords_sampler(input=input_clifford_sampler, interf=interf)
-        out_noisy_sampler = noisy_sampling(input=input_noisy_sampler, distinguishability=distinguishability, reflectivity=reflectivity, interf=interf)
+		        out_clifford_sampler = cliffords_sampler(input=input_clifford_sampler, interf=interf)
+		        out_noisy_sampler = noisy_sampling(input=input_noisy_sampler, distinguishability=distinguishability, reflectivity=reflectivity, interf=interf)
 
-        @test !check_suppression_law(out_clifford_sampler)
-        @test !check_suppression_law(out_noisy_sampler)
+		        @test !check_suppression_law(out_clifford_sampler)
+		        @test !check_suppression_law(out_noisy_sampler)
 
-    end
+		    end
+
+		end
+
+	end
 
 end
