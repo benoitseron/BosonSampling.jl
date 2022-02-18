@@ -22,7 +22,7 @@ function classical_sampler(;input::Input, interf::Interferometer)
 
 end
 
-function classical_sampler(;U,n,m)
+function classical_sampler(input=nothing, interf=nothing; U, n, m)
 
     output_state = zeros(Int,m)
     output_modes = collect(1:m)
