@@ -19,7 +19,7 @@ using Roots
 using BenchmarkTools
 using Optim
 using ProgressMeter
-using LaTeXStrings
+#using LaTeXStrings
 
 const ATOL = 1e-10
 
@@ -34,18 +34,20 @@ include("scattering.jl")
 include("bunching/bunching.jl")
 include("partitions/legacy.jl")
 
+include("circuits/circuit_elements.jl")
+
 include("permanent_conjectures/bapat_sunder.jl")
 include("permanent_conjectures/counter_example_functions.jl")
 include("permanent_conjectures/counter_example_numerical_search.jl")
 include("permanent_conjectures/permanent_on_top.jl")
-
-include("boson_samplers/classical_sampler.jl")
-include("boson_samplers/cliffords_sampler.jl")
-include("boson_samplers/metropolis_sampler.jl")
-include("boson_samplers/noisy_sampler.jl")
-
-include("distributions/noisy_distribution.jl")
-include("distributions/theoretical_distribution.jl")
+#
+# include("boson_samplers/classical_sampler.jl")
+# include("boson_samplers/cliffords_sampler.jl")
+# include("boson_samplers/metropolis_sampler.jl")
+# include("boson_samplers/noisy_sampler.jl")
+#
+# include("distributions/noisy_distribution.jl")
+# include("distributions/theoretical_distribution.jl")
 
 permanent = ryser
 
