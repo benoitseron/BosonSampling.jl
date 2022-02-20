@@ -17,7 +17,7 @@ end
 struct Fourier <: Interferometer
     m::Int
     U::Matrix{ComplexF64}
-    FourierMatrix(U) = new(m,fourier_matrix(m))
+    Fourier(m::Int) = new(m,fourier_matrix(m))
 end
 
 

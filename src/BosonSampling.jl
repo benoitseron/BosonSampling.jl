@@ -20,6 +20,8 @@ using Roots
 using BenchmarkTools
 using Optim
 using ProgressMeter
+using Parameters
+using ArgCheck
 
 const ATOL = 1e-10
 
