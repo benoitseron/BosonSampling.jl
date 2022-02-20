@@ -63,31 +63,7 @@ struct PartitionOccupancy
                 end
         end
 end
-#
-# struct PartitionCountingInterferometer <: Interferometer
-#         partition_occupancy::PartitionOccupancy
-#         physical_interferometer::Interferometer
-#         fourier_indexes::Vector{Complex}
-#         virtual_interferometer::Interferometer
-#         # the phases are 2pi/(n+1) * fourier_indexes
-#
-#         function PartitionCountingInterferometer(partition_occupancy, physical_interferometer, fourier_indexes)
-#
-#                 """outputs the virtual interferometer that gives the fourier phase
-#                 x(fourier_indexes), of which the multidimensional inverse
-#                 fourier transform outputs the the probability to get partition_occupancy.counts
-#                 photons in partition_occupancy.partition"""
-#
-#                 virtual_interferometer_matrix = copy(physical_interferometer.U)
-#                 for i in length(partition_occupancy.partition.subsets)
-#                         virtual_interferometer_matrix *= Diagonal(@. exp(2*pi*1im/(partition_occupancy.n+1) * fourier_indexes))
-#                 end
-#                 virtual_interferometer_matrix *= U'
-#
-#                 new(partition_occupancy, physical_interferometer, virtual_interferometer_matrix, fourier_indexes, virtual_interferometer_matrix)
-#         end
-#
-# end
+
 
 function all_mode_configurations(n,n_subset; only_photon_number_conserving = false)
 
@@ -166,7 +142,7 @@ function check_photon_conservation(physical_indexes,  pdf, n; atol = ATOL, parti
 
 end
 
-function compute_probabilities_partition(physical_interferometer::Interferometer, part::Partition, n::Int)
+function compute_probabilities_partition(physical_interferometer::Interferometer, part::Partition, input_state::Input)
 
         """computes the probability to find a certain photon counts in a
         partition `part` of the output modes for the interferometer given
@@ -176,12 +152,14 @@ function compute_probabilities_partition(physical_interferometer::Interferometer
         corresponding to the occupation numbers in the partition and the
         associated probability"""
 
-        @warn "only implemented in the bosonic case so far"
-        @warn "this gives what happens for input of type [1^n O^(m-n)]"
-
-        @argcheck n <= m "more than one input per mode is not implemented"
+        @argcheck at_most_one_photon_per_bin(input_state) "more than one input per mode is not implemented"
 
         occupies_all_modes(part) ? (@warn "inefficient if no loss: partition occupies all modes thus extra calculations made that are unnecessary") : nothing
+
+        n = input_state.n
+        m = input_state.m
+        mode_occupation_list = fill_arrangement(input_state)
+        S = input_state.G.S
 
         fourier_indexes = all_mode_configurations(n,part.n_subset, only_photon_number_conserving = false)
         probas_fourier = Array{ComplexF64}(undef, length(fourier_indexes))
@@ -215,7 +193,7 @@ function compute_probabilities_partition(physical_interferometer::Interferometer
                 # beware, only the modes corresponding to the
                 # virtual_interferometer_matrix[input_config,input_config]
                 # must be taken into account !
-                probas_fourier[index_fourier_array] = permanent(virtual_interferometer_matrix[1:n,1:n])
+                probas_fourier[index_fourier_array] = permanent(virtual_interferometer_matrix[mode_occupation_list,mode_occupation_list] .* S)
         end
 
         physical_indexes = copy(fourier_indexes)
@@ -248,3 +226,17 @@ function print_pdfs(physical_indexes, pdf, n; physical_events_only = false, part
         end
         println("---------------")
 end
+
+n = 2
+m = 2
+
+input_state = Input{Bosonic}(first_modes(n,m))
+
+set1 = [1,0]
+set2 = [0,1]
+physical_interferometer = Fourier(m)
+part = Partition([Subset(set1), Subset(set2)])
+
+(physical_indexes, pdf) = compute_probabilities_partition(physical_interferometer, part, input_state)
+
+print_pdfs(physical_indexes, pdf,n; partition_spans_all_modes = true, physical_events_only = true)

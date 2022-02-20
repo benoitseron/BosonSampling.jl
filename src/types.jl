@@ -33,7 +33,7 @@ at_most_one_photon_per_bin(r::ModeOccupation) = at_most_one_photon_per_bin(r.sta
 isa_subset(subset_modes::ModeOccupation) = at_most_one_photon_per_bin(subset_modes)
 isa_subset(state) = at_most_one_photon_per_bin(state)
 # this last function is defined to avoid the abuse of language
-first_modes(n::Int,m::Int) = ModeOccupation([i <= n ? 1 : 0 for i in 1:m])
+first_modes(n::Int,m::Int) = n<=m ? ModeOccupation([i <= n ? 1 : 0 for i in 1:m]) : error("n>m")
 
 abstract type InputType end
 
@@ -92,9 +92,11 @@ end
 struct Input{T<:InputType}
     r::ModeOccupation
     G::GramMatrix
+    n::Int
+    m::Int
     function Input{T}(r::ModeOccupation) where {T<:InputType}
         if T in [Bosonic, Distinguishable, Undef]
-            return new{T}(r,GramMatrix{T}(r.n))
+            return new{T}(r,GramMatrix{T}(r.n),r.n,r.m)
         else
             error("type ", T, " not implemented")
         end
@@ -102,12 +104,14 @@ struct Input{T<:InputType}
     function Input{T}(r::ModeOccupation, G::GramMatrix) where {T<:InputType}
 
         if T == PartDist
-            return new{T}(r,G)
+            return new{T}(r,G,r.n,r.m)
         else
             error("type ", T, " not implemented")
         end
     end
 end
+
+at_most_one_photon_per_bin(inp::Input) = at_most_one_photon_per_bin(inp.r)
 
 abstract type OutputMeasurementType end
 

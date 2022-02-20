@@ -62,28 +62,28 @@ check_subset_overlap([s1,s2,s3])
 
 ### HOM tests: one mode ###
 
-m = 2
-n = 2
+input_state = Input{Bosonic}(first_modes(n,m))
 
 set1 = [1,0]
 physical_interferometer = Fourier(m)
 part = Partition([Subset(set1)])
 
-(physical_indexes,  pdf) = compute_probabilities_partition(physical_interferometer, part, n)
+(physical_indexes, pdf) = compute_probabilities_partition(physical_interferometer, part, input_state)
 
-print_pdfs(physical_indexes, pdf, n)
 
 ### HOM tests: mode1, mode2 ###
 
-m = 2
 n = 2
+m = 2
+
+input_state = Input{Bosonic}(first_modes(n,m))
 
 set1 = [1,0]
 set2 = [0,1]
 physical_interferometer = Fourier(m)
 part = Partition([Subset(set1), Subset(set2)])
 
-(physical_indexes,  pdf) = compute_probabilities_partition(physical_interferometer, part, n)
+(physical_indexes, pdf) = compute_probabilities_partition(physical_interferometer, part, input_state)
 
 print_pdfs(physical_indexes, pdf,n; partition_spans_all_modes = true, physical_events_only = true)
 

@@ -37,6 +37,9 @@ end
 
 fill_arrangement(r::ModeOccupation) = fill_arrangement(r.state)
 
+fill_arrangement(inp::Input) = fill_arrangement(inp.r)
+
+
 function random_occupancy(n::Int, m::Int)
 
 	""" returns a vector of size m with n randomly placed ones """
