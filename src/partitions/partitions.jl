@@ -112,6 +112,9 @@ function compute_probabilities_partition(physical_interferometer::Interferometer
         associated probability"""
 
         @warn "only implemented in the bosonic case so far"
+        @warn "this gives what happens for input of type [1^n O^(m-n)]"
+
+        @argcheck n <= m "more than one input per mode is not implemented"
 
         fourier_indexes = all_mode_configurations(n,part.n_subset, only_photon_number_conserving = false)
         probas_fourier = Array{ComplexF64}(undef, length(fourier_indexes))
@@ -153,7 +156,7 @@ function compute_probabilities_partition(physical_interferometer::Interferometer
 
         pdf = clean_pdf(pdf)
 
-        (physical_indexes,  pdf)
+        (physical_indexes, pdf, probas_fourier)
 end
 
 
@@ -263,29 +266,34 @@ check_photon_conservation(physical_indexes, pdf, n; partition_spans_all_modes = 
 
 ### other tests ###
 
-m = 10
-n = 3
+m = 4
+n = 2
 set1 = zeros(Int,m)
 set2 = zeros(Int,m)
 set1[1:2] .= 1
 set2[3:4] .= 1
 
-physical_interferometer = RandHaar(m)
+
+physical_interferometer = Fourier(m)
 part = Partition([Subset(set1), Subset(set2)])
 
-(physical_indexes,  pdf) = compute_probabilities_partition(physical_interferometer, part, n)
+(physical_indexes,  pdf, probas_fourier) = compute_probabilities_partition(physical_interferometer, part, n)
+
+print_pdfs(physical_indexes,  pdf, n)
+print_pdfs(physical_indexes,  probas_fourier, n)
+
+physical_index = [2,2]
+fourier_indexes = copy(physical_indexes)
+
+for (i,fourier_index) in enumerate(fourier_indexes)
+        @show fourier_index
+        @show probas_fourier[i] * exp(2pi*1im/(n+1) * dot(physical_index, fourier_index))
+end
+
+sum(probas_fourier[i] * exp(2pi*1im/(n+1) * dot(physical_index, fourier_index)) for (i,fourier_index) in enumerate(fourier_indexes))
 
 
-check_photon_conservation(physical_indexes, pdf, n)
+
+check_photon_conservation(physical_indexes, pdf, n; partition_spans_all_modes = false)
 physical_indexes
 pdf
-
-scatter(pdf)
-
-for (i,index) in enumerate(physical_indexes)
-
-        if sum(index) > n
-                @show index
-                @show pdf[i]
-        end
-end
