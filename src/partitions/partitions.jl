@@ -150,7 +150,11 @@ function compute_probabilities_partition(physical_interferometer::Interferometer
 
         physical_indexes = copy(fourier_indexes)
 
-        probas_physical(physical_index) = 1/(n+1)^(part.n_subset) * sum([probas_fourier[i] * exp(-2*pi*1im/(n+1) * dot(physical_index, fourier_indexes[i])) for i in 1:length(fourier_indexes)])
+        # probas_physical(physical_index) = 1/(n+1)^(part.n_subset) * sum([probas_fourier[i] * exp(-2*pi*1im/(n+1) * dot(physical_index, fourier_indexes[i])) for i in 1:length(fourier_indexes)])
+        # previous function
+
+        probas_physical(physical_index) = 1/(n+1)^(part.n_subset) * sum(probas_fourier[i] * exp(-2pi*1im/(n+1) * dot(physical_index, fourier_index)) for (i,fourier_index) in enumerate(fourier_indexes))
+
 
         pdf = [probas_physical(physical_index) for physical_index in physical_indexes]
 
@@ -278,22 +282,16 @@ physical_interferometer = Fourier(m)
 part = Partition([Subset(set1), Subset(set2)])
 
 (physical_indexes,  pdf, probas_fourier) = compute_probabilities_partition(physical_interferometer, part, n)
+fourier_indexes = copy(physical_indexes)
 
 print_pdfs(physical_indexes,  pdf, n)
 print_pdfs(physical_indexes,  probas_fourier, n)
 
-physical_index = [2,2]
-fourier_indexes = copy(physical_indexes)
 
-for (i,fourier_index) in enumerate(fourier_indexes)
-        @show fourier_index
-        @show probas_fourier[i] * exp(2pi*1im/(n+1) * dot(physical_index, fourier_index))
-end
+probas_physical(physical_index) = 1/(n+1)^(part.n_subset) * sum(probas_fourier[i] * exp(-1*-2pi*1im/(n+1) * dot(physical_index, fourier_index)) for (i,fourier_index) in enumerate(fourier_indexes))
 
-sum(probas_fourier[i] * exp(2pi*1im/(n+1) * dot(physical_index, fourier_index)) for (i,fourier_index) in enumerate(fourier_indexes))
+pdf2 = [probas_physical(physical_index) for physical_index in physical_indexes]
 
+print_pdfs(physical_indexes,  pdf2, n)
 
-
-check_photon_conservation(physical_indexes, pdf, n; partition_spans_all_modes = false)
-physical_indexes
-pdf
+check_photon_conservation(physical_indexes, pdf2, n; partition_spans_all_modes = false)
