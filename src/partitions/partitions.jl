@@ -226,17 +226,3 @@ function print_pdfs(physical_indexes, pdf, n; physical_events_only = false, part
         end
         println("---------------")
 end
-
-n = 2
-m = 2
-
-input_state = Input{Bosonic}(first_modes(n,m))
-
-set1 = [1,0]
-set2 = [0,1]
-physical_interferometer = Fourier(m)
-part = Partition([Subset(set1), Subset(set2)])
-
-(physical_indexes, pdf) = compute_probabilities_partition(physical_interferometer, part, input_state)
-
-print_pdfs(physical_indexes, pdf,n; partition_spans_all_modes = true, physical_events_only = true)
