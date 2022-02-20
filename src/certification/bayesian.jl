@@ -57,10 +57,10 @@ end
 
 # first we generate a series of bosonic events
 
-n_events = 10
+n_events = 50
 n = 2
-m = 2
-interf = Fourier(m)
+m = 4
+interf = RandHaar(m)
 input_state = Input{Bosonic}(first_modes(n,m))
 
 events = []
@@ -84,7 +84,7 @@ events
 # next, from events, recover the probabilities under both
 # hypothesis
 
-function p_H(event::Event)
+function p_B(event::Event)
 
     interf = event.interferometer
     r = event.input_state.r
@@ -98,7 +98,7 @@ function p_H(event::Event)
 
 end
 
-function p_A(event::Event)
+function p_D(event::Event)
 
     interf = event.interferometer
     r = event.input_state.r
@@ -112,8 +112,18 @@ function p_A(event::Event)
 
 end
 
-confidence(compute_χ(events[1:2], p_H, p_A))
-update_confidence(events[1], p_H, p_A, 1.)
+# hypothesis : the events were from a bosonic distribution
 
-p_H(events[1])
-p_A(events[1])
+p_q = p_B
+p_a = p_D
+
+confidence(compute_χ(events, p_q, p_a))
+
+# hypothesis : the events were from a distinguishable distribution
+
+p_q = p_D
+p_a = p_B
+
+confidence(compute_χ(events, p_q, p_a))
+
+##### the only thing I see is a problem in the probabilities themselves?
