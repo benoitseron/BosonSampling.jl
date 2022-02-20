@@ -123,12 +123,17 @@ function compute_probabilities_partition(physical_interferometer::Interferometer
         for (index_fourier_array, fourier_index) in enumerate(fourier_indexes)
 
                 # for each fourier index, we recompute the virtual interferometer
-                virtual_interferometer_matrix  = physical_interferometer.U'
+                virtual_interferometer_matrix  = physical_interferometer.U
                 diag = [one(eltype(virtual_interferometer_matrix)) for i in 1:m]
 
                 for (i,fourier_element) in enumerate(fourier_index)
-
+                        ##### this is where the wrong must be
+                        ##### confusion vector dot operations
                         this_phase = exp(2*pi*1im/(n+1) * fourier_element)
+
+                        @show fourier_element
+                        @show this_phase
+                        @show diag
 
                         for j in 1:length(diag)
 
@@ -136,14 +141,15 @@ function compute_probabilities_partition(physical_interferometer::Interferometer
                                         diag[j] *= this_phase
 
                                 end
+                                @show diag
                         end
 
                 end
 
                 virtual_interferometer_matrix *= Diagonal(diag)
-                virtual_interferometer_matrix *= physical_interferometer.U
+                virtual_interferometer_matrix *= physical_interferometer.U'
 
-                probas_fourier[index_fourier_array] = permanent(virtual_interferometer_matrix)
+                probas_fourier[index_fourier_array] = permanent(virtual_interferometer_matrix[1:n,1:n])
         end
 
         probas_fourier
@@ -271,27 +277,20 @@ check_photon_conservation(physical_indexes, pdf, n; partition_spans_all_modes = 
 ### other tests ###
 
 m = 4
-n = 2
+n = 3
 set1 = zeros(Int,m)
 set2 = zeros(Int,m)
 set1[1:2] .= 1
 set2[3:4] .= 1
 
 
-physical_interferometer = Fourier(m)
+physical_interferometer = RandHaar(m)
 part = Partition([Subset(set1), Subset(set2)])
 
 (physical_indexes,  pdf, probas_fourier) = compute_probabilities_partition(physical_interferometer, part, n)
 fourier_indexes = copy(physical_indexes)
 
 print_pdfs(physical_indexes,  pdf, n)
-print_pdfs(physical_indexes,  probas_fourier, n)
+#print_pdfs(physical_indexes,  probas_fourier, n)
 
-
-probas_physical(physical_index) = 1/(n+1)^(part.n_subset) * sum(probas_fourier[i] * exp(-1*-2pi*1im/(n+1) * dot(physical_index, fourier_index)) for (i,fourier_index) in enumerate(fourier_indexes))
-
-pdf2 = [probas_physical(physical_index) for physical_index in physical_indexes]
-
-print_pdfs(physical_indexes,  pdf2, n)
-
-check_photon_conservation(physical_indexes, pdf2, n; partition_spans_all_modes = false)
+check_photon_conservation(physical_indexes, pdf, n; partition_spans_all_modes = false)
