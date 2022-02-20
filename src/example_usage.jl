@@ -48,3 +48,12 @@ known_sampler = () -> iterate_until_collisionless(() -> classical_sampler(U = U,
 
 
 samples = metropolis_sampler(;target_pdf = target_pdf, known_pdf = known_pdf , known_sampler = known_sampler , starting_state = starting_state, n_iter = 100)
+
+### subsets ###
+
+
+s1 = Subset([1,1,0,0,0])
+s2 = Subset([0,0,1,1,0])
+s3 = Subset([1,0,1,0,0])
+
+check_subset_overlap([s1,s2,s3])

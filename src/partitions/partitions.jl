@@ -10,10 +10,30 @@ struct Subset
         Subset(state) = isa_subset(state) ? new(sum(state), length(state), state) : error("invalid subset")
 end
 
+function check_disjoint_subsets(s1::Subset, s2::Subset)
+        @argcheck s1.m == s2.m "subsets do not have the same dimension"
+        @argcheck all(s1.subset .* s2.subset .== 0) "subsets overlap"
+end
+
+function check_subset_overlap(subsets::Vector{Subset})
+
+        for (i,subset_1) in enumerate(subsets)
+                for (j,subset_2) in enumerate(subsets)
+                        if i>j
+                                check_disjoint_subsets(subset_1, subset_2)
+                        end
+                end
+        end
+
+end
+
 struct Partition
         subsets::Vector{Subset}
         n_subset::Int
-        Partition(subsets) = new(subsets, length(subsets))
+        function Partition(subsets)
+                check_subset_overlap(subsets)
+                new(subsets, length(subsets))
+        end
 end
 
 struct PartitionOccupancy
@@ -203,7 +223,7 @@ function print_pdfs(physical_indexes, pdf, n; physical_events_only = false, part
         println("---------------")
 end
 
-### HOM tests ###
+### HOM tests: one mode ###
 
 m = 2
 n = 2
@@ -220,6 +240,8 @@ check_photon_conservation(physical_indexes, pdf, n)
 
 print_pdfs(physical_indexes,  pdf, n)
 
+### HOM tests: mode1, mode2 ###
+
 m = 2
 n = 2
 
@@ -233,6 +255,9 @@ part = Partition([Subset(set1), Subset(set2)])
 print_pdfs(physical_indexes, pdf,n; partition_spans_all_modes = true, physical_events_only = true)
 
 check_photon_conservation(physical_indexes, pdf, n; partition_spans_all_modes = true)
+
+
+
 
 
 
