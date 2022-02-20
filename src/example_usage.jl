@@ -71,11 +71,7 @@ part = Partition([Subset(set1)])
 
 (physical_indexes,  pdf) = compute_probabilities_partition(physical_interferometer, part, n)
 
-photon_number_conserving_events(physical_indexes,n)
-
-check_photon_conservation(physical_indexes, pdf, n)
-
-print_pdfs(physical_indexes,  pdf, n)
+print_pdfs(physical_indexes, pdf, n)
 
 ### HOM tests: mode1, mode2 ###
 
@@ -91,4 +87,21 @@ part = Partition([Subset(set1), Subset(set2)])
 
 print_pdfs(physical_indexes, pdf,n; partition_spans_all_modes = true, physical_events_only = true)
 
-check_photon_conservation(physical_indexes, pdf, n; partition_spans_all_modes = true)
+### multiset for a random interferometer ###
+
+m = 4
+n = 3
+set1 = zeros(Int,m)
+set2 = zeros(Int,m)
+set1[1:2] .= 1
+set2[3:4] .= 1
+
+
+physical_interferometer = RandHaar(m)
+part = Partition([Subset(set1), Subset(set2)])
+
+(physical_indexes,  pdf) = compute_probabilities_partition(physical_interferometer, part, n)
+fourier_indexes = copy(physical_indexes)
+
+print_pdfs(physical_indexes, pdf, n; physical_events_only = true, partition_spans_all_modes = true)
+#print_pdfs(physical_indexes,  probas_fourier, n)

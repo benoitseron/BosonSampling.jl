@@ -30,10 +30,24 @@ end
 struct Partition
         subsets::Vector{Subset}
         n_subset::Int
+        m::Int
         function Partition(subsets)
                 check_subset_overlap(subsets)
-                new(subsets, length(subsets))
+                new(subsets, length(subsets), subsets[1].m)
         end
+end
+
+function occupies_all_modes(part::Partition)
+
+        """checks if a partition occupies all m modes"""
+
+        occupied_modes = zeros(Int, part.m)
+        for s in part.subsets
+                occupied_modes .+= s.subset
+        end
+
+        all(occupied_modes .== 1)
+
 end
 
 struct PartitionOccupancy
@@ -101,75 +115,6 @@ function all_mode_configurations(n,n_subset; only_photon_number_conserving = fal
 end
 
 
-function compute_probabilities_partition(physical_interferometer::Interferometer, part::Partition, n::Int)
-
-        """computes the probability to find a certain photon counts in a
-        partition `part` of the output modes for the interferometer given
-
-        returns : (counts = physical_indexes, probabilities = pdf)
-
-        corresponding to the occupation numbers in the partition and the
-        associated probability"""
-
-        @warn "only implemented in the bosonic case so far"
-        @warn "this gives what happens for input of type [1^n O^(m-n)]"
-
-        @argcheck n <= m "more than one input per mode is not implemented"
-
-        fourier_indexes = all_mode_configurations(n,part.n_subset, only_photon_number_conserving = false)
-        probas_fourier = Array{ComplexF64}(undef, length(fourier_indexes))
-        virtual_interferometer_matrix = similar(physical_interferometer.U)
-
-        for (index_fourier_array, fourier_index) in enumerate(fourier_indexes)
-
-                # for each fourier index, we recompute the virtual interferometer
-                virtual_interferometer_matrix  = physical_interferometer.U
-                diag = [one(eltype(virtual_interferometer_matrix)) for i in 1:m]
-
-                for (i,fourier_element) in enumerate(fourier_index)
-                        ##### this is where the wrong must be
-                        ##### confusion vector dot operations
-                        this_phase = exp(2*pi*1im/(n+1) * fourier_element)
-
-                        @show fourier_element
-                        @show this_phase
-                        @show diag
-
-                        for j in 1:length(diag)
-
-                                if part.subsets[i].subset[j] == 1
-                                        diag[j] *= this_phase
-
-                                end
-                                @show diag
-                        end
-
-                end
-
-                virtual_interferometer_matrix *= Diagonal(diag)
-                virtual_interferometer_matrix *= physical_interferometer.U'
-
-                probas_fourier[index_fourier_array] = permanent(virtual_interferometer_matrix[1:n,1:n])
-        end
-
-        probas_fourier
-
-        physical_indexes = copy(fourier_indexes)
-
-        # probas_physical(physical_index) = 1/(n+1)^(part.n_subset) * sum([probas_fourier[i] * exp(-2*pi*1im/(n+1) * dot(physical_index, fourier_indexes[i])) for i in 1:length(fourier_indexes)])
-        # previous function
-
-        probas_physical(physical_index) = 1/(n+1)^(part.n_subset) * sum(probas_fourier[i] * exp(-2pi*1im/(n+1) * dot(physical_index, fourier_index)) for (i,fourier_index) in enumerate(fourier_indexes))
-
-
-        pdf = [probas_physical(physical_index) for physical_index in physical_indexes]
-
-        pdf = clean_pdf(pdf)
-
-        (physical_indexes, pdf, probas_fourier)
-end
-
-
 
 function photon_number_conserving_events(physical_indexes, n; partition_spans_all_modes = false)
 
@@ -221,6 +166,74 @@ function check_photon_conservation(physical_indexes,  pdf, n; atol = ATOL, parti
 
 end
 
+function compute_probabilities_partition(physical_interferometer::Interferometer, part::Partition, n::Int)
+
+        """computes the probability to find a certain photon counts in a
+        partition `part` of the output modes for the interferometer given
+
+        returns : (counts = physical_indexes, probabilities = pdf)
+
+        corresponding to the occupation numbers in the partition and the
+        associated probability"""
+
+        @warn "only implemented in the bosonic case so far"
+        @warn "this gives what happens for input of type [1^n O^(m-n)]"
+
+        @argcheck n <= m "more than one input per mode is not implemented"
+
+        occupies_all_modes(part) ? (@warn "inefficient if no loss: partition occupies all modes thus extra calculations made that are unnecessary") : nothing
+
+        fourier_indexes = all_mode_configurations(n,part.n_subset, only_photon_number_conserving = false)
+        probas_fourier = Array{ComplexF64}(undef, length(fourier_indexes))
+        virtual_interferometer_matrix = similar(physical_interferometer.U)
+
+        for (index_fourier_array, fourier_index) in enumerate(fourier_indexes)
+
+                # for each fourier index, we recompute the virtual interferometer
+                virtual_interferometer_matrix  = physical_interferometer.U
+                diag = [one(eltype(virtual_interferometer_matrix)) for i in 1:m]
+
+                for (i,fourier_element) in enumerate(fourier_index)
+
+                        this_phase = exp(2*pi*1im/(n+1) * fourier_element)
+
+                        for j in 1:length(diag)
+
+                                if part.subsets[i].subset[j] == 1
+                                        diag[j] *= this_phase
+
+                                end
+
+                        end
+
+                end
+
+                virtual_interferometer_matrix *= Diagonal(diag)
+                virtual_interferometer_matrix *= physical_interferometer.U'
+
+
+                # beware, only the modes corresponding to the
+                # virtual_interferometer_matrix[input_config,input_config]
+                # must be taken into account !
+                probas_fourier[index_fourier_array] = permanent(virtual_interferometer_matrix[1:n,1:n])
+        end
+
+        physical_indexes = copy(fourier_indexes)
+
+        probas_physical(physical_index) = 1/(n+1)^(part.n_subset) * sum(probas_fourier[i] * exp(-2pi*1im/(n+1) * dot(physical_index, fourier_index)) for (i,fourier_index) in enumerate(fourier_indexes))
+
+
+        pdf = [probas_physical(physical_index) for physical_index in physical_indexes]
+
+        pdf = clean_pdf(pdf)
+
+        check_photon_conservation(physical_indexes, pdf, n; partition_spans_all_modes = occupies_all_modes(part))
+
+        (physical_indexes, pdf)
+end
+
+
+
 function print_pdfs(physical_indexes, pdf, n; physical_events_only = false, partition_spans_all_modes = false)
 
         indexes_to_print = physical_events_only ? photon_number_conserving_events(physical_indexes, n; partition_spans_all_modes = partition_spans_all_modes) : physical_indexes
@@ -235,62 +248,3 @@ function print_pdfs(physical_indexes, pdf, n; physical_events_only = false, part
         end
         println("---------------")
 end
-
-### HOM tests: one mode ###
-
-m = 2
-n = 2
-
-set1 = [1,0]
-physical_interferometer = Fourier(m)
-part = Partition([Subset(set1)])
-
-(physical_indexes,  pdf) = compute_probabilities_partition(physical_interferometer, part, n)
-
-photon_number_conserving_events(physical_indexes,n)
-
-check_photon_conservation(physical_indexes, pdf, n)
-
-print_pdfs(physical_indexes,  pdf, n)
-
-### HOM tests: mode1, mode2 ###
-
-m = 2
-n = 2
-
-set1 = [1,0]
-set2 = [0,1]
-physical_interferometer = Fourier(m)
-part = Partition([Subset(set1), Subset(set2)])
-
-(physical_indexes,  pdf) = compute_probabilities_partition(physical_interferometer, part, n)
-
-print_pdfs(physical_indexes, pdf,n; partition_spans_all_modes = true, physical_events_only = true)
-
-check_photon_conservation(physical_indexes, pdf, n; partition_spans_all_modes = true)
-
-
-
-
-
-
-### other tests ###
-
-m = 4
-n = 3
-set1 = zeros(Int,m)
-set2 = zeros(Int,m)
-set1[1:2] .= 1
-set2[3:4] .= 1
-
-
-physical_interferometer = RandHaar(m)
-part = Partition([Subset(set1), Subset(set2)])
-
-(physical_indexes,  pdf, probas_fourier) = compute_probabilities_partition(physical_interferometer, part, n)
-fourier_indexes = copy(physical_indexes)
-
-print_pdfs(physical_indexes,  pdf, n)
-#print_pdfs(physical_indexes,  probas_fourier, n)
-
-check_photon_conservation(physical_indexes, pdf, n; partition_spans_all_modes = false)
