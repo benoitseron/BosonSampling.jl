@@ -20,6 +20,7 @@ using BenchmarkTools
 using Optim
 using ProgressMeter
 #using LaTeXStrings
+using Distributions
 
 const ATOL = 1e-10
 

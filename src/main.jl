@@ -20,6 +20,7 @@ using Optim
 using ProgressMeter
 using Parameters
 using ArgCheck
+using Distributions
 
 const ATOL = 1e-10
 
@@ -34,7 +35,6 @@ include("circuits/circuit_elements.jl")
 
 include("bunching/bunching.jl")
 include("partitions/legacy.jl")
-
 
 include("permanent_conjectures/bapat_sunder.jl")
 include("permanent_conjectures/counter_example_functions.jl")
