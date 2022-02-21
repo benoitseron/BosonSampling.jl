@@ -163,3 +163,17 @@ function print_pdfs(physical_indexes, pdf, n; physical_events_only = false, part
         end
         println("---------------")
 end
+
+function compute_probability!(ev::Event{TIn,TOut}) where {TIn<:InputType, TOut<:PartitionCounts}
+
+        check_probability_empty(ev)
+
+        ev.proba_params.precision = eps()
+        ev.proba_params.failure_probability = 0
+
+        ev.proba_params.probability = ################ inefficient to give a partition count type of thing
+        # rather would only pass a partition to the event then compute all
+        # probabilities
+        # otherwise many many unnecessary calculations will be performed
+
+end

@@ -41,3 +41,9 @@ struct Event{TIn<:InputType, TOut<:OutputMeasurementType}
     Event(i,o,interf,p = nothing) = Event{get_parametric_type(i)[1], get_parametric_type(o)[1]}(i,o,interf,p)
 
 end
+
+function check_probability_empty(event::Event)
+    if ev.proba_params.probability != nothing
+		@warn "probability was already set in, rewriting"
+	end
+end
