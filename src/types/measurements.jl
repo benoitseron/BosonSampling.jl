@@ -1,12 +1,33 @@
-
 ### measurements ###
 
 abstract type OutputMeasurementType end
 
 struct FockDetection <: OutputMeasurementType
+
+    """detection as in the standard boson sampling"""
+
+    s::ModeOccupation
+    FockDetection(s::ModeOccupation) = at_most_one_photon_per_bin(s) ? new(s) : error("more than one detector per more")
+
 end
 
 struct PartitionCounts <: OutputMeasurementType
+
+    """measuring the probability of getting a specific
+    count for a given partition"""
+
+    part_occupancy::PartitionOccupancy
+    PartitionCounts(part_occupancy::PartitionOccupancy) = new(part_occupancy)
+
+end
+
+struct PartitionCountsAll <: OutputMeasurementType
+
+    """all possible counts probabilities in a partition"""
+
+    part::Partition
+    PartitionCountsAll(part::Partition) = new(part)
+
 end
 
 struct OutputMeasurement{T<:OutputMeasurementType}
@@ -15,7 +36,6 @@ struct OutputMeasurement{T<:OutputMeasurementType}
     # internal degrees of freedom
 
     s::Union{ModeOccupation,Nothing} # position of the detectors for Fock measurement
-    part_occupancy::Union{PartitionOccupancy,Nothing} # partition detectors for PartitionCounts
 
     # function OutputMeasurement{T}(s::ModeOccupation) where {T<:OutputMeasurementType}
     #     if T == FockDetection
@@ -25,11 +45,15 @@ struct OutputMeasurement{T<:OutputMeasurementType}
     #     end
     # end
 
-    OutputMeasurement{FockDetection}(s::ModeOccupation) = at_most_one_photon_per_bin(s) ? new(s, nothing) : error("more than one detector per more")
+    function OutputMeasurement{FockDetection}(s::ModeOccupation)
+
+        @warn "OutputMeasurement{FockDetection} obsolete, replace with FockDetection"
+
+        at_most_one_photon_per_bin(s) ? new(s, nothing, nothing) : error("more than one detector per more")
+
+    end
     OutputMeasurement(s::ModeOccupation) = OutputMeasurement{FockDetection}(s::ModeOccupation)
 
-    OutputMeasurement{PartitionCounts}(part_occupancy::PartitionOccupancy) = new(nothing, part_occupancy)
-    OutputMeasurement(part_occupancy::PartitionOccupancy) = OutputMeasurement{PartitionCounts}(part_occupancy::PartitionOccupancy)
 
 
 end
