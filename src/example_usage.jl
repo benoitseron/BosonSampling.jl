@@ -105,3 +105,14 @@ fourier_indexes = copy(physical_indexes)
 
 print_pdfs(physical_indexes, pdf, n; physical_events_only = true, partition_spans_all_modes = true)
 #print_pdfs(physical_indexes,  probas_fourier, n)
+
+### partitions, subsets ###
+
+s1 = Subset([1,1,0,0,0])
+s2 = Subset([0,0,1,1,0])
+n = 2
+
+part = Partition([s1,s2])
+part_occ = PartitionOccupancy(ModeOccupation([2,1]),n,part)
+
+OutputMeasurement()
