@@ -2,69 +2,6 @@
 # photons in partitions of the output modes
 # a partition is a set of subsets of the output modes
 
-struct Subset
-        # basically a mode occupation list with at most one count per mode
-        n::Int
-        m::Int
-        subset::Vector{Int}
-        Subset(state) = isa_subset(state) ? new(sum(state), length(state), state) : error("invalid subset")
-end
-
-function check_disjoint_subsets(s1::Subset, s2::Subset)
-        @argcheck s1.m == s2.m "subsets do not have the same dimension"
-        @argcheck all(s1.subset .* s2.subset .== 0) "subsets overlap"
-end
-
-function check_subset_overlap(subsets::Vector{Subset})
-
-        for (i,subset_1) in enumerate(subsets)
-                for (j,subset_2) in enumerate(subsets)
-                        if i>j
-                                check_disjoint_subsets(subset_1, subset_2)
-                        end
-                end
-        end
-
-end
-
-struct Partition
-        subsets::Vector{Subset}
-        n_subset::Int
-        m::Int
-        function Partition(subsets)
-                check_subset_overlap(subsets)
-                new(subsets, length(subsets), subsets[1].m)
-        end
-end
-
-function occupies_all_modes(part::Partition)
-
-        """checks if a partition occupies all m modes"""
-
-        occupied_modes = zeros(Int, part.m)
-        for s in part.subsets
-                occupied_modes .+= s.subset
-        end
-
-        all(occupied_modes .== 1)
-
-end
-
-struct PartitionOccupancy
-        counts::ModeOccupation
-        partition::Partition
-        n::Int
-        m::Int
-        function PartitionOccupancy(counts::ModeOccupation, n::Int, partition::Partition)
-                if counts.m == partition.n_subset
-                        new(counts, partition, n, partition.subsets[1].m)
-                else
-                        error("counts do not have as many modes as parition has subsets")
-                end
-        end
-end
-
-
 function all_mode_configurations(n,n_subset; only_photon_number_conserving = false)
 
         """generates all possible output modes configurations for n photons

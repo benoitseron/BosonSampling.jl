@@ -57,8 +57,8 @@ end
 
 # first we generate a series of bosonic events
 
-n_events = 50
-n = 2
+n_events = 10
+n = 3
 m = 4
 interf = RandHaar(m)
 input_state = Input{Bosonic}(first_modes(n,m))
@@ -125,5 +125,7 @@ p_q = p_D
 p_a = p_B
 
 confidence(compute_χ(events, p_q, p_a))
+
+@test confidence(compute_χ(events, p_q, p_a)) + confidence(compute_χ(events, p_a, p_q)) ≈ 1 atol = 1e-6
 
 ##### the only thing I see is a problem in the probabilities themselves?
