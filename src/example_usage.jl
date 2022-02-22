@@ -87,6 +87,13 @@ part = Partition([Subset(set1), Subset(set2)])
 
 print_pdfs(physical_indexes, pdf,n; partition_spans_all_modes = true, physical_events_only = true)
 
+# for a single count
+
+part_occ = PartitionOccupancy(ModeOccupation([1,1]),2,part)
+
+compute_probability_partition_occupancy(physical_interferometer, part_occ, input_state)
+
+
 ### multiset for a random interferometer ###
 
 m = 4

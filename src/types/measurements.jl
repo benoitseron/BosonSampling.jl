@@ -11,7 +11,7 @@ struct FockDetection <: OutputMeasurementType
 
 end
 
-struct PartitionCounts <: OutputMeasurementType
+struct PartitionCount <: OutputMeasurementType
 
     """measuring the probability of getting a specific
     count for a given partition"""

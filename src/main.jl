@@ -20,6 +20,7 @@ using Optim
 using ProgressMeter
 using Parameters
 using ArgCheck
+using Distributions:Normal
 
 const ATOL = 1e-10
 
@@ -29,6 +30,9 @@ include("proba_tools.jl")
 include("type_functions.jl")
 include("types/types.jl")
 include("scattering.jl")
+
+include("circuits/circuit_elements.jl")
+
 include("bunching/bunching.jl")
 include("partitions/legacy.jl")
 

@@ -1,10 +1,9 @@
 ### events ###
 
 mutable struct EventProbability
-    probability::Union{Number,Nothing}
-    precision::Union{Number,Nothing} # see remarks in conventions
-    failure_probability::Union{Number,Nothing}
-
+    probability::Union{Number,Nothing, Vector{Number}}
+    precision::Union{Number,Nothing, Vector{Number}} # see remarks in conventions
+    failure_probability::Union{Number,Nothing, Vector{Number}}
 
     function EventProbability(probability = nothing)
 

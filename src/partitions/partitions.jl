@@ -147,7 +147,23 @@ function compute_probabilities_partition(physical_interferometer::Interferometer
         (physical_indexes, pdf)
 end
 
+function compute_probability_partition_occupancy(physical_interferometer::Interferometer, part_occupancy::PartitionOccupancy, input_state::Input)
 
+        """computes the probability to find a partition occupancy
+
+        note: inefficient to use multiple times for the same physical setting,
+        rather use compute_probabilities_partition"""
+
+        (physical_indexes, pdf) = compute_probabilities_partition(physical_interferometer, part_occupancy.partition, input_state::Input)
+
+        for (i,counts) in enumerate(physical_indexes)
+                if counts == part_occupancy.counts.state
+                        return pdf[i]
+                end
+        end
+        nothing
+
+end
 
 function print_pdfs(physical_indexes, pdf, n; physical_events_only = false, partition_spans_all_modes = false)
 
@@ -164,16 +180,17 @@ function print_pdfs(physical_indexes, pdf, n; physical_events_only = false, part
         println("---------------")
 end
 
-function compute_probability!(ev::Event{TIn,TOut}) where {TIn<:InputType, TOut<:PartitionCounts}
+function compute_probability!(ev::Event{TIn,TOut}) where {TIn<:InputType, TOut<:PartitionCount}
 
         check_probability_empty(ev)
+
+        interf = ev.interferometer
+        part_occupancy = ev.output_measurement.part_occupancy
+        input_state = ev.input_state
 
         ev.proba_params.precision = eps()
         ev.proba_params.failure_probability = 0
 
-        ev.proba_params.probability = ################ inefficient to give a partition count type of thing
-        # rather would only pass a partition to the event then compute all
-        # probabilities
-        # otherwise many many unnecessary calculations will be performed
+        ev.proba_params.probability = nothing ####################33compute_probabilities_partition(ev.interferometer, ev.part::Partition, input_state::Input)
 
 end
