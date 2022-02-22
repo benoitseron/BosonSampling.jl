@@ -184,13 +184,21 @@ function compute_probability!(ev::Event{TIn,TOut}) where {TIn<:InputType, TOut<:
 
         check_probability_empty(ev)
 
-        interf = ev.interferometer
-        part_occupancy = ev.output_measurement.part_occupancy
-        input_state = ev.input_state
-
         ev.proba_params.precision = eps()
         ev.proba_params.failure_probability = 0
 
-        ev.proba_params.probability = nothing ####################33compute_probabilities_partition(ev.interferometer, ev.part::Partition, input_state::Input)
+        ev.proba_params.probability = compute_probability_partition_occupancy(ev.interferometer, ev.part_occupancy, ev.input_state)
 
 end
+
+# 
+# check_probability_empty(ev)
+#
+# interf = ev.interferometer
+# part = ev.output_measurement.part_occupancy
+# input_state = ev.input_state
+#
+# ev.proba_params.precision = eps()
+# ev.proba_params.failure_probability = 0
+#
+# ev.proba_params.probability = nothing ####################33compute_probabilities_partition(ev.interferometer, ev.part::Partition, input_state::Input)

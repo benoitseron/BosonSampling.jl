@@ -17,7 +17,7 @@ struct PartitionCount <: OutputMeasurementType
     count for a given partition"""
 
     part_occupancy::PartitionOccupancy
-    PartitionCounts(part_occupancy::PartitionOccupancy) = new(part_occupancy)
+    PartitionCount(part_occupancy::PartitionOccupancy) = new(part_occupancy)
 
 end
 

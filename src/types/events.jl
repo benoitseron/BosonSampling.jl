@@ -24,7 +24,7 @@ end
 struct Event{TIn<:InputType, TOut<:OutputMeasurementType}
 
     input_state::Input{TIn}
-    output_measurement::OutputMeasurement{TOut}
+    output_measurement::TOut
     proba_params::EventProbability
     interferometer::Interferometer
 

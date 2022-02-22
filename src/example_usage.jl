@@ -93,6 +93,21 @@ part_occ = PartitionOccupancy(ModeOccupation([1,1]),2,part)
 
 compute_probability_partition_occupancy(physical_interferometer, part_occ, input_state)
 
+# the same using an event
+
+PartitionCount(part_occ)
+
+o = PartitionCount(part_occ)
+ev = Event(input_state, o, physical_interferometer)
+############ need to change the constructor of Event
+
+get_parametric_type(input_state)
+get_parametric_type(o)
+
+length(collect(typeof(o).parameters))
+typeof(o)
+collect(typeof(input_state).parameters)
+
 
 ### multiset for a random interferometer ###
 
