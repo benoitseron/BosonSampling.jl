@@ -94,7 +94,7 @@ function occupancy_vector_to_mode_occupancy(occupancy_vector)
 end
 
 
-function scattering_matrix(U::Matrix, input_state::Vector{Int}, output_state::Vector{Int})
+function scattering_matrix(U, input_state::Vector{Int}, output_state::Vector{Int})
 
     """
     U = interferometer matrix, size m*m
@@ -117,7 +117,15 @@ function scattering_matrix(U::Matrix, input_state::Vector{Int}, output_state::Ve
     index_input = fill_arrangement(input_state)
     index_output = fill_arrangement(output_state)
 
-	U[index_input,index_output]
+	try
+		U[index_input,index_output]
+	catch err
+		if isa(MethodError, err)
+			copy(U)[index_input,index_output]
+		else
+			println(err)
+		end
+	end
 
 end
 
@@ -183,37 +191,26 @@ end
 
 function process_probability_partial(U, S, input_state,output_state)
 
-    """computes the partially distinguishable process probability according to Tichy's tensor permanent https://arxiv.org/abs/1410.7687
-
-    note : naive permanent implementation so really slow"""
+    """computes the partially distinguishable process probability according to Tichy's tensor permanent https://arxiv.org/abs/1410.7687"""
 
     n = size(S,1)
 
-    if sum(input_state) != sum(output_state)
-        throw(ArgumentError("particles not conserved"))
-    end
+    @argcheck sum(input_state) != sum(output_state) "particles not conserved"
 
-    if sum(input_state) != n
-        throw(ArgumentError("S matrix doesnt have the same number of photons as the input"))
-    end
+    @argcheck sum(input_state) != n "S matrix doesnt have the same number of photons as the input"
 
     M = scattering_matrix(U, input_state, output_state)
+	W = Array{eltype(U)}(undef, (n,n,n))
 
-    result = zero(eltype(U))
+	for ss in 1:n
+	    for rr in 1:n
+	        for j in 1:n
+	            W[ss,rr,j] = M[ss, j] * conj(M[rr, j]) * S[rr, ss]
+	        end
+	    end
+	end
 
-    for sigma in permutations(collect(1:n))
-        for rho in permutations(collect(1:n))
-
-            this_diagonal = one(eltype(U))
-            for i=1:n
-                this_diagonal *= M[sigma[i], i] * conj(M[rho[i],i]) * S[rho[i], sigma[i]]
-            end
-
-            result += this_diagonal
-        end
-    end
-
-    1/(vector_factorial(input_state) * vector_factorial(output_state)) * result
+    1/(vector_factorial(input_state) * vector_factorial(output_state)) * ryser_tensor(W)
 
 end
 
@@ -274,7 +271,7 @@ function check_suppression_law(event)
 	else
 		return false
 	end
-	
+
 end
 
 
