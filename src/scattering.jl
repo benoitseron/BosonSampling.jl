@@ -195,9 +195,9 @@ function process_probability_partial(U, S, input_state,output_state)
 
     n = size(S,1)
 
-    @argcheck sum(input_state) != sum(output_state) "particles not conserved"
+    @argcheck sum(input_state) == sum(output_state) "particles not conserved"
 
-    @argcheck sum(input_state) != n "S matrix doesnt have the same number of photons as the input"
+    @argcheck sum(input_state) == n "S matrix doesnt have the same number of photons as the input"
 
     M = scattering_matrix(U, input_state, output_state)
 	W = Array{eltype(U)}(undef, (n,n,n))
