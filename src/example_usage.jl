@@ -112,13 +112,11 @@ plot(fig_approx, fig_samp, layout=(2,1))
 
 n = 3
 m = 6
-x = 0.7 # distinguishability
 
-G = GramMatrix{ToyModel}(n, gram_matrix_toy_model(n, x))
-input = Input{ToyModel}(first_modes(n,m), G)
+input = Input{Bosonic}(first_modes(n,m))
 interf = RandHaar(m)
 
-output_distribution = theoretical_distribution(input=input, distinguishability=x, interf=interf, gram_matrix=G)
+output_distribution = theoretical_distribution(input=input, distinguishability=1, interf=interf, gram_matrix=input.G)
 
 ### Usage Interferometer ###
 
