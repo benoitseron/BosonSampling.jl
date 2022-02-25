@@ -35,14 +35,16 @@ H_matrix(interf::Interferometer, i::Input, o::OutputMeasurement{FockDetection}) 
 
 H_matrix(interf::Interferometer, i::Input, subset_modes::ModeOccupation) = isa_subset(subset_modes) ? H_matrix(interf.U, i.r.state, subset_modes.state) : error("invalid subset")
 
-function full_bunching_probability(interf::Interferometer, i::Input, subset_modes::ModeOccupation)
+function full_bunching_probability(interf::Interferometer, i::Input, subset_modes::Subset)
 
 	"""computes the probability that all n photons end up in the subset of chosen
 	output modes following https://arxiv.org/abs/1509.01561"""
 
-	return clean_proba(permanent(H_matrix(interf,i,subset_modes) .* i.G.S))
+	return clean_proba(permanent(H_matrix(interf,i,subset_modes) .* transpose(i.G.S)))
 
 end
+
+
 
 
 
