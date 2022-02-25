@@ -1,6 +1,11 @@
 function H_matrix(U, input_state, partition_occupancy_vector)
 
-	"""Shshesnovitch's H matrix for a partition defined by partition_occupancy_vector"""
+	"""H matrix for a partition defined by partition_occupancy_vector
+
+	note: conventions follow the author's Boson bunching is not maximized by indistinguishable particles
+
+	which are the ones compatible with Tichy (Shshnovitch has a different one
+	for the evolution of the creation operators)"""
 
 	part = occupancy_vector_to_partition(partition_occupancy_vector)
 	input_modes = occupancy_vector_to_mode_occupancy(input_state)
@@ -18,7 +23,7 @@ function H_matrix(U, input_state, partition_occupancy_vector)
 
 	for i in 1: number_photons
 		for j in 1:number_photons
-			H[i,j] = sum([U[input_modes[i], l] * conj(U[input_modes[j], l]) for l in part])
+			H[i,j] = sum([U[l, input_modes[i]] * conj(U[l,input_modes[j]]) for l in part])
 		end
 	end
 

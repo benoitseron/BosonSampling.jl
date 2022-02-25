@@ -8,26 +8,30 @@ This project implements standard and scattershot BosonSampling in Julia, includi
 
   Photon creation operators are changed as
   ``a_j -> \sum_j U_jk b_k``
-  when going through the interferometer ``U``.
+  when going through the interferometer ``\op{U}``.
   Thus, the rows correspond to the input, columns to the output, that is: the probability that a single goes from `j` to `k` is ``|U_jk|^2``
+
+  This is the conventions used by most people. Let us warn that Valery Shchesnovich uses a convention that is incompatible: ``\op{U}`` needs to be changed to ``\op{U}^\dagger``. (And likewise defines the Gram matrix as the transpose of ours, see below.)
 
   By default, we will use [Tichy's conventions](https://arxiv.org/abs/1312.4266)
   * Input vector = `r` or `input_state`
-  * Output vector = `s` or `output_state` (`output_measurement` as well)
+  * Output vector = `s` or `output_state`
+  * For detection that if not just an event `output_measurement`
   * interferometer matrix = `U`
-  * interferometer matrix M of tichy (with rows corresponding to the input,...) = `scattering_matrix`
-  dimension of the matrix = `m` (size of the interferometer) or (`n` in previous code
+  * interferometer matrix `M` of Tichy (with rows corresponding to the input,...) = `scattering_matrix`
+  * dimension of the interferometer = `m` (size of the interferometer) or (`n` in previous code
   or where the number of photons is irrelevant or called number_photons)
   * number of modes occupied = `n`, `number_photons`
+
+### Bunching
+
+The H-matrix follows a convention different from that of Valery Shchesnovich: `H_{a,b} = \sum _{l \in \mathcal{K}} U_{l,a} U_{l,b}^{*}`.
+
 
 ### Conventions regarding Julia:
 
   Unlike most languages, the counting goes from 1,2,3... instead of starting at
   zero as 0,1,2,...
-
-  We write matrices as `Matrix(Line, Column)`. Parts of the program were written
-  with the opposite convention, thus there may be mistakes although most of them
-  should be gone. (I believe Julia's convention changed in a version update).
 
 ### Gram matrices :
 
