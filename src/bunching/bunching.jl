@@ -44,7 +44,18 @@ function full_bunching_probability(interf::Interferometer, i::Input, subset_mode
 
 end
 
+function bunching_events(input_state::Input, sub::Subset)
 
+	"""generates the output configurations corresponding to a full
+	bunching in the subset_modes"""
+
+
+	#photon_distribution_in_subset_modes = 
+	all_mode_configurations(input_state, sub, only_photon_number_conserving = false)
+
+	######### convert to output ModeOccupations
+
+end
 
 
 

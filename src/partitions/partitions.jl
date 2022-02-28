@@ -4,10 +4,15 @@
 
 function all_mode_configurations(n,n_subset; only_photon_number_conserving = false)
 
-        """generates all possible output modes configurations for n photons
-        in n_subset outputs
+        """generates all possible photon counts
+        of n photons in a partition/subset
+        of n_subset subsets
 
-        does not take into account photon number conservation by default"""
+        does not take into account photon number conservation by default
+
+        this is the photon counting in partitions and not events outputs
+
+        but it can be used likewise"""
 
         array = []
         for i in 1:(n+1)^(n_subset)
@@ -27,7 +32,9 @@ function all_mode_configurations(n,n_subset; only_photon_number_conserving = fal
 
 end
 
+all_mode_configurations(input_state::Input,part::Partition; only_photon_number_conserving = false) = all_mode_configurations(input_state.n,part.n_subset; only_photon_number_conserving = only_photon_number_conserving)
 
+all_mode_configurations(input_state::Input,sub::Subset; only_photon_number_conserving = false) = all_mode_configurations(input_state.n,1; only_photon_number_conserving = only_photon_number_conserving)
 
 function photon_number_conserving_events(physical_indexes, n; partition_spans_all_modes = false)
 
@@ -191,7 +198,7 @@ function compute_probability!(ev::Event{TIn,TOut}) where {TIn<:InputType, TOut<:
 
 end
 
-# 
+#
 # check_probability_empty(ev)
 #
 # interf = ev.interferometer

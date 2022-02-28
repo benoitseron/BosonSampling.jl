@@ -9,9 +9,10 @@ end
 
 at_most_one_photon_per_bin(state) = all(state[:] .<= 1)
 at_most_one_photon_per_bin(r::ModeOccupation) = at_most_one_photon_per_bin(r.state)
-isa_subset(subset_modes::ModeOccupation) = at_most_one_photon_per_bin(subset_modes)
-isa_subset(state) = at_most_one_photon_per_bin(state)
-# this last function is defined to avoid the abuse of language
+
+isa_subset(subset_modes::Vector{Int}) = (at_most_one_photon_per_bin(subset_modes) && sum(subset_modes) != 0)
+isa_subset(subset_modes::ModeOccupation) = isa_subset(subset_modes.state)
+
 first_modes(n::Int,m::Int) = n<=m ? ModeOccupation([i <= n ? 1 : 0 for i in 1:m]) : error("n>m")
 
 
@@ -20,7 +21,10 @@ struct Subset
         n::Int
         m::Int
         subset::Vector{Int}
-        Subset(state) = isa_subset(state) ? new(sum(state), length(state), state) : error("invalid subset")
+        function Subset(state)
+
+                isa_subset(state) ? new(sum(state), length(state), state) : error("invalid subset")
+        end
 end
 
 function check_disjoint_subsets(s1::Subset, s2::Subset)

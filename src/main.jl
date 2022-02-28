@@ -33,10 +33,12 @@ include("scattering.jl")
 
 include("circuits/circuit_elements.jl")
 
-include("bunching/bunching.jl")
-
 include("partitions/legacy.jl")
 include("partitions/partitions.jl")
+
+include("bunching/bunching.jl")
+
+
 
 include("permanent_conjectures/bapat_sunder.jl")
 include("permanent_conjectures/counter_example_functions.jl")

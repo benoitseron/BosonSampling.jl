@@ -140,3 +140,16 @@ part_occ = PartitionOccupancy(ModeOccupation([2,1]),n,part)
 OutputMeasurement(part_occ)
 
 ### bunching ###
+
+m = 4
+n = 3
+set1 = zeros(Int,m)
+set1[1:2] .= 1
+
+physical_interferometer = RandHaar(m)
+sub = Subset(set1)
+
+input_state = Input{Bosonic}(first_modes(n,m))
+
+bunching_events(input_state,sub)
+#### not what we want
