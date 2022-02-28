@@ -10,7 +10,7 @@ using Statistics
 using LinearAlgebra #removed so as to be able to use generic types such as BigFloats, can be put back if needed
 using PolynomialRoots
 using StatsBase
-using JLD
+#using JLD
 using CSV
 using DataFrames
 using Tables
@@ -33,6 +33,8 @@ include("types/types.jl")
 include("scattering.jl")
 include("bunching/bunching.jl")
 include("partitions/legacy.jl")
+
+include("circuits/circuit_elements.jl")
 
 include("boson_samplers/classical_sampler.jl")
 

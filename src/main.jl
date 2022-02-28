@@ -8,7 +8,7 @@ using Statistics
 using LinearAlgebra #removed so as to be able to use generic types such as BigFloats, can be put back if needed
 using PolynomialRoots
 using StatsBase
-using JLD
+#using JLD
 using CSV
 using DataFrames
 using Tables

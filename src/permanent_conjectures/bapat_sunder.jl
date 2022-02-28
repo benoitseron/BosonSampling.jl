@@ -10,7 +10,7 @@ function violates_bapat_sunder(A,B, tol = ATOL)
 	elseif !(is_positive_semidefinite(A) && is_positive_semidefinite(B))
 		throw(Exception("A or B not semidefinitepositive"))
 	else
-		return abs(permanent_ryser(A .* B)) / (abs(permanent_ryser(A)) * real(prod([B[i,i] for i in 1:size(B)[1]]))) > 1+tol
+		return abs(ryser(A .* B)) / (abs(ryser(A)) * real(prod([B[i,i] for i in 1:size(B)[1]]))) > 1+tol
 	end
 	return nothing
 end
