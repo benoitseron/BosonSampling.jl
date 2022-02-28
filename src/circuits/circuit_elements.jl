@@ -11,8 +11,6 @@ function beam_splitter(transmission_amplitude = sqrt(0.5))
 
 	bs = [[t r]; [-r t]]
 
-	transpose(bs)
-
 end
 
 function beam_splitter_modes(;in_up,in_down,out_up,out_down, transmission_amplitude,n)
