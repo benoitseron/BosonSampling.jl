@@ -22,19 +22,9 @@ using Optim
 using ProgressMeter
 using Parameters
 using ArgCheck
+using Distributions:Normal
 
 const ATOL = 1e-10
-interferometer_convention = "tichy" # or "shchesnovich"
-
-function is_a_valid_convention(convention)
-
-    """checks if a convention is valid, the goal of this
-    function also being to see all places where it is used"""
-
-    convention in ["tichy", "shchesnovich"]
-
-end
-
 
 include("special_matrices.jl")
 include("matrix_tests.jl")

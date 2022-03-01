@@ -104,7 +104,6 @@ function scattering_matrix(U::Matrix, input_state::Vector{Int}, output_state::Ve
     follows http://arxiv.org/abs/quant-ph/0406127v1
     """
 
-	is_a_valid_convention(convention)
 
     m = size(U,1)
     n = sum(input_state)
@@ -118,9 +117,7 @@ function scattering_matrix(U::Matrix, input_state::Vector{Int}, output_state::Ve
     index_input = fill_arrangement(input_state)
     index_output = fill_arrangement(output_state)
 
-	if convention in ["tichy", "shchesnovich"]
-		U[index_input,index_output]
-	end
+	U[index_input,index_output]
 
 end
 
@@ -200,23 +197,18 @@ function process_probability_partial(U, S, input_state,output_state)
         throw(ArgumentError("S matrix doesnt have the same number of photons as the input"))
     end
 
-    M = scattering_matrix(U, input_state, output_state)
+	M = scattering_matrix(U, input_state, output_state)
+	W = Array{eltype(U)}(undef, (n,n,n))
 
-    result = zero(eltype(U))
+	for ss in 1:n
+	    for rr in 1:n
+	        for j in 1:n
+	            W[ss,rr,j] = M[ss, j] * conj(M[rr, j]) * S[rr, ss]
+	        end
+	    end
+	end
 
-    for sigma in permutations(collect(1:n))
-        for rho in permutations(collect(1:n))
-
-            this_diagonal = one(eltype(U))
-            for i=1:n
-                this_diagonal *= M[sigma[i], i] * conj(M[rho[i],i]) * S[rho[i], sigma[i]]
-            end
-
-            result += this_diagonal
-        end
-    end
-
-    1/(vector_factorial(input_state) * vector_factorial(output_state)) * result
+    1/(vector_factorial(input_state) * vector_factorial(output_state)) * ryser_tensor(W)
 
 end
 

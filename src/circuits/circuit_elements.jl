@@ -9,7 +9,7 @@ function beam_splitter(transmission_amplitude = sqrt(0.5))
 	t = transmission_amplitude
 	r = sqrt(1-t^2)
 
-	bs = [[t r]; [-r t]]
+	bs = [[t -r]; [r t]]
 
 end
 
@@ -29,11 +29,11 @@ function beam_splitter_modes(;in_up,in_down,out_up,out_down, transmission_amplit
 	bs[in_down, out_down] = sub_bs[2,2]
 	bs[in_down, out_up] = sub_bs[2,1]
 	bs[in_up, out_down] = sub_bs[1,2]
-
-	# before convention checks:
+	#
+	# # before convention checks:
 	# bs[in_down, out_up] = sub_bs[1,2] ####### this change is a bit ad hoc and needs to be checked carefully with the conventions
 	# bs[in_up, out_down] = sub_bs[2,1]
-
+	#
 
 	bs
 
