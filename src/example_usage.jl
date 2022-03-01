@@ -81,6 +81,57 @@ known_sampler = () -> iterate_until_collisionless(() -> classical_sampler(U = U,
 samples = metropolis_sampler(;target_pdf = target_pdf, known_pdf = known_pdf , known_sampler = known_sampler , starting_state = starting_state, n_iter = 100)
 
 
+### Noisy distribution ###
+
+n = 3
+m = 6
+x = 0.8
+η = 0.8
+
+G = GramMatrix{ToyModel}(n, gram_matrix_toy_model(n, x))
+input = Input{ToyModel}(first_modes(n,m), G)
+interf = RandHaar(m)
+
+output_statistics = noisy_distribution(input=input, distinguishability=x, reflectivity=η, interf=interf)
+p_exact = output_statistics[1]
+p_approx = output_statistics[2]
+p_sampled = output_statistics[3]
+
+fig_approx = plot(title="approximative computation", xlabel="modes occupation", ylabel="probability");
+plot!(fig_approx, p_exact, label="p_exact");
+plot!(fig_approx, p_approx, label="p_approx");
+fig_samp = plot(title="sampling computation", xlabel="modes occupation", ylabel="probability");
+plot!(fig_samp, p_exact, label="p_exact");
+plot!(fig_samp, p_sampled, label="p_sampled");
+
+plot(fig_approx, fig_samp, layout=(2,1))
+
+### Theoretical distribution ###
+
+n = 3
+m = 6
+
+input = Input{Bosonic}(first_modes(n,m))
+interf = RandHaar(m)
+
+output_distribution = theoretical_distribution(input=input, distinguishability=1, interf=interf, gram_matrix=input.G)
+
+### Usage Interferometer ###
+
+B = BeamSplitter(1/sqrt(2))
+n = 2 # photon number
+m = 2 # mode number
+proba_bunching = Vector{Float64}(undef, 0)
+
+for x = 0.00001:0.01:1
+    G = GramMatrix{ToyModel}(n, gram_matrix_toy_model(n, x))
+    input = Input{ToyModel}(first_modes(n,m), G)
+    p_theo = theoretical_distribution(input=input, interf=B, distinguishability=x, gram_matrix=G)
+
+    push!(proba_bunching, p_theo[2]) # store the probabilty to observe one photon in each mode
+end
+plot(0.001:0.01:1, proba_bunching, label=nothing, xlabel="distinguishability", ylabel="event probabilty")
+
 ### subsets ###
 
 s1 = Subset([1,1,0,0,0])
@@ -187,4 +238,3 @@ input_state = Input{Bosonic}(first_modes(n,m))
 
 bunching_events(input_state,sub)
 #### not what we want
-
