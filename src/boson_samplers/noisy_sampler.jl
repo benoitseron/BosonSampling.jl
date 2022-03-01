@@ -33,7 +33,7 @@ function noisy_sampling(;input::Input, distinguishability::Real, reflectivity::R
     end
 
     input = [input_modes[i]-bosonic_input[i] for i = 1:m]
-    classical_input = Input{Classical}(ModeOccupation(input))
+    classical_input = Input{Distinguishable}(ModeOccupation(input))
     classical_output = fill_arrangement(classical_sampler(input=classical_input, interf=interf))
     input = Input{Bosonic}(ModeOccupation(bosonic_input))
     bosonic_output = cliffords_sampler(input=input, interf=interf)
