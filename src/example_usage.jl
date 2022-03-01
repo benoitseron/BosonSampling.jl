@@ -39,29 +39,27 @@ input = Input{Distinguishable}(first_modes(n,m))
 interf = RandHaar(m)
 out = classical_sampler(input=input, interf=interf)
 
-### Cliffords sampler ###
+## Cliffords sampler ###
 
-# m = 16
-# n = 3
-# input = Input{Bosonic}(first_modes(n,m))
-# interf = RandHaar(m)
-# out = cliffords_sampler(input=input, interf=interf)
-#
-# classical_sampler(U = rand_haar(16), m = 16, n = 3)
+m = 16
+n = 3
+input = Input{Bosonic}(first_modes(n,m))
+interf = RandHaar(m)
+out = cliffords_sampler(input=input, interf=interf)
 
-### Noisy sampling ###
+## Noisy sampling ###
 
-# m = 16
-# n = 3
-#
-# x = 0.8 # distinguishability
-# η = 0.8 # reflectivity
-#
-# G = GramMatrix{ToyModel}(n, gram_matrix_toy_model(n,x))
-# input = Input{ToyModel}(first_modes(n,m), G)
-# interf = RandHaar(m)
-#
-# out = noisy_sampling(input=input, distinguishability=x, reflectivity=η, interf=interf)
+m = 16
+n = 3
+
+x = 0.8 # distinguishability
+η = 0.8 # reflectivity
+
+G = GramMatrix{ToyModel}(n, gram_matrix_toy_model(n,x))
+input = Input{ToyModel}(first_modes(n,m), G)
+interf = RandHaar(m)
+
+out = noisy_sampling(input=input, distinguishability=x, reflectivity=η, interf=interf)
 
 ### MIS sampling ###
 
@@ -99,7 +97,7 @@ p_exact = output_statistics[1]
 p_approx = output_statistics[2]
 p_sampled = output_statistics[3]
 
-fig_approx = plot(title="approximative computation", xlabel="modes occupatiom", ylabel="probability");
+fig_approx = plot(title="approximative computation", xlabel="modes occupation", ylabel="probability");
 plot!(fig_approx, p_exact, label="p_exact");
 plot!(fig_approx, p_approx, label="p_approx");
 fig_samp = plot(title="sampling computation", xlabel="modes occupation", ylabel="probability");
