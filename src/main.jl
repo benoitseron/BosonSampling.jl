@@ -1,5 +1,3 @@
-module BosonSampling
-
 using Permanents
 using Plots
 using Test
@@ -29,8 +27,6 @@ const ATOL = 1e-10
 include("special_matrices.jl")
 include("matrix_tests.jl")
 include("proba_tools.jl")
-include("tools.jl")
-include("circuits/circuit_elements.jl")
 include("type_functions.jl")
 include("types.jl")
 include("scattering.jl")
@@ -46,11 +42,3 @@ include("permanent_conjectures/counter_example_numerical_search.jl")
 include("permanent_conjectures/permanent_on_top.jl")
 
 permanent = ryser
-
-for n in names(@__MODULE__; all=true)
-    if Base.isidentifier(n) && n ∉ (Symbol(@__MODULE__), :eval, :include)
-        @eval export $n
-    end
-end
-
-end
