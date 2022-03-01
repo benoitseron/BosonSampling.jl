@@ -81,53 +81,110 @@ known_sampler = () -> iterate_until_collisionless(() -> classical_sampler(U = U,
 samples = metropolis_sampler(;target_pdf = target_pdf, known_pdf = known_pdf , known_sampler = known_sampler , starting_state = starting_state, n_iter = 100)
 
 
-### Noisy distribution ###
+### subsets ###
 
+s1 = Subset([1,1,0,0,0])
+s2 = Subset([0,0,1,1,0])
+s3 = Subset([1,0,1,0,0])
+
+"subsets are not allowed to overlap"
+
+check_subset_overlap([s1,s2,s3])
+
+### HOM tests: one mode ###
+
+input_state = Input{Bosonic}(first_modes(n,m))
+
+set1 = [1,0]
+physical_interferometer = Fourier(m)
+part = Partition([Subset(set1)])
+
+(physical_indexes, pdf) = compute_probabilities_partition(physical_interferometer, part, input_state)
+
+
+### HOM tests: mode1, mode2 ###
+
+n = 2
+m = 2
+
+input_state = Input{Bosonic}(first_modes(n,m))
+
+set1 = [1,0]
+set2 = [0,1]
+physical_interferometer = Fourier(m)
+part = Partition([Subset(set1), Subset(set2)])
+
+(physical_indexes, pdf) = compute_probabilities_partition(physical_interferometer, part, input_state)
+
+print_pdfs(physical_indexes, pdf,n; partition_spans_all_modes = true, physical_events_only = true)
+
+# for a single count
+
+part_occ = PartitionOccupancy(ModeOccupation([1,1]),2,part)
+
+compute_probability_partition_occupancy(physical_interferometer, part_occ, input_state)
+
+# the same using an event
+
+PartitionCount(part_occ)
+
+o = PartitionCount(part_occ)
+ev = Event(input_state, o, physical_interferometer)
+############ need to change the constructor of Event
+
+get_parametric_type(input_state)
+get_parametric_type(o)
+
+length(collect(typeof(o).parameters))
+typeof(o)
+collect(typeof(input_state).parameters)
+
+
+### multiset for a random interferometer ###
+
+m = 4
 n = 3
-m = 6
-x = 0.8
-η = 0.8
+set1 = zeros(Int,m)
+set2 = zeros(Int,m)
+set1[1:2] .= 1
+set2[3:4] .= 1
 
-G = GramMatrix{ToyModel}(n, gram_matrix_toy_model(n, x))
-input = Input{ToyModel}(first_modes(n,m), G)
-interf = RandHaar(m)
 
-output_statistics = noisy_distribution(input=input, distinguishability=x, reflectivity=η, interf=interf)
-p_exact = output_statistics[1]
-p_approx = output_statistics[2]
-p_sampled = output_statistics[3]
+physical_interferometer = RandHaar(m)
+part = Partition([Subset(set1), Subset(set2)])
 
-fig_approx = plot(title="approximative computation", xlabel="modes occupation", ylabel="probability");
-plot!(fig_approx, p_exact, label="p_exact");
-plot!(fig_approx, p_approx, label="p_approx");
-fig_samp = plot(title="sampling computation", xlabel="modes occupation", ylabel="probability");
-plot!(fig_samp, p_exact, label="p_exact");
-plot!(fig_samp, p_sampled, label="p_sampled");
 
-plot(fig_approx, fig_samp, layout=(2,1))
+(physical_indexes,  pdf) = compute_probabilities_partition(physical_interferometer, part, n)
+fourier_indexes = copy(physical_indexes)
 
-### Theoretical distribution ###
 
+print_pdfs(physical_indexes, pdf, n; physical_events_only = true, partition_spans_all_modes = true)
+#print_pdfs(physical_indexes,  probas_fourier, n)
+
+### partitions, subsets ###
+
+s1 = Subset([1,1,0,0,0])
+s2 = Subset([0,0,1,1,0])
+n = 2
+
+part = Partition([s1,s2])
+part_occ = PartitionOccupancy(ModeOccupation([2,1]),n,part)
+
+OutputMeasurement(part_occ)
+
+### bunching ###
+
+m = 4
 n = 3
-m = 6
 
-input = Input{Bosonic}(first_modes(n,m))
-interf = RandHaar(m)
+set1 = zeros(Int,m)
+set1[1:2] .= 1
 
-output_distribution = theoretical_distribution(input=input, distinguishability=1, interf=interf, gram_matrix=input.G)
+physical_interferometer = RandHaar(m)
+sub = Subset(set1)
 
-### Usage Interferometer ###
+input_state = Input{Bosonic}(first_modes(n,m))
 
-B = BeamSplitter(1/sqrt(2))
-n = 2 # photon number
-m = 2 # mode number
-proba_bunching = Vector{Float64}(undef, 0)
+bunching_events(input_state,sub)
+#### not what we want
 
-for x = 0.00001:0.01:1
-    G = GramMatrix{ToyModel}(n, gram_matrix_toy_model(n, x))
-    input = Input{ToyModel}(first_modes(n,m), G)
-    p_theo = theoretical_distribution(input=input, interf=B, distinguishability=x, gram_matrix=G)
-
-    push!(proba_bunching, p_theo[2]) # store the probabilty to observe one photon in each mode
-end
-plot(0.001:0.01:1, proba_bunching, label=nothing, xlabel="distinguishability", ylabel="event probabilty")

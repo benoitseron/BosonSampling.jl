@@ -40,10 +40,12 @@ end
 
 fill_arrangement(r::ModeOccupation) = fill_arrangement(r.state)
 
+fill_arrangement(inp::Input) = fill_arrangement(inp.r)
+
+
 function random_occupancy(n::Int, m::Int)
 
 	""" returns a vector of size m with n randomly placed ones """
-
 	if n > m
 		throw(ArgumentError("Implemented at most one photon per mode"))
 	else
@@ -94,7 +96,7 @@ function occupancy_vector_to_mode_occupancy(occupancy_vector)
 end
 
 
-function scattering_matrix(U, input_state::Vector{Int}, output_state::Vector{Int})
+function scattering_matrix(U::Matrix, input_state::Vector{Int}, output_state::Vector{Int}, convention = interferometer_convention)
 
     """
     U = interferometer matrix, size m*m
@@ -104,6 +106,7 @@ function scattering_matrix(U, input_state::Vector{Int}, output_state::Vector{Int
 
     follows http://arxiv.org/abs/quant-ph/0406127v1
     """
+
 
     m = size(U,1)
     n = sum(input_state)
@@ -199,7 +202,7 @@ function process_probability_partial(U, S, input_state,output_state)
 
     @argcheck sum(input_state) == n "S matrix doesnt have the same number of photons as the input"
 
-    M = scattering_matrix(U, input_state, output_state)
+	M = scattering_matrix(U, input_state, output_state)
 	W = Array{eltype(U)}(undef, (n,n,n))
 
 	for ss in 1:n
@@ -216,34 +219,29 @@ end
 
 process_probability_partial(interf::Interferometer, input_state::Input{PartDist},output_state::OutputMeasurement{FockDetection}) = process_probability_partial(interf.U, input_state.G.S, input_state.r.state,output_state.s.state)
 
-function compute_probability!(ev::Event{TIn,TOut}) where {TIn<:InputType, TOut<:OutputMeasurementType}
+function compute_probability!(ev::Event{TIn,TOut}) where {TIn<:InputType, TOut<:FockDetection}
 
-	if ev.proba_params.probability != nothing
-		@warn "probability was already set in, rewriting"
-	end
+	check_probability_empty(ev)
 
-	if TOut == FockDetection
-		if TIn in [Bosonic, Distinguishable, PartDist]
+	if TIn in [Bosonic, Distinguishable, PartDist]
 
-			ev.proba_params.precision = eps()
-			ev.proba_params.failure_probability = 0
+		ev.proba_params.precision = eps()
+		ev.proba_params.failure_probability = 0
 
-			if TIn == Bosonic
+		if TIn == Bosonic
 
-				ev.proba_params.probability = bosonic_probability(ev.interferometer.U, ev.input_state.r.state, ev.output_measurement.s.state)
+			ev.proba_params.probability = bosonic_probability(ev.interferometer.U, ev.input_state.r.state, ev.output_measurement.s.state)
 
-			elseif TIn == Distinguishable
+		elseif TIn == Distinguishable
 
-				ev.proba_params.probability = distinguishable_probability(ev.interferometer.U, ev.input_state.r.state, ev.output_measurement.s.state)
+			ev.proba_params.probability = distinguishable_probability(ev.interferometer.U, ev.input_state.r.state, ev.output_measurement.s.state)
 
-			else
-				ev.proba_params.probability = process_probability_partial(ev.interferometer, ev.input_state, ev.output_measurement)
-			end
-				ev.proba_params.probability = clean_proba(ev.proba_params.probability)
+		else
+			ev.proba_params.probability = process_probability_partial(ev.interferometer, ev.input_state, ev.output_measurement)
 		end
-	else
-		error(TOut, " not implemented")
+			ev.proba_params.probability = clean_proba(ev.proba_params.probability)
 	end
+
 end
 
 function output_mode_occupation(number_photons, number_modes)

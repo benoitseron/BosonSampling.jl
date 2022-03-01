@@ -1,6 +1,11 @@
 function H_matrix(U, input_state, partition_occupancy_vector)
 
-	"""Shshesnovitch's H matrix for a partition defined by partition_occupancy_vector"""
+	"""H matrix for a partition defined by partition_occupancy_vector
+
+	note: conventions follow the author's Boson bunching is not maximized by indistinguishable particles
+
+	which are the ones compatible with Tichy (Shshnovitch has a different one
+	for the evolution of the creation operators)"""
 
 	part = occupancy_vector_to_partition(partition_occupancy_vector)
 	input_modes = occupancy_vector_to_mode_occupancy(input_state)
@@ -18,7 +23,7 @@ function H_matrix(U, input_state, partition_occupancy_vector)
 
 	for i in 1: number_photons
 		for j in 1:number_photons
-			H[i,j] = sum([U[input_modes[i], l] * conj(U[input_modes[j], l]) for l in part])
+			H[i,j] = sum([conj(U[l, input_modes[i]]) * U[l,input_modes[j]] for l in part])
 		end
 	end
 
@@ -30,12 +35,25 @@ H_matrix(interf::Interferometer, i::Input, o::OutputMeasurement{FockDetection}) 
 
 H_matrix(interf::Interferometer, i::Input, subset_modes::ModeOccupation) = isa_subset(subset_modes) ? H_matrix(interf.U, i.r.state, subset_modes.state) : error("invalid subset")
 
-function full_bunching_probability(interf::Interferometer, i::Input, subset_modes::ModeOccupation)
+function full_bunching_probability(interf::Interferometer, i::Input, subset_modes::Subset)
 
 	"""computes the probability that all n photons end up in the subset of chosen
 	output modes following https://arxiv.org/abs/1509.01561"""
 
-	return clean_proba(permanent(H_matrix(interf,i,subset_modes) .* i.G.S))
+	return clean_proba(permanent(H_matrix(interf,i,subset_modes) .* transpose(i.G.S)))
+
+end
+
+function bunching_events(input_state::Input, sub::Subset)
+
+	"""generates the output configurations corresponding to a full
+	bunching in the subset_modes"""
+
+
+	#photon_distribution_in_subset_modes =
+	all_mode_configurations(input_state, sub, only_photon_number_conserving = false)
+
+	######### convert to output ModeOccupations
 
 end
 

@@ -10,7 +10,7 @@ using Statistics
 using LinearAlgebra #removed so as to be able to use generic types such as BigFloats, can be put back if needed
 using PolynomialRoots
 using StatsBase
-using JLD
+#using JLD
 using CSV
 using DataFrames
 using Tables
@@ -22,7 +22,7 @@ using Optim
 using ProgressMeter
 using Parameters
 using ArgCheck
-using Distributions
+using Distributions:Normal
 
 const ATOL = 1e-10
 
@@ -32,11 +32,15 @@ include("proba_tools.jl")
 include("tools.jl")
 include("circuits/circuit_elements.jl")
 include("type_functions.jl")
-include("types.jl")
+include("types/types.jl")
 include("scattering.jl")
 
 include("bunching/bunching.jl")
 include("partitions/legacy.jl")
+
+include("circuits/circuit_elements.jl")
+
+include("boson_samplers/classical_sampler.jl")
 
 include("permanent_conjectures/bapat_sunder.jl")
 include("permanent_conjectures/counter_example_functions.jl")

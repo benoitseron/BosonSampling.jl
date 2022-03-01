@@ -22,6 +22,29 @@ function clean_proba(probability, atol=ATOL)
     end
 end
 
+function clean_pdf(A::Array, atol = ATOL)
+
+	"""checks if an array has all elements as acceptable probabilities within atol
+	and converts them to that and summing to one within length(A) * atol
+	and renormalizes"""
+
+	A .= clean_proba.(A)
+	normalization = sum(A)
+	if isapprox(normalization, 1, atol = length(A) * atol)
+		A .= 1/normalization * A
+		return convert(Vector{Real}, A)
+	else
+		error("A not normalized")
+	end
+end
+
+function isa_pdf(pdf)
+
+	"""asserts if pdf is a probability distribution"""
+	clean_pdf(pdf)
+
+end
+
 function tvd(a,b)
 	"""total variation distance"""
 	0.5*sum(abs.(a-b))
