@@ -1,3 +1,7 @@
+using BosonSampling
+using Test
+using Plots
+
 ### scattering ###
 
 m = 5
@@ -33,7 +37,6 @@ n = 3
 
 input = Input{Distinguishable}(first_modes(n,m))
 interf = RandHaar(m)
-
 out = classical_sampler(input=input, interf=interf)
 
 ### Cliffords sampler ###
@@ -64,21 +67,21 @@ out = classical_sampler(input=input, interf=interf)
 
 n = 8
 m = n^2
-
 starting_state = zeros(Int, m)
-input = Input{Undef}(first_modes(n,m))
-input_state = input.r
-interf = RandHaar(m)
-U = interf.U
+input_state = first_modes_array(n,m)
+
+U = copy(rand_haar(m))
 
 # generate a collisionless state as a starting point
 starting_state = iterate_until_collisionless(() -> random_occupancy(n,m))
 
-known_pdf(state) = process_probability_distinguishable(U, input.r, state)
-target_pdf(state) = process_probability(U, input.r, state)
-known_sampler = () -> iterate_until_collisionless(() -> classical_sampler(input=input, interf=interf)) # gives a classical sampler
+known_pdf(state) = process_probability_distinguishable(U, input_state, state)
+target_pdf(state) = process_probability(U, input_state, state)
+known_sampler = () -> iterate_until_collisionless(() -> classical_sampler(U = U, m = m, n = n)) # gives a classical sampler
+
 
 samples = metropolis_sampler(;target_pdf = target_pdf, known_pdf = known_pdf , known_sampler = known_sampler , starting_state = starting_state, n_iter = 100)
+
 
 ### Noisy distribution ###
 
@@ -96,18 +99,37 @@ p_exact = output_statistics[1]
 p_approx = output_statistics[2]
 p_sampled = output_statistics[3]
 
-plot(p_exact, label="p_exact")
-plot!(p_approx, label="p_approx")
-plot!(p_sampled, label="p_sampled")
+fig_approx = plot(title="approximative computation", xlabel="modes occupatiom", ylabel="probability");
+plot!(fig_approx, p_exact, label="p_exact");
+plot!(fig_approx, p_approx, label="p_approx");
+fig_samp = plot(title="sampling computation", xlabel="modes occupation", ylabel="probability");
+plot!(fig_samp, p_exact, label="p_exact");
+plot!(fig_samp, p_sampled, label="p_sampled");
+
+plot(fig_approx, fig_samp, layout=(2,1))
 
 ### Theoretical distribution ###
 
 n = 3
 m = 6
-x = 0.7 # distinguishability
 
-G = GramMatrix{ToyModel}(n, gram_matrix_toy_model(n, x))
-input = Input{ToyModel}(first_modes(n,m), G)
+input = Input{Bosonic}(first_modes(n,m))
 interf = RandHaar(m)
 
-output_distribution = theoretical_distribution(input=input, distinguishability=x, interf=interf, gram_matrix=G)
+output_distribution = theoretical_distribution(input=input, distinguishability=1, interf=interf, gram_matrix=input.G)
+
+### Usage Interferometer ###
+
+B = BeamSplitter(1/sqrt(2))
+n = 2 # photon number
+m = 2 # mode number
+proba_bunching = Vector{Float64}(undef, 0)
+
+for x = 0.00001:0.01:1
+    G = GramMatrix{ToyModel}(n, gram_matrix_toy_model(n, x))
+    input = Input{ToyModel}(first_modes(n,m), G)
+    p_theo = theoretical_distribution(input=input, interf=B, distinguishability=x, gram_matrix=G)
+
+    push!(proba_bunching, p_theo[2]) # store the probabilty to observe one photon in each mode
+end
+plot(0.001:0.01:1, proba_bunching, label=nothing, xlabel="distinguishability", ylabel="event probabilty")
