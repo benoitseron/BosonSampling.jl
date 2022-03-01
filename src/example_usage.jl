@@ -1,3 +1,7 @@
+using BosonSampling
+using Test
+using Plots
+
 ### scattering ###
 
 m = 5
@@ -33,55 +37,51 @@ n = 3
 
 input = Input{Distinguishable}(first_modes(n,m))
 interf = RandHaar(m)
-
 out = classical_sampler(input=input, interf=interf)
 
-### Cliffords sampler ###
+## Cliffords sampler ###
 
-# m = 16
-# n = 3
-# input = Input{Bosonic}(first_modes(n,m))
-# interf = RandHaar(m)
-# out = cliffords_sampler(input=input, interf=interf)
-#
-# classical_sampler(U = rand_haar(16), m = 16, n = 3)
+m = 16
+n = 3
+input = Input{Bosonic}(first_modes(n,m))
+interf = RandHaar(m)
+out = cliffords_sampler(input=input, interf=interf)
 
-### Noisy sampling ###
+## Noisy sampling ###
 
-# m = 16
-# n = 3
-#
-# x = 0.8 # distinguishability
-# η = 0.8 # reflectivity
-#
-# G = GramMatrix{ToyModel}(n, gram_matrix_toy_model(n,x))
-# input = Input{ToyModel}(first_modes(n,m), G)
-# interf = RandHaar(m)
-#
-# out = noisy_sampling(input=input, distinguishability=x, reflectivity=η, interf=interf)
+m = 16
+n = 3
+
+x = 0.8 # distinguishability
+η = 0.8 # reflectivity
+
+G = GramMatrix{ToyModel}(n, gram_matrix_toy_model(n,x))
+input = Input{ToyModel}(first_modes(n,m), G)
+interf = RandHaar(m)
+
+out = noisy_sampling(input=input, distinguishability=x, reflectivity=η, interf=interf)
 
 ### MIS sampling ###
 
 n = 8
 m = n^2
-
 starting_state = zeros(Int, m)
-input = Input{Undef}(first_modes(n,m))
-input_state = input.r
-interf = RandHaar(m)
-U = interf.U
+input_state = first_modes_array(n,m)
+
+U = copy(rand_haar(m))
 
 # generate a collisionless state as a starting point
 starting_state = iterate_until_collisionless(() -> random_occupancy(n,m))
 
-known_pdf(state) = process_probability_distinguishable(U, input.r, state)
-target_pdf(state) = process_probability(U, input.r, state)
-known_sampler = () -> iterate_until_collisionless(() -> classical_sampler(input=input, interf=interf)) # gives a classical sampler
+known_pdf(state) = process_probability_distinguishable(U, input_state, state)
+target_pdf(state) = process_probability(U, input_state, state)
+known_sampler = () -> iterate_until_collisionless(() -> classical_sampler(U = U, m = m, n = n)) # gives a classical sampler
+
 
 samples = metropolis_sampler(;target_pdf = target_pdf, known_pdf = known_pdf , known_sampler = known_sampler , starting_state = starting_state, n_iter = 100)
 
-### subsets ###
 
+### subsets ###
 
 s1 = Subset([1,1,0,0,0])
 s2 = Subset([0,0,1,1,0])
@@ -153,8 +153,10 @@ set2[3:4] .= 1
 physical_interferometer = RandHaar(m)
 part = Partition([Subset(set1), Subset(set2)])
 
+
 (physical_indexes,  pdf) = compute_probabilities_partition(physical_interferometer, part, n)
 fourier_indexes = copy(physical_indexes)
+
 
 print_pdfs(physical_indexes, pdf, n; physical_events_only = true, partition_spans_all_modes = true)
 #print_pdfs(physical_indexes,  probas_fourier, n)
@@ -174,6 +176,7 @@ OutputMeasurement(part_occ)
 
 m = 4
 n = 3
+
 set1 = zeros(Int,m)
 set1[1:2] .= 1
 
@@ -184,3 +187,4 @@ input_state = Input{Bosonic}(first_modes(n,m))
 
 bunching_events(input_state,sub)
 #### not what we want
+
