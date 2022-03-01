@@ -93,7 +93,7 @@ function occupancy_vector_to_mode_occupancy(occupancy_vector)
 end
 
 
-function scattering_matrix(U::Matrix, input_state::Vector{Int}, output_state::Vector{Int})
+function scattering_matrix(U::Matrix, input_state::Vector{Int}, output_state::Vector{Int}, convention = interferometer_convention)
 
     """
     U = interferometer matrix, size m*m
@@ -103,6 +103,8 @@ function scattering_matrix(U::Matrix, input_state::Vector{Int}, output_state::Ve
 
     follows http://arxiv.org/abs/quant-ph/0406127v1
     """
+
+	is_a_valid_convention(convention)
 
     m = size(U,1)
     n = sum(input_state)
@@ -116,7 +118,9 @@ function scattering_matrix(U::Matrix, input_state::Vector{Int}, output_state::Ve
     index_input = fill_arrangement(input_state)
     index_output = fill_arrangement(output_state)
 
-	U[index_input,index_output]
+	if convention in ["tichy", "shchesnovich"]
+		U[index_input,index_output]
+	end
 
 end
 

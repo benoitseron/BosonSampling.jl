@@ -23,7 +23,7 @@ function H_matrix(U, input_state, partition_occupancy_vector)
 
 	for i in 1: number_photons
 		for j in 1:number_photons
-			H[i,j] = sum([U[l, input_modes[i]] * conj(U[l,input_modes[j]]) for l in part])
+			H[i,j] = sum([conj(U[l, input_modes[i]]) * U[l,input_modes[j]] for l in part])
 		end
 	end
 
@@ -50,7 +50,7 @@ function bunching_events(input_state::Input, sub::Subset)
 	bunching in the subset_modes"""
 
 
-	#photon_distribution_in_subset_modes = 
+	#photon_distribution_in_subset_modes =
 	all_mode_configurations(input_state, sub, only_photon_number_conserving = false)
 
 	######### convert to output ModeOccupations
