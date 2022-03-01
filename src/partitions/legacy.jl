@@ -78,7 +78,7 @@ function proba_partition_partial(; U, S, occupancy_vector, input_state, checks =
 
 	end
 
-	proba_fourier = 1/vector_factorial(input_state) .* [ryser(S .* scattering_matrix_amplitudes(U, input_state, occupancy_vector, k)) for k in 0:n]
+	proba_fourier = 1/vector_factorial(input_state) .* [ryser(copy(transpose(S)) .* scattering_matrix_amplitudes(U, input_state, occupancy_vector, k)) for k in 0:n]
 
 	if length(proba_fourier) == 0
 		throw(ArgumentError("cannot compute the idft of an empty array"))
