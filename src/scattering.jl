@@ -13,7 +13,9 @@ function iterate_until_collisionless(f)
         if is_collisionless(state)
             return state
         end
+
     end
+
 end
 
 function fill_arrangement(occupation_vector)
@@ -33,6 +35,7 @@ function fill_arrangement(occupation_vector)
     end
 
     arrangement
+
 end
 
 fill_arrangement(r::ModeOccupation) = fill_arrangement(r.state)
@@ -53,9 +56,9 @@ function random_occupancy(n::Int, m::Int)
 	return occupancy_vector
 end
 
-random_mode_occupation(n::Int,m::Int) = ModeOccupation(random_occupancy(n,m))
+random_mode_occupation(n::Int, m::Int) = ModeOccupation(random_occupancy(n,m))
 
-function random_mode_occupation_collisionless(n::Int,m::Int)
+function random_mode_occupation_collisionless(n::Int, m::Int)
 
 	n<=m ? iterate_until_collisionless(() -> random_mode_occupation(n,m)) : error("n>m cannot make for collisionless mode occupations")
 
@@ -117,7 +120,15 @@ function scattering_matrix(U::Matrix, input_state::Vector{Int}, output_state::Ve
     index_input = fill_arrangement(input_state)
     index_output = fill_arrangement(output_state)
 
-	U[index_input,index_output]
+	try
+		U[index_input,index_output]
+	catch err
+		if isa(MethodError, err)
+			copy(U)[index_input,index_output]
+		else
+			println(err)
+		end
+	end
 
 end
 
@@ -183,19 +194,13 @@ end
 
 function process_probability_partial(U, S, input_state,output_state)
 
-    """computes the partially distinguishable process probability according to Tichy's tensor permanent https://arxiv.org/abs/1410.7687
-
-    note : naive permanent implementation so really slow"""
+    """computes the partially distinguishable process probability according to Tichy's tensor permanent https://arxiv.org/abs/1410.7687"""
 
     n = size(S,1)
 
-    if sum(input_state) != sum(output_state)
-        throw(ArgumentError("particles not conserved"))
-    end
+    @argcheck sum(input_state) == sum(output_state) "particles not conserved"
 
-    if sum(input_state) != n
-        throw(ArgumentError("S matrix doesnt have the same number of photons as the input"))
-    end
+    @argcheck sum(input_state) == n "S matrix doesnt have the same number of photons as the input"
 
 	M = scattering_matrix(U, input_state, output_state)
 	W = Array{eltype(U)}(undef, (n,n,n))
@@ -235,6 +240,34 @@ function compute_probability!(ev::Event{TIn,TOut}) where {TIn<:InputType, TOut<:
 			ev.proba_params.probability = process_probability_partial(ev.interferometer, ev.input_state, ev.output_measurement)
 		end
 			ev.proba_params.probability = clean_proba(ev.proba_params.probability)
+	end
+
+end
+
+function output_mode_occupation(number_photons, number_modes)
+
+	nlist = collect(1:number_modes)
+
+	for i = 1:number_photons-1
+		sublist = []
+		for j = 1:length(nlist)
+			for k = 1:number_modes
+				push!(sublist, vcat(nlist[j], k))
+			end
+		end
+		nlist = sublist
+	end
+
+	nlist
+
+end
+
+function check_suppression_law(event)
+
+	if mod(sum(event), length(event)) != 0
+		return true
+	else
+		return false
 	end
 
 end

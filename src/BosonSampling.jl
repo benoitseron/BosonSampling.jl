@@ -3,7 +3,7 @@ module BosonSampling
 using Permanents
 using Plots
 using Test
-using Combinatorics:permutations
+using Combinatorics
 using Random
 using IterTools
 using Statistics
@@ -32,6 +32,9 @@ include("proba_tools.jl")
 include("type_functions.jl")
 include("types/types.jl")
 include("scattering.jl")
+
+include("circuits/circuit_elements.jl")
+
 include("bunching/bunching.jl")
 include("partitions/legacy.jl")
 

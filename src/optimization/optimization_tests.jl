@@ -37,6 +37,7 @@ end
 
 
 function array_to_matrix(array, r, n)
+
     """gives a (r,n) matrix from the r, n-sized vectors concatenated in array"""
 
     mat = Matrix{eltype(array)}(undef, r, n)
@@ -48,6 +49,7 @@ function array_to_matrix(array, r, n)
     end
 
     mat
+
 end
 
 function objective(array, r, n)
