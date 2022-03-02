@@ -71,7 +71,7 @@ struct Input{T<:InputType}
     end
     function Input{T}(r::ModeOccupation, G::GramMatrix) where {T<:InputType}
 
-        if T <: PartDist && T != RandomModel
+        if T in [PartDist, ToyModel]
             return new{T}(r,G,r.n,r.m)
         else
             error("type ", T, " not implemented")
