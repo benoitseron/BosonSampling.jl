@@ -96,7 +96,7 @@ function occupancy_vector_to_mode_occupancy(occupancy_vector)
 end
 
 
-function scattering_matrix(U::Matrix, input_state::Vector{Int}, output_state::Vector{Int}, convention = interferometer_convention)
+function scattering_matrix(U::Matrix, input_state::Vector{Int}, output_state::Vector{Int})
 
     """
     U = interferometer matrix, size m*m

@@ -39,8 +39,13 @@ include("partitions/legacy.jl")
 
 include("circuits/circuit_elements.jl")
 
-include("boson_sampler/tools.jl")
+include("boson_samplers/tools.jl")
 include("boson_samplers/classical_sampler.jl")
+include("boson_samplers/cliffords_sampler.jl")
+include("boson_samplers/methods.jl")
+include("boson_samplers/metropolis_independant_sampler.jl")
+include("boson_samplers/metropolis_sampler.jl")
+include("boson_samplers/noisy_sampler.jl")
 
 include("permanent_conjectures/bapat_sunder.jl")
 include("permanent_conjectures/counter_example_functions.jl")

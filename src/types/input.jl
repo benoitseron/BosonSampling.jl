@@ -6,9 +6,9 @@ struct Bosonic <:InputType
 end
 struct PartDist <:InputType
 end
-abstract type ToyModel <: PartDist
+abstract type ToyModel <: InputType
 end
-abstract type RandomModel <: PartDist
+abstract type RandomModel <: InputType
 end
 struct Distinguishable <:InputType
 end
