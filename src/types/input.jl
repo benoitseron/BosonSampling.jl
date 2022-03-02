@@ -6,6 +6,10 @@ struct Bosonic <:InputType
 end
 struct PartDist <:InputType
 end
+abstract type ToyModel <: PartDist
+end
+abstract type RandomModel <: PartDist
+end
 struct Distinguishable <:InputType
 end
 struct Undef <:InputType
@@ -36,6 +40,8 @@ struct GramMatrix{T<:InputType}
             return new{T}(n,ones(ComplexF64,n,n), nothing, OrthonormalBasis())
         elseif T == Distinguishable
             return new{T}(n,Matrix{ComplexF64}(I,n,n), nothing, OrthonormalBasis())
+        elseif T == RandomModel
+            return new{T}(n, rand_gram_matrix(n), nothing, OrthonormalBasis())
         elseif T == Undef
             return new{T}(n,Matrix{ComplexF64}(undef,n,n), nothing, OrthonormalBasis())
         else
@@ -43,13 +49,10 @@ struct GramMatrix{T<:InputType}
         end
     end
     function GramMatrix{T}(n::Int,S::Matrix) where {T<:InputType}
-        if T in [Bosonic, Distinguishable, Undef]
-            error("S matrix should not be specified for [Bosonic, Distinguishable, Undef] types")
-            ########### to be made better
-        elseif T == PartDist
-            return new{T}(n,S, nothing, OrthonormalBasis())
+        if T <: PartDist && T != RandomModel
+            return new{T}(n, S, nothing, OrthonormalBasis())
         else
-            error("type ", T, " not implemented")
+            T in [Bosonic, Distinguishable, Undef, RandomModel] ? error("S matrix should not be specified for type ", T) : error("Type ", T, " not implemented")
         end
     end
 end
@@ -60,7 +63,7 @@ struct Input{T<:InputType}
     n::Int
     m::Int
     function Input{T}(r::ModeOccupation) where {T<:InputType}
-        if T in [Bosonic, Distinguishable, Undef]
+        if T in [Bosonic, Distinguishable, Undef, RandomModel]
             return new{T}(r,GramMatrix{T}(r.n),r.n,r.m)
         else
             error("type ", T, " not implemented")
@@ -68,7 +71,7 @@ struct Input{T<:InputType}
     end
     function Input{T}(r::ModeOccupation, G::GramMatrix) where {T<:InputType}
 
-        if T == PartDist
+        if T <: PartDist && T != RandomModel
             return new{T}(r,G,r.n,r.m)
         else
             error("type ", T, " not implemented")

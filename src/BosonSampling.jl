@@ -29,9 +29,8 @@ const ATOL = 1e-10
 include("special_matrices.jl")
 include("matrix_tests.jl")
 include("proba_tools.jl")
-include("tools.jl")
 include("circuits/circuit_elements.jl")
-include("type_functions.jl")
+include("types/type_functions.jl")
 include("types/types.jl")
 include("scattering.jl")
 
@@ -40,6 +39,7 @@ include("partitions/legacy.jl")
 
 include("circuits/circuit_elements.jl")
 
+include("boson_sampler/tools.jl")
 include("boson_samplers/classical_sampler.jl")
 
 include("permanent_conjectures/bapat_sunder.jl")
