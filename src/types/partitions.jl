@@ -7,6 +7,8 @@ struct ModeOccupation
     ModeOccupation(state) = all(state[:] .>= 0) ? new(sum(state), length(state), state) : error("negative photon counts")
 end
 
+Base.show(io::IO, i::ModeOccupation) = print(io, "state = ", i.state)
+
 at_most_one_photon_per_bin(state) = all(state[:] .<= 1)
 at_most_one_photon_per_bin(r::ModeOccupation) = at_most_one_photon_per_bin(r.state)
 
@@ -26,6 +28,9 @@ struct Subset
                 isa_subset(state) ? new(sum(state), length(state), state) : error("invalid subset")
         end
 end
+
+Base.show(io::IO, s::Subset) = print(io, "subset = ", convert(Vector{Int},occupancy_vector_to_partition(s.subset)))
+
 
 function check_disjoint_subsets(s1::Subset, s2::Subset)
         @argcheck s1.m == s2.m "subsets do not have the same dimension"
@@ -54,6 +59,15 @@ struct Partition
         end
 end
 
+Base.show(io::IO, part::Partition) = begin
+
+    println(io, "partition =")
+    for s in part.subsets
+        println(io, s)
+    end
+end
+
+
 function occupies_all_modes(part::Partition)
 
         """checks if a partition occupies all m modes"""
@@ -79,4 +93,11 @@ struct PartitionOccupancy
                         error("counts do not have as many modes as parition has subsets")
                 end
         end
+end
+
+Base.show(io::IO, part_occ::PartitionOccupancy) = begin
+
+    println(io, "counts = ", part_occ.counts.state, " in")
+    println(io,part_occ.partition)
+
 end
