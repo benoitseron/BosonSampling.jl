@@ -4,7 +4,7 @@ mutable struct EventProbability
     probability::Union{Number,Nothing, Vector{Number}}
     precision::Union{Number,Nothing, Vector{Number}} # see remarks in conventions
     failure_probability::Union{Number,Nothing, Vector{Number}}
-
+	
     function EventProbability(probability = nothing)
 
         if probability == nothing
