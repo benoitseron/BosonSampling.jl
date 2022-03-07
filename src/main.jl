@@ -13,3 +13,5 @@ n = 2
 
 part = Partition([s1,s2])
 part_occ = PartitionOccupancy(ModeOccupation([2,1]),n,part)
+
+data = MultipleCounts()

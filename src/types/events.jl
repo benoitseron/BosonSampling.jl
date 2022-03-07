@@ -1,11 +1,11 @@
-### events ###
-
 mutable struct MultipleCounts
 
 	"""holds something like the photon counting probabilities with their respective probability"""
 
-	counts::Vector{Union{ModeOccupation, PartitionOccupancy}}
-	proba::Vector{Real}
+	counts::Union{Nothing, Vector{ModeOccupation}, Vector{PartitionOccupancy}}
+	proba::Union{Nothing,Vector{Real}}
+
+	MultipleCounts() = new(nothing,nothing)
 
 end
 
