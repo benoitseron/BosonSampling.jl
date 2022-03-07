@@ -97,7 +97,8 @@ end
 
 Base.show(io::IO, part_occ::PartitionOccupancy) = begin
 
-    println(io, "counts = ", part_occ.counts.state, " in")
-    println(io,part_occ.partition)
+        for (i, count) in enumerate(part_occ.counts.state)
+                println(io, count," in ", part_occ.partition.subsets[i])
+        end
 
 end

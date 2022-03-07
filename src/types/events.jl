@@ -1,10 +1,19 @@
 ### events ###
 
+mutable struct MultipleCounts
+
+	"""holds something like the photon counting probabilities with their respective probability"""
+
+	counts::Vector{Union{ModeOccupation, PartitionOccupancy}}
+	proba::Vector{Real}
+
+end
+
 mutable struct EventProbability
-    probability::Union{Number,Nothing, Vector{Number}}
-    precision::Union{Number,Nothing, Vector{Number}} # see remarks in conventions
-    failure_probability::Union{Number,Nothing, Vector{Number}}
-	
+    probability::Union{Number,Nothing, MultipleCounts}
+    precision::Union{Number,Nothing} # see remarks in conventions
+    failure_probability::Union{Number,Nothing}
+
     function EventProbability(probability = nothing)
 
         if probability == nothing
