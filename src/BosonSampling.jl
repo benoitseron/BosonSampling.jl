@@ -22,7 +22,7 @@ using Optim
 using ProgressMeter
 using Parameters
 using ArgCheck
-using Distributions:Normal
+using Distributions
 
 const ATOL = 1e-10
 
