@@ -1,12 +1,13 @@
-function noisy_sampling(;input::Input, distinguishability::Real, reflectivity::Real, interf::Interferometer)
+function noisy_sampler(;input::Input, reflectivity::Real, interf::Interferometer)
 
     """ choose state truncation s.t the runtime goes as O(2^k + Poly(m,n,k)).
         k increases linearly as n and the error ϵ goes as x^n
         https://arxiv.org/pdf/1907.00022.pdf """
 
     input_modes = input.r.state
-    n = input.r.n
-    m = input.r.m
+    n = input.n
+    m = input.m
+    distinguishability = input.distinguishability
     U = interf.U
 
     k = trunc(Int, distinguishability*reflectivity*n)
