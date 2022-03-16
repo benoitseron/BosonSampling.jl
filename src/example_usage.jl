@@ -8,7 +8,7 @@ m = 5
 n = 3
 
 interf = RandHaar(m)
-i = Input{PartDist}(first_modes(n,m), GramMatrix{PartDist}(n, rand_gram_matrix(n)))
+i = Input{RandomModel}(first_modes(n,m))
 o = OutputMeasurement{FockDetection}(first_modes(n,m))
 ev = Event(i,o,interf)
 
@@ -21,7 +21,7 @@ n = 3
 
 interf = RandHaar(m)
 ib = Input{Bosonic}(first_modes(n,m))
-ipd = Input{PartDist}(first_modes(n,m), GramMatrix{PartDist}(n, rand_gram_matrix(n)))
+ipd = Input{RandomModel}(first_modes(n,m))
 subset_modes = first_modes(n,m)
 
 pb = full_bunching_probability(interf, ib, subset_modes)
@@ -55,11 +55,10 @@ n = 3
 x = 0.8 # distinguishability
 η = 0.8 # reflectivity
 
-G = GramMatrix{ToyModel}(n, gram_matrix_toy_model(n,x))
-input = Input{ToyModel}(first_modes(n,m), G)
+input = Input{ToyModel}(first_modes(n,m), x)
 interf = RandHaar(m)
 
-out = noisy_sampling(input=input, distinguishability=x, reflectivity=η, interf=interf)
+out = noisy_sampler(input=input, reflectivity=η, interf=interf)
 
 ### MIS sampling ###
 
@@ -88,11 +87,10 @@ m = 6
 x = 0.8
 η = 0.8
 
-G = GramMatrix{ToyModel}(n, gram_matrix_toy_model(n, x))
-input = Input{ToyModel}(first_modes(n,m), G)
+input = Input{ToyModel}(first_modes(n,m), x)
 interf = RandHaar(m)
 
-output_statistics = noisy_distribution(input=input, distinguishability=x, reflectivity=η, interf=interf)
+output_statistics = noisy_distribution(input=input, reflectivity=η, interf=interf)
 p_exact = output_statistics[1]
 p_approx = output_statistics[2]
 p_sampled = output_statistics[3]
@@ -114,7 +112,7 @@ m = 6
 input = Input{Bosonic}(first_modes(n,m))
 interf = RandHaar(m)
 
-output_distribution = theoretical_distribution(input=input, distinguishability=1, interf=interf, gram_matrix=input.G)
+output_distribution = theoretical_distribution(input=input, interf=interf)
 
 ### Usage Interferometer ###
 
@@ -123,11 +121,9 @@ n = 2 # photon number
 m = 2 # mode number
 proba_bunching = Vector{Float64}(undef, 0)
 
-for x = 0.00001:0.01:1
-    G = GramMatrix{ToyModel}(n, gram_matrix_toy_model(n, x))
-    input = Input{ToyModel}(first_modes(n,m), G)
-    p_theo = theoretical_distribution(input=input, interf=B, distinguishability=x, gram_matrix=G)
-
+for x = 0.00001:0.01:1.0
+    input = Input{ToyModel}(first_modes(n,m), x)
+    p_theo = theoretical_distribution(input=input, interf=B)
     push!(proba_bunching, p_theo[2]) # store the probabilty to observe one photon in each mode
 end
 plot(0.001:0.01:1, proba_bunching, label=nothing, xlabel="distinguishability", ylabel="event probabilty")
