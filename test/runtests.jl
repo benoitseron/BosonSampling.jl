@@ -84,8 +84,8 @@ using LinearAlgebra
 			for n = 2:5
 				occupation = ModeOccupation(random_occupancy(n, n^2))
 				input = Input{Bosonic}(occupation)
-				interf = RandHaar(input.r.m)
-				p_theo = theoretical_distribution(input=input, distinguishability=1, interf=interf, gram_matrix=input.G)
+				interf = RandHaar(input.m)
+				p_theo = theoretical_distribution(input=input, interf=interf)
 
 				@test sum(p_theo) ≈ 1 atol=1e-9
 			end
@@ -95,10 +95,10 @@ using LinearAlgebra
 		@testset "positivity" begin
 
 	        for n = 2:5
-	            occupation = ModeOccupation(random_occupancy(n, n^2))
+	            occupation = ModeOccupation(random_occupancy(n,n))
 	            input = Input{Bosonic}(occupation)
-	            interf = RandHaar(input.r.m)
-	            p_theo = theoretical_distribution(input=input, distinguishability=1, interf=interf, gram_matrix=input.G)
+	            interf = RandHaar(input.m)
+	            p_theo = theoretical_distribution(input=input, interf=interf)
 
 	            @test all(p->p>=0, p_theo)
 	        end
@@ -110,8 +110,8 @@ using LinearAlgebra
 	        for n = 2:5
 	            occupation = ModeOccupation(random_occupancy(n,n))
 	            input = Input{Bosonic}(occupation)
-	            interf = Fourier(input.r.n)
-	            p_theo = theoretical_distribution(input=input, distinguishability=1, interf=interf, gram_matrix=input.G)
+	            interf = Fourier(input.n)
+	            p_theo = theoretical_distribution(input=input, interf=interf)
 
 	            output_events = output_mode_occupation(n,n)
 	            for i = 1:length(output_events)
@@ -130,10 +130,10 @@ using LinearAlgebra
 		@testset "normalization" begin
 
 			for n = 2:4
-				occupation = ModeOccupation(random_occupancy(n, 2n))
-    			input = Input{RandomModel}(occupation)
-		        interf = RandHaar(input.r.m)
-		        p_exact, p_approx, p_samp = noisy_distribution(input=input, distinguishability=0.5, reflectivity=0.5, interf=interf)
+				occupation = ModeOccupation(random_occupancy(n,n))
+    			input = Input{ToyModel}(occupation, 0.8)
+		        interf = RandHaar(input.m)
+		        p_exact, p_approx, p_samp = noisy_distribution(input=input, reflectivity=0.8, interf=interf)
 
 		       	@test sum(p_exact) ≈ 1 atol=1e-9
 		        @test sum(p_approx) ≈ 1 atol=1e-9
@@ -145,10 +145,10 @@ using LinearAlgebra
    		@testset "positivity" begin
 
     		for n = 2:4
-     			occupation = ModeOccupation(random_occupancy(n, 2n))
-		       	input = Input{RandomModel}(occupation)
-		        interf = RandHaar(input.r.m)
-		        p_exact, p_approx, p_samp = noisy_distribution(input=input, distinguishability=0.5, reflectivity=0.5, interf=interf)
+     			occupation = ModeOccupation(random_occupancy(n,n))
+		       	input = Input{ToyModel}(occupation, 0.8)
+		        interf = RandHaar(input.m)
+		        p_exact, p_approx, p_samp = noisy_distribution(input=input, reflectivity=0.5, interf=interf)
 
 		       	@test all(p->p>=0, p_exact)
 		        @test all(p->p>=0, p_approx)
@@ -165,8 +165,8 @@ using LinearAlgebra
 
        			occupation = ModeOccupation(random_occupancy(n,n))
 		        input = Input{Bosonic}(occupation)
-		        interf = Fourier(input.r.m)
-		        O = noisy_distribution(input=input, distinguishability=1, reflectivity=0.5, interf=interf, approx=false, samp=false)
+		        interf = Fourier(input.m)
+		        O = noisy_distribution(input=input, reflectivity=0.5, interf=interf, approx=false, samp=false)
 	         	p_exact = O[1]
 
 		        output_events = output_mode_occupation(n,n)
@@ -189,9 +189,9 @@ using LinearAlgebra
 		    input = Input{Bosonic}(occupation)
 
 	      	for i = 1:10
-        		interf = RandHaar(input.r.m)
-		       	p_theo = theoretical_distribution(input=input, distinguishability=1, interf=interf, gram_matrix=input.G)
-		        O = noisy_distribution(input=input, distinguishability=1, reflectivity=0.999, interf=interf, approx=false, samp=false)
+        		interf = RandHaar(input.m)
+		       	p_theo = theoretical_distribution(input=input, interf=interf)
+		        O = noisy_distribution(input=input, reflectivity=0.999, interf=interf, approx=false, samp=false)
 		        p_exact = O[1]
 
 		       	for j = 1:length(p_theo)
@@ -203,20 +203,16 @@ using LinearAlgebra
 	end
 
 	@testset "suppression law boson samplers" begin
-		@warn "need to include Permanents.jl to export fast_glynn_pern"
 
 	    for n = 3:10
 
 	        interf = Fourier(n)
-     		reflectivity = 1
-		    distinguishability = 1
-      		G = GramMatrix{ToyModel}(n, gram_matrix_toy_model(n, distinguishability))
+     		reflectivity = 1.0
 
-		   	input_clifford_sampler = Input{Bosonic}(first_modes(n,n))
-		    input_noisy_sampler = Input{ToyModel}(first_modes(n,n), G)
+		   	input = Input{Bosonic}(first_modes(n,n))
 
-	      	out_clifford_sampler = cliffords_sampler(input=input_clifford_sampler, interf=interf)
-		    out_noisy_sampler = noisy_sampling(input=input_noisy_sampler, distinguishability=distinguishability, reflectivity=reflectivity, interf=interf)
+	      	out_clifford_sampler = cliffords_sampler(input=input, interf=interf)
+		    out_noisy_sampler = noisy_sampler(input=input, reflectivity=reflectivity, interf=interf)
 
 	    	@test !check_suppression_law(out_clifford_sampler)
 		    @test !check_suppression_law(out_noisy_sampler)
