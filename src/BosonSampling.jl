@@ -23,8 +23,8 @@ using ProgressMeter
 using Parameters
 using ArgCheck
 using Distributions
-using Distributed
-using SharedArrays
+# using Distributed
+# using SharedArrays
 
 const ATOL = 1e-10
 
