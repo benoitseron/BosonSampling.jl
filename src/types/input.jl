@@ -2,23 +2,49 @@
 
 abstract type InputType end
 
-struct Bosonic <:InputType
-end
-struct PartDist <:InputType
-end
-abstract type ToyModel <: InputType
-end
-abstract type RandomModel <: InputType
-end
-struct Distinguishable <:InputType
-end
-struct Undef <:InputType
+abstract type Bosonic <: InputType end
+
+abstract type GaussianState <: Bosonic end
+
+struct ThermalState <: GaussianState
+
+    mode_number::Int
+    mean_photon_number::Float64
+    mean_vector::Vector
+    covariance_matrix::Matrix
+
+    function ThermalState(mode_number::Int, mean_photon_number::Float64)
+        return new(
+            mode_number,
+            mean_photon_number,
+            zeros(mode_number),
+            (mean_photon_number + 1 / 2) *
+            Matrix{ComplexF64}(I, 2*mode_number, 2*mode_number),
+        )
+    end
+
 end
 
+abstract type PartDist <: InputType end
+
+struct ToyModel <: PartDist
+    distinguishability::Float64
+    ToyModel(distinguishability::Float64) = new(distinguishability)
+end
+
+abstract type RandomModel <: PartDist end
+
+abstract type Undef <: InputType end
+
+abstract type Distinguishable <: InputType end
+
 mutable struct OrthonormalBasis
+
     """basis of vectors v_1,...,v_n stored as columns in a n*r matrix
     possibly empty"""
+
     vectors_matrix::Union{Matrix,Nothing}
+
     function OrthonormalBasis(vectors_matrix = nothing)
         if vectors_matrix == nothing
             new(nothing)
@@ -26,9 +52,10 @@ mutable struct OrthonormalBasis
             is_orthonormal(vectors_matrix, atol = ATOL) ? new(vectors_matrix) : error("invalid orthonormal basis")
         end
     end
+
 end
 
-struct GramMatrix{T<:InputType}
+mutable struct GramMatrix{T<:InputType}
 
     n::Int
     S::Matrix
@@ -36,47 +63,90 @@ struct GramMatrix{T<:InputType}
     generating_vectors::OrthonormalBasis
 
     function GramMatrix{T}(n::Int) where {T<:InputType}
-        if T == Bosonic
-            return new{T}(n,ones(ComplexF64,n,n), nothing, OrthonormalBasis())
-        elseif T == Distinguishable
-            return new{T}(n,Matrix{ComplexF64}(I,n,n), nothing, OrthonormalBasis())
+        if T <: Bosonic
+            return new{T}(
+                n,
+                ones(ComplexF64, n, n),
+                nothing,
+                OrthonormalBasis(),
+            )
         elseif T == RandomModel
-            return new{T}(n, rand_gram_matrix(n), nothing, OrthonormalBasis())
+            return new{T}(
+                n,
+                rand_gram_matrix(n),
+                nothing,
+                OrthonormalBasis(),
+            )
+        elseif T == Distinguishable
+            return new{T}(
+                n,
+                Matrix{ComplexF64}(I, n, n),
+                nothing,
+                OrthonormalBasis(),
+            )
         elseif T == Undef
-            return new{T}(n,Matrix{ComplexF64}(undef,n,n), nothing, OrthonormalBasis())
+            return new{T}(
+                n,
+                Matrix{ComplexF64}(undef, n, n),
+                nothing,
+                OrthonormalBasis(),
+            )
         else
             error("type ", T, " not implemented")
         end
     end
-    function GramMatrix{T}(n::Int,S::Matrix) where {T<:InputType}
-        if T <: PartDist && T != RandomModel
-            return new{T}(n, S, nothing, OrthonormalBasis())
+
+    function GramMatrix{T}(n::Int, distinguishability::Float64) where {T<:InputType}
+        if T == ToyModel
+            return new{T}(
+                n,
+                gram_matrix_toy_model(n, distinguishability),
+                nothing,
+                OrthonormalBasis(),
+            )
         else
-            T in [Bosonic, Distinguishable, Undef, RandomModel] ? error("S matrix should not be specified for type ", T) : error("Type ", T, " not implemented")
+            T in [Bosonic, Distinguishable, RandomModel, Undef] ?
+            error("S matrix should not be specified for type ", T) :
+            error("Type ", T, " not implemented")
         end
     end
+
 end
 
 struct Input{T<:InputType}
+
     r::ModeOccupation
-    G::GramMatrix
+    G::Matrix
     n::Int
     m::Int
-    function Input{T}(r::ModeOccupation) where {T<:InputType}
-        if T in [Bosonic, Distinguishable, Undef, RandomModel]
-            return new{T}(r,GramMatrix{T}(r.n),r.n,r.m)
-        else
-            error("type ", T, " not implemented")
-        end
-    end
-    function Input{T}(r::ModeOccupation, G::GramMatrix) where {T<:InputType}
+    distinguishability::Any
 
-        if T in [PartDist, ToyModel]
-            return new{T}(r,G,r.n,r.m)
+    function Input{T}(r::ModeOccupation) where {T<:InputType}
+        if T == Bosonic
+            return new{T}(r, GramMatrix{T}(r.n).S, r.n, r.m, 1.0)
+        elseif T == Distinguishable
+            return new{T}(r, GramMatrix{T}(r.n).S, r.n, r.m, 0.0)
+        elseif T in [RandomModel, Undef]
+            return new{T}(r, GramMatrix{T}(r.n).S, r.n, r.m, nothing)
         else
             error("type ", T, " not implemented")
         end
     end
+
+    function Input{T}(r::ModeOccupation, distinguishability::Float64) where {T<:InputType}
+        if T == ToyModel
+            return new{T}(
+                r,
+                GramMatrix{T}(r.n, distinguishability).S,
+                r.n,
+                r.m,
+                distinguishability,
+            )
+        else
+            error("type ", T, " not implemented")
+        end
+    end
+
 end
 
 at_most_one_photon_per_bin(inp::Input) = at_most_one_photon_per_bin(inp.r)
