@@ -1,44 +1,30 @@
-function noisy_sampler(;input::Input, reflectivity::Real, interf::Interferometer)
-
-    """ choose state truncation s.t the runtime goes as O(2^k + Poly(m,n,k)).
+"""
+choose state truncation s.t the runtime goes as O(2^k + Poly(m,n,k)).
         k increases linearly as n and the error ϵ goes as x^n
-        https://arxiv.org/pdf/1907.00022.pdf """
+        https://arxiv.org/pdf/1907.00022.pdf
+"""
 
-    input_modes = input.r.state
-    n = input.n
-    m = input.m
-    distinguishability = input.distinguishability
-    U = interf.U
+function noisy_sampler(;input::Input, reflectivity::Float64, interf::Interferometer)
 
-    k = trunc(Int, distinguishability*reflectivity*n)
-    k == 0 ? k=1 : nothing
+    list_assignement = fill_arrangement(input.r.state)
+    l = rand(Binomial(input.n, reflectivity))
+    remaining_photons = Int.(zeros(input.m))
+    remaining_subset = rand(collect(multiset_combinations(list_assignement, l)))
+    remaining_photons[remaining_subset] .= 1
 
-    l = rand(Binomial(n, reflectivity))
-    l > k ? l=k : nothing
-    i = rand(Binomial(l, distinguishability))
-    remaining_photons = Int.(zeros(m))
-    bosonic_input = Int.(zeros(m))
+    list_assignement = fill_arrangement(remaining_photons)
+    i = rand(Binomial(l, input.distinguishability))
+    bosonic_input = Int.(zeros(input.m))
+    bosonic_subset = rand(collect(multiset_combinations(list_assignement, i)))
+    bosonic_input[bosonic_subset] .= 1
 
-    count = 0
-    while count != l
-        rand_idx = rand(1:m, l)
-        remaining_photons[rand_idx] = input_modes[rand_idx]
-        count = sum(remaining_photons)
-    end
+    classical_input = input.r.state .- bosonic_input
+    classical_input = Input{Distinguishable}(ModeOccupation(classical_input))
+    bosonic_input = Input{Bosonic}(ModeOccupation(bosonic_input))
 
-    count = 0
-    while count != i
-        rand_idx = rand(1:m, i)
-        bosonic_input[rand_idx] = remaining_photons[rand_idx]
-        count = sum(bosonic_input)
-    end
-
-    input = [input_modes[i]-bosonic_input[i] for i = 1:m]
-    classical_input = Input{Distinguishable}(ModeOccupation(input))
     classical_output = fill_arrangement(classical_sampler(input=classical_input, interf=interf))
-    input = Input{Bosonic}(ModeOccupation(bosonic_input))
-    bosonic_output = cliffords_sampler(input=input, interf=interf)
+    bosonic_output = cliffords_sampler(input=bosonic_input, interf=interf)
 
-    return append!(classical_output, bosonic_output)
+    return sort(append!(classical_output, bosonic_output))
 
 end
