@@ -30,6 +30,8 @@ function partition_expectation_values(partition_size_vector, partition_counts)
 
 end
 
+partition_expectation_values(part_occ::PartitionOccupancy) = partition_expectation_values(partition_occupancy_to_partition_size_vector_and_counts(part_occ)...)
+
 function subset_expectation_value(subset_size, k,n,m)
 
     """returns the haar average probability of finding k photons
@@ -83,7 +85,7 @@ function choose_best_average_subset(;m,n, distance = tvd)
 end
 
 
-# 
+#
 # ###### averages #######
 #
 # ### now various plots to see how it evolves ###

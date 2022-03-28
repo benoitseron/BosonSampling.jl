@@ -87,11 +87,15 @@ struct PartitionOccupancy
         n::Int
         m::Int
         function PartitionOccupancy(counts::ModeOccupation, n::Int, partition::Partition)
-                if counts.m == partition.n_subset
-                        new(counts, partition, n, partition.subsets[1].m)
-                else
-                        error("counts do not have as many modes as parition has subsets")
+
+                @argcheck counts.m == partition.n_subset "counts do not have as many modes as parition has subsets"
+                @argcheck sum(counts.state) <= n "more photons at the output than input"
+                if occupies_all_modes(partition)
+                        @argcheck sum(counts.state) == n "photons lost in a partition that occupies all modes"
                 end
+
+                new(counts, partition, n, partition.subsets[1].m)
+
         end
 end
 
@@ -100,5 +104,18 @@ Base.show(io::IO, part_occ::PartitionOccupancy) = begin
         for (i, count) in enumerate(part_occ.counts.state)
                 println(io, count," in ", part_occ.partition.subsets[i])
         end
+
+end
+
+function partition_occupancy_to_partition_size_vector_and_counts(part_occ::PartitionOccupancy)
+
+    part = part_occ.partition
+
+    @argcheck occupies_all_modes(part) "need to have a partition that occupies all modes if using Shsnovitch's formulas in partition_expectation_values.jl"
+
+    partition_size_vector = [part.subsets[i].n for i in 1:length(part.subsets)]
+    partition_counts = part_occ.counts.state
+
+    partition_size_vector, partition_counts
 
 end

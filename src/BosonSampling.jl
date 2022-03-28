@@ -36,7 +36,7 @@ include("scattering.jl")
 
 include("bunching/bunching.jl")
 include("partitions/legacy.jl")
-
+include("partitions/partition_expectation_values.jl")
 
 include("boson_samplers/tools.jl")
 include("boson_samplers/classical_sampler.jl")
