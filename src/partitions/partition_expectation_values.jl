@@ -85,6 +85,48 @@ function choose_best_average_subset(;m,n, distance = tvd)
 end
 
 
+function best_partition_size(;m,n, n_subsets, distance = tvd)
+
+    """return the ideal partition_size_vector for a given number
+    of subsets n_subsets
+
+    for a single subset, n_subsets = 2 as we need a complete partition, occupying all modes"""
+
+    @argcheck n_subsets >= 2 "we need a complete partition, occupying all modes"
+    @argcheck n_subsets <= m "more partition bins than output modes"
+
+    part_list = all_mode_configurations(m,n_subsets, only_photon_number_conserving = true)
+
+    remove_trivial_partitions!(part_list)
+
+    max_distance = 0
+    part_max_ratio = nothing
+
+    for part in ranked_partition_list(part_list)
+
+        events = all_mode_configurations(m,n_subsets, only_photon_number_conserving = true)
+
+        pdf = [partition_expectation_values(part, event) for event in events]
+
+        pdf_dist = hcat(collect.(pdf)...)[1,:]
+        pdf_bos = hcat(collect.(pdf)...)[2,:]
+
+        this_distance = distance(pdf_bos,pdf_dist)
+
+        println(part, " : ", this_distance)
+
+        if this_distance > max_distance
+            max_distance = this_distance
+            part_max_ratio = part
+        end
+    end
+
+    part_max_ratio, max_distance
+
+end
+
+
+
 #
 # ###### averages #######
 #

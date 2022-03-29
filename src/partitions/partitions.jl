@@ -36,6 +36,40 @@ all_mode_configurations(input_state::Input,part::Partition; only_photon_number_c
 
 all_mode_configurations(input_state::Input,sub::Subset; only_photon_number_conserving = false) = all_mode_configurations(input_state.n,1; only_photon_number_conserving = only_photon_number_conserving)
 
+function remove_trivial_partitions!(part_list)
+
+    """in a list of partitions sizes, ex. [[2,0],[1,1],[0,2]], keeps only
+    the elements with non trivial subset size, in this ex. only [1,1]"""
+
+    filter!(x -> !any(x .== 0), part_list)
+
+end
+
+
+function ranked_partition_list(part_list)
+
+    """ removes partitions such as [1,2] when [2,1] is already counted as only the size of the partition counts; only keeps vectors of decreasing count"""
+
+    output_partitions = []
+
+    for part in part_list
+
+        keep_this_part = true
+        for i in 1:length(part)-1
+            if part[i] < part[i+1]
+                keep_this_part = false
+                break
+            end
+        end
+
+        if keep_this_part
+            push!(output_partitions, part)
+        end
+    end
+
+    output_partitions
+end
+
 function photon_number_conserving_events(physical_indexes, n; partition_spans_all_modes = false)
 
         """returns only the events conserving photon number n
