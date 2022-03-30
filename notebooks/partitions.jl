@@ -72,9 +72,9 @@ scatter(log10.(density_evolution))
 
 ###### multisets ######
 
-m = 12
-n = 8
-n_subsets_array = collect(2:4)
+m = 10
+n = 4
+n_subsets_array = collect(2:6)
 
 function plot_tvd_with_n_subsets(m,n,n_subsets_array)
 
