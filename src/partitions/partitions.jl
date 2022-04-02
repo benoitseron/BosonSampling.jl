@@ -239,7 +239,7 @@ function compute_probability!(ev::Event{TIn,TOut}) where {TIn<:InputType, TOut<:
         ev.proba_params.precision = eps()
         ev.proba_params.failure_probability = 0
 
-        # ev.proba_params.probability = compute_probability_partition_occupancy(ev.interferometer, ev.part_occupancy, ev.input_state)
+        ev.proba_params.probability = compute_probability_partition_occupancy(ev.interferometer, ev.part_occupancy, ev.input_state)
 
 end
 

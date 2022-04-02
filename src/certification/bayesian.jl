@@ -1,6 +1,5 @@
 ### first, a simple bayesian estimator ###
 
-
 confidence(χ) = χ/(1+χ)
 
 function update_confidence(event, p_q, p_a, χ)
@@ -10,7 +9,7 @@ function update_confidence(event, p_q, p_a, χ)
 
 end
 
-function compute_χ(events,p_q, p_a)
+function compute_χ(events, p_q, p_a)
     χ = 1.
     for event in events
         χ = update_confidence(event, p_q, p_a, χ)

@@ -3,22 +3,182 @@ using BosonSampling
 using Permanents
 using PrettyTables
 using ArgCheck
+using Test
 
-# how to store probabilities ? In EventProbability
-# array of [counts, proba]
-# what is its type?
+### multiple counts buisness ###
 
-s1 = Subset([1,1,0,0,0])
-s2 = Subset([0,0,1,1,0])
-s3 = Subset([0,0,0,0,1])
+
+m = 10
 n = 3
+set1 = zeros(Int,m)
+set2 = zeros(Int,m)
+set1[1:2] .= 1
+set2[3:4] .= 1
 
-part = Partition([s1,s2])
-part_occ = PartitionOccupancy(ModeOccupation([2,1]),n,part)
+interf = RandHaar(m)
+part = Partition([Subset(set1), Subset(set2)])
 
-occupies_all_modes(part)
+i = Input{Bosonic}(first_modes(n,m))
+o = PartitionCountsAll(part)
+ev = Event(i,o,interf)
 
-part = Partition([s1,s2,s3])
-part_occ = PartitionOccupancy(ModeOccupation([2,0,1]),n,part)
+(part_occ,  pdf) = compute_probabilities_partition(ev.interferometer, ev.output_measurement.part, i)
 
-partition_expectation_values(part_occ)
+# clean up to keep photon number conserving events (possibly lossy events in the partition occupies all modes)
+
+part_occ_physical = []
+pdf_physical = []
+
+n = i.n
+
+for (i,occ) in enumerate(part_occ)
+    if sum(occ) < n
+        push!(part_occ_physical, occ)
+        push!(pdf_physical, pdf[i])
+    end
+end
+
+mc = MultipleCounts([PartitionOccupancy(ModeOccupation(occ),n,part) for occ in part_occ_physical], pdf_physical)
+
+EventProbability(mc)
+
+mc.proba = clean_pdf(mc.proba)
+
+sum(mc.proba)
+
+
+
+
+### first, a simple bayesian estimator ###
+
+confidence(χ) = χ/(1+χ)
+
+function update_confidence(event, p_q, p_a, χ)
+
+    χ *= p_q(event)/p_a(event)
+    χ
+
+end
+
+function compute_χ(events, p_q, p_a)
+    χ = 1.
+    for event in events
+        χ = update_confidence(event, p_q, p_a, χ)
+    end
+    χ
+end
+
+function compute_confidence(events,p_q, p_a)
+
+    """a bayesian confidence estimator:
+
+    returns the probability that the null hypothesis Q is right compared to
+    the alternative hypothesis A
+
+    the functions take in events
+    p_q is a function that takes in an event and gives its probability in the null hypothesis
+    p_a is the same for the alternative hypothesis
+    χ is the ratio between null hypothesis probabilities and alternative ones
+
+    """
+
+    confidence(compute_χ(events,p_q, p_a))
+end
+
+function compute_confidence_array(events, p_q, p_a)
+
+    """gives an array of the probability of H being true
+    as we process more and more events"""
+
+    χ_array = [1.]
+
+    for event in events
+        push!(χ_array, update_confidence(event, p_q, p_a, χ_array[end]))
+    end
+
+    confidence.(χ_array)
+
+end
+
+### tests with standard boson sampling ###
+
+# we will test that we are indeed in the bosonic case
+# compared to the distinguishable one
+
+# first we generate a series of bosonic events
+
+n_events = 10
+n = 3
+m = 4
+interf = RandHaar(m)
+input_state = Input{Bosonic}(first_modes(n,m))
+
+events = []
+
+OutputMeasurement{FockDetection}(random_mode_occupation_collisionless(n,m))
+
+for i in 1:n_events
+
+    # generate a random output pattern
+    output_state = FockDetection(random_mode_occupation_collisionless(n,m))
+
+    # compute the event probability
+    this_event = Event(input_state, output_state, interf)
+    compute_probability!(this_event)
+    push!(events, this_event)
+
+end
+
+# now we have the vector of observed events with probabilities
+
+events
+
+# next, from events, recover the probabilities under both
+# hypothesis
+
+function p_B(event::Event)
+
+    interf = event.interferometer
+    r = event.input_state.r
+    input_state = Input{Bosonic}(r)
+    output_state = event.output_measurement
+
+    event_H = Event(input_state, output_state, interf)
+    compute_probability!(event_H)
+
+    event_H.proba_params.probability
+
+end
+
+function p_D(event::Event)
+
+    interf = event.interferometer
+    r = event.input_state.r
+    input_state = Input{Distinguishable}(r)
+    output_state = event.output_measurement
+
+    event_A = Event(input_state, output_state, interf)
+    compute_probability!(event_A)
+
+    event_A.proba_params.probability
+
+end
+
+# hypothesis : the events were from a bosonic distribution
+
+p_q = p_B
+p_a = p_D
+
+confidence(compute_χ(events, p_q, p_a))
+
+# hypothesis : the events were from a distinguishable distribution
+
+p_q = p_D
+p_a = p_B
+
+confidence(compute_χ(events, p_q, p_a))
+
+@test confidence(compute_χ(events, p_q, p_a)) + confidence(compute_χ(events, p_a, p_q)) ≈ 1 atol = 1e-10
+
+##### the only thing I see is a problem in the probabilities themselves?
+####### it just looks like stuff is inversed somewhere...

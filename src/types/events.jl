@@ -6,6 +6,7 @@ mutable struct MultipleCounts
 	proba::Union{Nothing,Vector{Real}}
 
 	MultipleCounts() = new(nothing,nothing)
+	MultipleCounts(counts, proba) = new(counts,proba)
 
 end
 
@@ -14,7 +15,7 @@ mutable struct EventProbability
     precision::Union{Number,Nothing} # see remarks in conventions
     failure_probability::Union{Number,Nothing}
 
-    function EventProbability(probability = nothing)
+    function EventProbability(probability::Union{Nothing, Number})
 
         if probability == nothing
             new(nothing, nothing, nothing)
@@ -27,6 +28,18 @@ mutable struct EventProbability
             end
         end
     end
+
+	function EventProbability(mc::MultipleCounts)
+
+		try
+			mc.proba = clean_pdf(mc.proba)
+			new(mc,nothing,nothing)
+		catch
+			error("invalid probability")
+		end
+
+	end
+
 end
 
 
@@ -50,7 +63,7 @@ struct Event{TIn<:InputType, TOut<:OutputMeasurementType}
 
 end
 
-function check_probability_empty(event::Event)
+function check_probability_empty(ev::Event)
     if ev.proba_params.probability != nothing
 		@warn "probability was already set in, rewriting"
 	end
