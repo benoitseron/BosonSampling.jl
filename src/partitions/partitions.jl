@@ -239,7 +239,28 @@ function compute_probability!(ev::Event{TIn,TOut}) where {TIn<:InputType, TOut<:
         ev.proba_params.precision = eps()
         ev.proba_params.failure_probability = 0
 
-        ev.proba_params.probability = compute_probability_partition_occupancy(ev.interferometer, ev.part_occupancy, ev.input_state)
+        i = ev.input_state
+        part = ev.output_measurement.part
+
+        (part_occ,  pdf) = compute_probabilities_partition(ev.interferometer, ev.output_measurement.part, i)
+
+        # clean up to keep photon number conserving events (possibly lossy events in the partition occupies all modes)
+
+        part_occ_physical = []
+        pdf_physical = []
+
+        n = i.n
+
+        for (i,occ) in enumerate(part_occ)
+            if sum(occ) <= n
+                push!(part_occ_physical, occ)
+                push!(pdf_physical, pdf[i])
+            end
+        end
+
+        mc = MultipleCounts([PartitionOccupancy(ModeOccupation(occ),n,part) for occ in part_occ_physical], pdf_physical)
+
+        ev.proba_params.probability = EventProbability(mc).probability
 
 end
 

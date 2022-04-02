@@ -238,3 +238,22 @@ input_state = Input{Bosonic}(first_modes(n,m))
 
 bunching_events(input_state,sub)
 #### not what we want
+
+### multiple counts probabilities ###
+
+
+m = 10
+n = 3
+set1 = zeros(Int,m)
+set2 = zeros(Int,m)
+set1[1:2] .= 1
+set2[3:4] .= 1
+
+interf = RandHaar(m)
+part = Partition([Subset(set1), Subset(set2)])
+
+i = Input{Bosonic}(first_modes(n,m))
+o = PartitionCountsAll(part)
+ev = Event(i,o,interf)
+
+compute_probability!(ev)

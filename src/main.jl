@@ -8,47 +8,6 @@ using Test
 ### multiple counts buisness ###
 
 
-m = 10
-n = 3
-set1 = zeros(Int,m)
-set2 = zeros(Int,m)
-set1[1:2] .= 1
-set2[3:4] .= 1
-
-interf = RandHaar(m)
-part = Partition([Subset(set1), Subset(set2)])
-
-i = Input{Bosonic}(first_modes(n,m))
-o = PartitionCountsAll(part)
-ev = Event(i,o,interf)
-
-(part_occ,  pdf) = compute_probabilities_partition(ev.interferometer, ev.output_measurement.part, i)
-
-# clean up to keep photon number conserving events (possibly lossy events in the partition occupies all modes)
-
-part_occ_physical = []
-pdf_physical = []
-
-n = i.n
-
-for (i,occ) in enumerate(part_occ)
-    if sum(occ) < n
-        push!(part_occ_physical, occ)
-        push!(pdf_physical, pdf[i])
-    end
-end
-
-mc = MultipleCounts([PartitionOccupancy(ModeOccupation(occ),n,part) for occ in part_occ_physical], pdf_physical)
-
-EventProbability(mc)
-
-mc.proba = clean_pdf(mc.proba)
-
-sum(mc.proba)
-
-
-
-
 ### first, a simple bayesian estimator ###
 
 confidence(χ) = χ/(1+χ)
