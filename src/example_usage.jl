@@ -111,7 +111,6 @@ m = 6
 
 input = Input{Bosonic}(first_modes(n,m))
 interf = RandHaar(m)
-
 output_distribution = theoretical_distribution(input=input, interf=interf)
 
 ### Usage Interferometer ###
@@ -234,3 +233,20 @@ input_state = Input{Bosonic}(first_modes(n,m))
 
 bunching_events(input_state,sub)
 #### not what we want
+
+### Visualization ###
+
+n = 5
+m = 10
+input = Input{Bosonic}(ModeOccupation(random_occupancy(n,m)))
+interf = RandHaar(m)
+output = cliffords_sampler(input=input, interf=interf)
+visualizeSampling(input, output)
+
+# distinguishability = 0.7
+# reflectivity = 0.7
+# input = Input{ToyModel}(ModeOccupation(random_occupancy(n,m)), distinguishability)
+# interf = RandHaar(m)
+# data_exact = noisy_distribution(input=input, reflectivity=reflectivity, interf=interf, approx=false, samp=false)
+# data_exact = data_exact[1]
+# visualizeData(input, [1,1,0,0], data_exact)
