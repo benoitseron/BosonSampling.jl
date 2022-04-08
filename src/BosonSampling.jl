@@ -23,6 +23,7 @@ using ProgressMeter
 using Parameters
 using ArgCheck
 using Distributions
+using Luxor
 # using Distributed
 # using SharedArrays
 
@@ -53,6 +54,8 @@ include("permanent_conjectures/bapat_sunder.jl")
 include("permanent_conjectures/counter_example_functions.jl")
 include("permanent_conjectures/counter_example_numerical_search.jl")
 include("permanent_conjectures/permanent_on_top.jl")
+include("visual.jl")
+
 
 permanent = ryser
 
