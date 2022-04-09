@@ -236,17 +236,21 @@ bunching_events(input_state,sub)
 
 ### Visualization ###
 
-n = 5
-m = 10
+n = 4
+m = 8
+
 input = Input{Bosonic}(ModeOccupation(random_occupancy(n,m)))
 interf = RandHaar(m)
 output = cliffords_sampler(input=input, interf=interf)
 visualizeSampling(input, output)
 
-# distinguishability = 0.7
-# reflectivity = 0.7
-# input = Input{ToyModel}(ModeOccupation(random_occupancy(n,m)), distinguishability)
-# interf = RandHaar(m)
-# data_exact = noisy_distribution(input=input, reflectivity=reflectivity, interf=interf, approx=false, samp=false)
-# data_exact = data_exact[1]
-# visualizeData(input, [1,1,0,0], data_exact)
+distinguishability = 0.7
+reflectivity = 0.7
+input = Input{ToyModel}(ModeOccupation(random_occupancy(n,m)), distinguishability)
+interf = RandHaar(m)
+data_exact = noisy_distribution(input=input, reflectivity=reflectivity, interf=interf, approx=false, samp=false)
+data_exact = data_exact[1]
+
+nlist = output_mode_occupation(n,m) # get all the possible output
+visualizeData(input, nlist[200], data_exact)
+
