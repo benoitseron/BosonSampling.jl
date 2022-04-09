@@ -49,12 +49,16 @@ function visualizeSampling(input::Input, output)
     preview()
 end
 
-# function visualizeData(input, output, data)
-#
-#     nlist = output_mode_occupation(sum(output), length(output))
-#     new_out = fill_arrangement(output)
-#     new_out in nlist ? idx = findfirst(x -> x==new_out, nlist) : error("invalid input argument")
-#
-#     visualizeSampling(input, new_out)
-#     print("event probability: ", data[idx])
-# end
+function visualizeData(input::Input, output, data)
+
+    nlist = output_mode_occupation(input.n, input.m)
+
+    if output in nlist
+        idx = findfirst(x -> x==output, nlist)
+        print("event probability: ", data[idx])
+        visualizeSampling(input, output)
+    else
+        throw(ArgumentError("invalid argument(s)"))
+    end
+
+end
