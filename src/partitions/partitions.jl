@@ -260,7 +260,7 @@ function compute_probability!(ev::Event{TIn,TOut}) where {TIn<:InputType, TOut<:
 
         mc = MultipleCounts([PartitionOccupancy(ModeOccupation(occ),n,part) for occ in part_occ_physical], pdf_physical)
 
-        ev.proba_params.probability = EventProbability(mc).probability
+        ev.proba_param2s.probability = EventProbability(mc).probability
 
 end
 
