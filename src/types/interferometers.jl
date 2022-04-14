@@ -7,7 +7,7 @@ struct UserDefinedInterferometer <: Interferometer
     #actively checks unitarity, inefficient if outputing many matrices that are known to be unitary
     m::Int
     U::Matrix
-    UserDefinedInterferometer(U::Matrix) = is_unitary(U) ? new(m, U) : error("input matrix is non unitary")
+    UserDefinedInterferometer(U) = is_unitary(U) ? new(size(U,1), U) : error("input matrix is non unitary")
 end
 
 struct RandHaar <: Interferometer
@@ -41,4 +41,11 @@ struct PhaseShift <: Interferometer
     m::Int
     U::Matrix
     PhaseShift(shifted_modes, param_) = new(shifted_modes, param_, length(shifted_modes), phase_shift(shifted_modes, param_))
+end
+
+Base.show(io::IO, interf::Interferometer) = print(io, "Interferometer :\n\n", "Type : ", typeof(interf), "\n", "m : ", interf.m)
+
+Base.show(io::IO, interf::UserDefinedInterferometer) = begin
+     print(io, "Interferometer :\n\n", "Type : ", typeof(interf), "\n", "m : ", interf.m, "\nUnitary : \n")
+     pretty_table(io, interf.U)
 end

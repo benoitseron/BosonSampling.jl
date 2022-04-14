@@ -30,6 +30,8 @@ function partition_expectation_values(partition_size_vector, partition_counts)
 
 end
 
+partition_expectation_values(part_occ::PartitionOccupancy) = partition_expectation_values(partition_occupancy_to_partition_size_vector_and_counts(part_occ)...)
+
 function subset_expectation_value(subset_size, k,n,m)
 
     """returns the haar average probability of finding k photons
@@ -83,70 +85,42 @@ function choose_best_average_subset(;m,n, distance = tvd)
 end
 
 
-# 
-# ###### averages #######
-#
-# ### now various plots to see how it evolves ###
-#
-# n_array = collect(2:20)
-#
-# m_array = 5 .* n_array
-#
-# const_density = [choose_best_average_subset(n = n_array[i],m = m_array[i])[2] for i in 1:length(n_array)]
-#
-# m_array = n_array .^2
-#
-# no_collision = [choose_best_average_subset(n = n_array[i],m = m_array[i])[2] for i in 1:length(n_array)]
-#
-# scatter(n_array, const_density)
-# scatter!(no_collision)
-#
-# ### evolution with n ###
-#
-# n_array = collect(1:40)
-#
-# m_array = 5 .* n_array
-# subset_size_array = map(x-> Int(ceil(x/2)), m_array)
-#
-# const_density = @. subset_relative_distance_of_averages(subset_size_array, n_array,m_array)
-#
-# m_array = n_array .^2
-# subset_size_array = map(x-> Int(ceil(x/2)), m_array)
-#
-# no_collision = @. subset_relative_distance_of_averages(subset_size_array, n_array,m_array)
-#
-# scatter(n_array, const_density)
-# scatter!(no_collision)
-#
-# # this shows that the previous haar averaging was very effective !
-#
-# ### evolution with partition size ###
-#
-# n_array = 20
-#
-# m_array = 5 .* n_array
-# subset_size_array = collect(1:m_array-1)
-#
-# const_density = @. subset_relative_distance_of_averages(subset_size_array, n_array,m_array)
-#
-# m_array = n_array .^2
-# subset_size_array = collect(1:m_array-1)
-#
-# no_collision = @. subset_relative_distance_of_averages(subset_size_array, n_array,m_array)
-#
-# scatter(const_density)
-# scatter(no_collision)
-#
-# # this shows that above 1.5 the number of photons, this is pretty much constant
-#
-# ### evolution with density ###
-#
-#
-# n_array = 20
-#
-# m_array = collect(n_array:n_array^3)
-# subset_size_array = map(x-> Int(ceil(x/2)), m_array)
-#
-# density_evolution = @. subset_relative_distance_of_averages(subset_size_array, n_array,m_array)
-#
-# scatter(log10.(density_evolution))
+function best_partition_size(;m,n, n_subsets, distance = tvd)
+
+    """return the ideal partition_size_vector for a given number
+    of subsets n_subsets
+
+    for a single subset, n_subsets = 2 as we need a complete partition, occupying all modes"""
+
+    @argcheck n_subsets >= 2 "we need a complete partition, occupying all modes"
+    @argcheck n_subsets <= m "more partition bins than output modes"
+
+    part_list = all_mode_configurations(m,n_subsets, only_photon_number_conserving = true)
+
+    remove_trivial_partitions!(part_list)
+
+    max_distance = 0
+    part_max_ratio = nothing
+
+    for part in ranked_partition_list(part_list)
+
+        events = all_mode_configurations(m,n_subsets, only_photon_number_conserving = true)
+
+        pdf = [partition_expectation_values(part, event) for event in events]
+
+        pdf_dist = hcat(collect.(pdf)...)[1,:]
+        pdf_bos = hcat(collect.(pdf)...)[2,:]
+
+        this_distance = distance(pdf_bos,pdf_dist)
+
+        println(part, " : ", this_distance)
+
+        if this_distance > max_distance
+            max_distance = this_distance
+            part_max_ratio = part
+        end
+    end
+
+    part_max_ratio, max_distance
+
+end

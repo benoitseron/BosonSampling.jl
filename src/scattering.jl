@@ -81,7 +81,7 @@ function occupancy_vector_to_partition(occupancy_vector)
 
 	for (mode, selected) in enumerate(occupancy_vector)
 		if selected == 1
-			append!(partition, [mode])
+			append!(partition, mode)
 		end
 	end
 	partition
