@@ -25,7 +25,7 @@ using ArgCheck
 using Distributions
 using Luxor
 # using Distributed
-# using SharedArrays
+# using SharedArrays
 
 const ATOL = 1e-10
 
@@ -39,6 +39,9 @@ include("scattering.jl")
 
 include("bunching/bunching.jl")
 include("partitions/legacy.jl")
+include("partitions/partition_expectation_values.jl")
+include("partitions/partitions.jl")
+
 
 include("boson_samplers/tools.jl")
 include("boson_samplers/classical_sampler.jl")
@@ -54,8 +57,8 @@ include("permanent_conjectures/bapat_sunder.jl")
 include("permanent_conjectures/counter_example_functions.jl")
 include("permanent_conjectures/counter_example_numerical_search.jl")
 include("permanent_conjectures/permanent_on_top.jl")
-include("visual.jl")
 
+include("visual.jl")
 
 permanent = ryser
 
