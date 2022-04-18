@@ -84,7 +84,7 @@ using LinearAlgebra
 			for n = 2:5
 				occupation = ModeOccupation(random_occupancy(n, n^2))
 				input = Input{Bosonic}(occupation)
-				interf = RandHaar(input.m)
+				interf = Fourier(input.r.m)
 				p_theo = theoretical_distribution(input=input, interf=interf)
 
 				@test sum(p_theo) ≈ 1 atol=1e-9
@@ -95,9 +95,9 @@ using LinearAlgebra
 		@testset "positivity" begin
 
 	        for n = 2:5
-	            occupation = ModeOccupation(random_occupancy(n,n))
+	            occupation = ModeOccupation(random_occupancy(n, n^2))
 	            input = Input{Bosonic}(occupation)
-	            interf = RandHaar(input.m)
+	            interf = Fourier(input.r.m)
 	            p_theo = theoretical_distribution(input=input, interf=interf)
 
 	            @test all(p->p>=0, p_theo)
@@ -110,7 +110,7 @@ using LinearAlgebra
 	        for n = 2:5
 	            occupation = ModeOccupation(random_occupancy(n,n))
 	            input = Input{Bosonic}(occupation)
-	            interf = Fourier(input.n)
+	            interf = Fourier(input.r.n)
 	            p_theo = theoretical_distribution(input=input, interf=interf)
 
 	            output_events = output_mode_occupation(n,n)
@@ -130,10 +130,14 @@ using LinearAlgebra
 		@testset "normalization" begin
 
 			for n = 2:4
-				occupation = ModeOccupation(random_occupancy(n,n))
-    			input = Input{ToyModel}(occupation, 0.8)
-		        interf = RandHaar(input.m)
-		        p_exact, p_approx, p_samp = noisy_distribution(input=input, reflectivity=0.8, interf=interf)
+				occupation = ModeOccupation(random_occupancy(n, 2n))
+    			input = Input{OneParameterInterpolation}(occupation, 0.5)
+		        interf = Fourier(input.r.m)
+		        res = noisy_distribution(input=input, reflectivity=0.5, interf=interf)
+
+				p_exact = res[1]
+				p_approx = res[2]
+				p_samp = res[3]
 
 		       	@test sum(p_exact) ≈ 1 atol=1e-9
 		        @test sum(p_approx) ≈ 1 atol=1e-9
@@ -145,10 +149,14 @@ using LinearAlgebra
    		@testset "positivity" begin
 
     		for n = 2:4
-     			occupation = ModeOccupation(random_occupancy(n,n))
-		       	input = Input{ToyModel}(occupation, 0.8)
-		        interf = RandHaar(input.m)
-		        p_exact, p_approx, p_samp = noisy_distribution(input=input, reflectivity=0.5, interf=interf)
+     			occupation = ModeOccupation(random_occupancy(n, 2n))
+		       	input = Input{OneParameterInterpolation}(occupation, 0.5)
+		        interf = Fourier(input.r.m)
+		        res = noisy_distribution(input=input, reflectivity=0.5, interf=interf)
+
+				p_exact = res[1]
+				p_approx = res[2]
+				p_samp = res[3]
 
 		       	@test all(p->p>=0, p_exact)
 		        @test all(p->p>=0, p_approx)
@@ -165,9 +173,9 @@ using LinearAlgebra
 
        			occupation = ModeOccupation(random_occupancy(n,n))
 		        input = Input{Bosonic}(occupation)
-		        interf = Fourier(input.m)
-		        O = noisy_distribution(input=input, reflectivity=0.5, interf=interf, approx=false, samp=false)
-	         	p_exact = O[1]
+		        interf = Fourier(input.r.m)
+		        res = noisy_distribution(input=input, reflectivity=0.5, interf=interf, approx=false, samp=false)
+	         	p_exact = res[1]
 
 		        output_events = output_mode_occupation(n,n)
 		        for i = 1:length(output_events)
@@ -189,7 +197,7 @@ using LinearAlgebra
 		    input = Input{Bosonic}(occupation)
 
 	      	for i = 1:10
-        		interf = RandHaar(input.m)
+        		interf = RandHaar(input.r.m)
 		       	p_theo = theoretical_distribution(input=input, interf=interf)
 		        O = noisy_distribution(input=input, reflectivity=0.999, interf=interf, approx=false, samp=false)
 		        p_exact = O[1]
@@ -207,12 +215,12 @@ using LinearAlgebra
 	    for n = 3:10
 
 	        interf = Fourier(n)
-     		reflectivity = 1.0
 
-		   	input = Input{Bosonic}(first_modes(n,n))
+		   	input_clifford_sampler = Input{Bosonic}(first_modes(n,n))
+		    input_noisy_sampler = Input{OneParameterInterpolation}(first_modes(n,n), 1.0)
 
-	      	out_clifford_sampler = cliffords_sampler(input=input, interf=interf)
-		    out_noisy_sampler = noisy_sampler(input=input, reflectivity=reflectivity, interf=interf)
+	      	out_clifford_sampler = cliffords_sampler(input=input_clifford_sampler, interf=interf)
+		    out_noisy_sampler = noisy_sampler(input=input_noisy_sampler, reflectivity=1.0, interf=interf)
 
 	    	@test !check_suppression_law(out_clifford_sampler)
 		    @test !check_suppression_law(out_noisy_sampler)
