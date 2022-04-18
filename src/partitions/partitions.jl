@@ -36,6 +36,40 @@ all_mode_configurations(input_state::Input,part::Partition; only_photon_number_c
 
 all_mode_configurations(input_state::Input,sub::Subset; only_photon_number_conserving = false) = all_mode_configurations(input_state.n,1; only_photon_number_conserving = only_photon_number_conserving)
 
+function remove_trivial_partitions!(part_list)
+
+    """in a list of partitions sizes, ex. [[2,0],[1,1],[0,2]], keeps only
+    the elements with non trivial subset size, in this ex. only [1,1]"""
+
+    filter!(x -> !any(x .== 0), part_list)
+
+end
+
+
+function ranked_partition_list(part_list)
+
+    """ removes partitions such as [1,2] when [2,1] is already counted as only the size of the partition counts; only keeps vectors of decreasing count"""
+
+    output_partitions = []
+
+    for part in part_list
+
+        keep_this_part = true
+        for i in 1:length(part)-1
+            if part[i] < part[i+1]
+                keep_this_part = false
+                break
+            end
+        end
+
+        if keep_this_part
+            push!(output_partitions, part)
+        end
+    end
+
+    output_partitions
+end
+
 function photon_number_conserving_events(physical_indexes, n; partition_spans_all_modes = false)
 
         """returns only the events conserving photon number n
@@ -96,7 +130,7 @@ function compute_probabilities_partition(physical_interferometer::Interferometer
         corresponding to the occupation numbers in the partition and the
         associated probability"""
 
-        @argcheck at_most_one_photon_per_bin(input_state) "more than one input per mode is not implemented"
+        @argcheck at_most_one_photon_per_bin(input_state.r) "more than one input per mode is not implemented"
 
         occupies_all_modes(part) ? (@warn "inefficient if no loss: partition occupies all modes thus extra calculations made that are unnecessary") : nothing
 
@@ -197,6 +231,39 @@ function compute_probability!(ev::Event{TIn,TOut}) where {TIn<:InputType, TOut<:
         ev.proba_params.probability = compute_probability_partition_occupancy(ev.interferometer, ev.part_occupancy, ev.input_state)
 
 end
+
+function compute_probability!(ev::Event{TIn,TOut}) where {TIn<:InputType, TOut<:PartitionCountsAll}
+
+        check_probability_empty(ev)
+
+        ev.proba_params.precision = eps()
+        ev.proba_params.failure_probability = 0
+
+        i = ev.input_state
+        part = ev.output_measurement.part
+
+        (part_occ,  pdf) = compute_probabilities_partition(ev.interferometer, ev.output_measurement.part, i)
+
+        # clean up to keep photon number conserving events (possibly lossy events in the partition occupies all modes)
+
+        part_occ_physical = []
+        pdf_physical = []
+
+        n = i.n
+
+        for (i,occ) in enumerate(part_occ)
+            if sum(occ) <= n
+                push!(part_occ_physical, occ)
+                push!(pdf_physical, pdf[i])
+            end
+        end
+
+        mc = MultipleCounts([PartitionOccupancy(ModeOccupation(occ),n,part) for occ in part_occ_physical], pdf_physical)
+
+        ev.proba_param2s.probability = EventProbability(mc).probability
+
+end
+
 
 #
 # check_probability_empty(ev)
