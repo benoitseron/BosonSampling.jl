@@ -13,7 +13,7 @@ function noisy_sampler(;input::Input, reflectivity::Float64, interf::Interferome
     remaining_photons[remaining_subset] .= 1
 
     list_assignement = fill_arrangement(remaining_photons)
-    i = rand(Binomial(l, input.distinguishability))
+    i = rand(Binomial(l, input.distinguishability_param))
     bosonic_input = Int.(zeros(input.m))
     bosonic_subset = rand(collect(multiset_combinations(list_assignement, i)))
     bosonic_input[bosonic_subset] .= 1
