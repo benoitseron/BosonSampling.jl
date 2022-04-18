@@ -9,8 +9,13 @@ function noisy_distribution(;input::Input, reflectivity::Real, interf::Interfero
     input_modes = input.r.state
     number_photons = input.n
     number_modes = input.m
-    distinguishability = input.distinguishability
     U = interf.U
+
+    if get_parametric_type(input)[1] == OneParameterInterpolation
+        distinguishability = input.distinguishability_param
+    else
+        get_parametric_type(input)[1] == Bosonic ? distinguishability = 1.0 : distinguishability = 0.0
+    end
 
     number_output_photons = trunc(Int, number_photons*reflectivity)
     input_occupancy_modes = fill_arrangement(input_modes)
