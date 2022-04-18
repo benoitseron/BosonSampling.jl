@@ -8,7 +8,7 @@ m = 5
 n = 3
 
 interf = RandHaar(m)
-i = Input{RandomModel}(first_modes(n,m))
+i = Input{RandomGramMatrix}(first_modes(n,m))
 o = OutputMeasurement{FockDetection}(first_modes(n,m))
 ev = Event(i,o,interf)
 
@@ -21,7 +21,7 @@ n = 3
 
 interf = RandHaar(m)
 ib = Input{Bosonic}(first_modes(n,m))
-ipd = Input{RandomModel}(first_modes(n,m))
+ipd = Input{RandomGramMatrix}(first_modes(n,m))
 subset_modes = first_modes(n,m)
 
 pb = full_bunching_probability(interf, ib, subset_modes)
@@ -55,7 +55,7 @@ n = 3
 x = 0.8 # distinguishability
 η = 0.8 # reflectivity
 
-input = Input{ToyModel}(first_modes(n,m), x)
+input = Input{OneParameterInterpolation}(first_modes(n,m), x)
 interf = RandHaar(m)
 
 out = noisy_sampler(input=input, reflectivity=η, interf=interf)
@@ -87,7 +87,7 @@ m = 6
 x = 0.8
 η = 0.8
 
-input = Input{ToyModel}(first_modes(n,m), x)
+input = Input{OneParameterInterpolation}(first_modes(n,m), x)
 interf = RandHaar(m)
 
 output_statistics = noisy_distribution(input=input, reflectivity=η, interf=interf)
@@ -111,6 +111,7 @@ m = 6
 
 input = Input{Bosonic}(first_modes(n,m))
 interf = RandHaar(m)
+
 output_distribution = theoretical_distribution(input=input, interf=interf)
 
 ### Usage Interferometer ###
@@ -121,8 +122,9 @@ m = 2 # mode number
 proba_bunching = Vector{Float64}(undef, 0)
 
 for x = 0.00001:0.01:1.0
-    input = Input{ToyModel}(first_modes(n,m), x)
+    input = Input{OneParameterInterpolation}(first_modes(n,m), x)
     p_theo = theoretical_distribution(input=input, interf=B)
+
     push!(proba_bunching, p_theo[2]) # store the probabilty to observe one photon in each mode
 end
 plot(0.001:0.01:1, proba_bunching, label=nothing, xlabel="distinguishability", ylabel="event probabilty")
@@ -234,11 +236,28 @@ input_state = Input{Bosonic}(first_modes(n,m))
 bunching_events(input_state,sub)
 #### not what we want
 
-### Visualization ###
+### multiple counts probabilities ###
 
+
+m = 10
+n = 3
+set1 = zeros(Int,m)
+set2 = zeros(Int,m)
+set1[1:2] .= 1
+set2[3:4] .= 1
+
+interf = RandHaar(m)
+part = Partition([Subset(set1), Subset(set2)])
+
+i = Input{Bosonic}(first_modes(n,m))
+o = PartitionCountsAll(part)
+ev = Event(i,o,interf)
+
+compute_probability!(ev)
+
+### Visualization ###
 n = 4
 m = 8
-
 input = Input{Bosonic}(ModeOccupation(random_occupancy(n,m)))
 interf = RandHaar(m)
 output = cliffords_sampler(input=input, interf=interf)
@@ -246,11 +265,10 @@ visualizeSampling(input, output)
 
 distinguishability = 0.7
 reflectivity = 0.7
-input = Input{ToyModel}(ModeOccupation(random_occupancy(n,m)), distinguishability)
+input = Input{OneParameterInterpolation}(ModeOccupation(random_occupancy(n,m)), distinguishability)
 interf = RandHaar(m)
 data_exact = noisy_distribution(input=input, reflectivity=reflectivity, interf=interf, approx=false, samp=false)
 data_exact = data_exact[1]
 
 nlist = output_mode_occupation(n,m) # get all the possible output
 visualizeData(input, nlist[200], data_exact)
-
