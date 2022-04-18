@@ -13,14 +13,11 @@ function cliffords_sampler(;input::Input, interf::Interferometer)
     sample_array = [wsample(1:m, Weights(weight_array))]
 
     for k in 2:n
-
         k_ = collect(1:k)
         permanent_matrix = reshape(A[sample_array, k_], length(sample_array), k)
-
         unormalized_pmf = LaplaceExpansion(permanent_matrix, A[:,k_])
         weight_array = unormalized_pmf/sum(unormalized_pmf)
         push!(sample_array, wsample(1:m, Weights(weight_array)))
-        
     end
 
     return sort(sample_array)
