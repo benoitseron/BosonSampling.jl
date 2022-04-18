@@ -343,10 +343,9 @@ function gram_from_n_r_vectors(M)
 
 end
 
-function gram_matrix_toy_model(n::Int, x::Real)
+function gram_matrix_one_param(n::Int, x::Float64)
 
 	S = 1.0 * Matrix(I, n, n)
-
 	for i in 1:n
 		for j in 1:n
 			i!=j ? S[i,j] = x : continue
