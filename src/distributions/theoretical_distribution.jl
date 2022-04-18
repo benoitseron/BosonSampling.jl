@@ -3,10 +3,15 @@ function theoretical_distribution(;input::Input, interf::Interferometer, i=nothi
     input_modes = input.r.state
     number_photons = input.n
     number_modes = input.m
-    distinguishability = input.distinguishability
+
+    if get_parametric_type(input)[1] == OneParameterInterpolation
+        distinguishability = input.distinguishability_param
+    else
+        get_parametric_type(input)[1] == Bosonic ? distinguishability = 1.0 : distinguishability = 0.0
+    end
 
     U = interf.U
-    S = input.G
+    S = input.G.S
 
     input_event = fill_arrangement(input_modes)
     output_events = output_mode_occupation(number_photons, number_modes)
