@@ -68,6 +68,60 @@ Base.show(io::IO, part::Partition) = begin
 end
 
 
+function partition_from_subset_lengths(subset_lengths)
+
+        """returns a partition from a vector of subset lengths, such as [2,1] gives Partition([[1,1],[1]])"""
+
+    m = sum(subset_lengths)
+    subsets = []
+
+    mode = 1
+
+    for subset_length in subset_lengths
+        subset_vector = zeros(Int, m)
+
+        for j in 0:subset_length-1
+            if mode+j <= m
+                subset_vector[mode+j ] = 1
+            end
+        end
+
+        Subset(subset_vector)
+        mode += subset_length
+        push!(subsets, Subset(subset_vector))
+    end
+
+    Partition(convert(Vector{Subset}, subsets))
+
+end
+
+
+function equilibrated_partition_vector(m,n_subsets)
+
+    """returns a (most) equilibrated partition possible by euclidian division
+
+    (a problem is that euclidian distribution may give n_subsets or n_subsets+1 if not done like below - here it is the most obvious thing I could think of to get a somewhat equilibrated partition with a constant number of subsets)"""
+    q = div(m,n_subsets)
+    y = n_subsets
+    r = rem(m,n_subsets)
+
+    first_part = [q for i in 1:y]
+    first_part[1] += r
+
+    first_part
+
+end
+
+equilibrated_mode_occupation(m,n_subsets) = ModeOccupation(equilibrated_partition_vector(m,n_subsets))
+
+function equilibrated_partition(m,n_subsets)
+
+        """returns a most equilibrated_partition according to the principles of equilibrated_partition_vector"""
+
+        partition_from_subset_lengths(equilibrated_partition_vector(m,n_subsets))
+
+end
+
 function occupies_all_modes(part::Partition)
 
         """checks if a partition occupies all m modes"""

@@ -88,7 +88,7 @@ end
 function best_partition_size(;m,n, n_subsets, distance = tvd)
 
     """return the ideal partition_size_vector for a given number
-    of subsets n_subsets
+    of subsets n_subsets as well as the haar averaged tvd in second parameter
 
     for a single subset, n_subsets = 2 as we need a complete partition, occupying all modes"""
 
