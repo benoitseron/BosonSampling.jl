@@ -104,7 +104,7 @@ function best_partition_size(;m,n, n_subsets, distance = tvd)
 
     for part in ranked_partition_list(part_list)
 
-        events = all_mode_configurations(m,n_subsets, only_photon_number_conserving = true)
+        events = all_mode_configurations(n,n_subsets, only_photon_number_conserving = true)
 
         pdf = [partition_expectation_values(part, event) for event in events]
 
