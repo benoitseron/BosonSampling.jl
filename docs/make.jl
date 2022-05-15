@@ -5,7 +5,7 @@ About = "Introduction" => "intro.md"
 
 # GettingStarted = "gettingstarted.md"
 
-Functions = "Functions" => "index.md"
+Functions = "Functions" => "functions.md"
 
 #
 

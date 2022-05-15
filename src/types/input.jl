@@ -1,9 +1,28 @@
 ### Inputs ###
 
+"""
+    InputType
+
+Supertype to any concrete input type such as `Bosonic`
+"""
 abstract type InputType end
 
+"""
+
+    Bosonic
+
+Type use to notify that the input is made of FockState indistinguishable photons.
+"""
 struct Bosonic <:InputType
 end
+
+"""
+
+    PartDist
+
+Type use to notify that the input is made of FockState partially distinguishable
+photons.
+"""
 struct PartDist <:InputType
 end
 abstract type ToyModel <: InputType
@@ -15,9 +34,15 @@ end
 struct Undef <:InputType
 end
 
+"""
+
+    OrthonormalBasis
+
+Basis of vectors v_1,...,v_n stored as columns in a n*r matrix
+possibly empty.
+"""
 mutable struct OrthonormalBasis
-    """basis of vectors v_1,...,v_n stored as columns in a n*r matrix
-    possibly empty"""
+
     vectors_matrix::Union{Matrix,Nothing}
     function OrthonormalBasis(vectors_matrix = nothing)
         if vectors_matrix == nothing
@@ -28,6 +53,13 @@ mutable struct OrthonormalBasis
     end
 end
 
+"""
+
+    GramMatrix{T<:InputType}
+
+Matrix of partial distinguishability. Will automatically generate the proper
+matrix if given an input type defining a specific gram matrix such as `Bosonic`.
+"""
 struct GramMatrix{T<:InputType}
 
     n::Int
@@ -57,6 +89,14 @@ struct GramMatrix{T<:InputType}
     end
 end
 
+"""
+
+    Input{T<:InputType}
+    Input{T}(r::ModeOccupation) where {T<:InputType}
+    Input{T}(r::ModeOccupation, G::GramMatrix) where {T<:InputType}
+
+Input state at the entrance of the interferometer.
+"""
 struct Input{T<:InputType}
     r::ModeOccupation
     G::GramMatrix
