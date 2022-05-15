@@ -1,6 +1,13 @@
-mutable struct MultipleCounts
+"""
 
-	"""holds something like the photon counting probabilities with their respective probability"""
+	MultipleCounts()
+	MultipleCounts(counts, proba)
+
+Holds something like the photon counting probabilities with their respective
+probability (in order to use them as a single observation). Can be declared
+empty as a placeholder.
+"""
+mutable struct MultipleCounts
 
 	counts::Union{Nothing, Vector{ModeOccupation}, Vector{PartitionOccupancy}}
 	proba::Union{Nothing,Vector{Real}}
@@ -10,6 +17,14 @@ mutable struct MultipleCounts
 
 end
 
+"""
+
+	EventProbability(probability::Union{Nothing, Number})
+	EventProbability(mc::MultipleCounts)
+
+Holds the probability or probabilities of an `Event`.
+
+"""
 mutable struct EventProbability
     probability::Union{Number,Nothing, MultipleCounts}
     precision::Union{Number,Nothing} # see remarks in conventions
@@ -42,7 +57,11 @@ mutable struct EventProbability
 
 end
 
+"""
+	Event{TIn<:InputType, TOut<:OutputMeasurementType}
 
+Event linking an input to an output.
+"""
 struct Event{TIn<:InputType, TOut<:OutputMeasurementType}
 
     input_state::Input{TIn}
