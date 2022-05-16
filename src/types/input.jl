@@ -5,6 +5,9 @@ Supertype to any concrete input type such as `Bosonic`
 """
 abstract type InputType end
 
+"""
+Type used to notify that the input is made of FockState indistinguishable photons.
+"""
 abstract type Bosonic <: InputType end
 
 """
