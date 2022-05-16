@@ -1,4 +1,4 @@
-function visualizeSampling(input::Input, output)
+function visualize_sampling(input::Input, output)
 
     Drawing(1500, 1500, "basic_test.png")
     origin()
@@ -49,14 +49,14 @@ function visualizeSampling(input::Input, output)
     preview()
 end
 
-function visualizeData(input::Input, output, data)
+function visualize_proba(input::Input, output, data)
 
     nlist = output_mode_occupation(input.n, input.m)
 
     if output in nlist
         idx = findfirst(x -> x==output, nlist)
         print("event probability: ", data[idx])
-        visualizeSampling(input, output)
+        visualize_sampling(input, output)
     else
         throw(ArgumentError("invalid argument(s)"))
     end
