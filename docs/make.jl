@@ -1,4 +1,4 @@
-push!(LOAD_PATH, "/Users/antoinerestivo/Desktop/BosonSampling.jl-optimized_types/src/")
+push!(LOAD_PATH, "path/to/BosonSampling.jl/src")
 
 using Documenter, BosonSampling
 
@@ -11,7 +11,7 @@ Types = "Types" => "index.md"
 PAGES = [About,Types]
 
 makedocs(
-    source = "/Users/antoinerestivo/Desktop/BosonSampling.jl-optimized_types/docs/src/",
+    source = "/Path/to/BosonSampling.jl/docs/src/",
     sitename = "BosonSampling.jl",
     modules = [BosonSampling],
     authors = "Benoit Seron, Antoine Restivo",
