@@ -1,11 +1,36 @@
-### events ###
+"""
 
+	MultipleCounts()
+	MultipleCounts(counts, proba)
+
+Holds something like the photon counting probabilities with their respective
+probability (in order to use them as a single observation). Can be declared
+empty as a placeholder.
+"""
+mutable struct MultipleCounts
+
+	counts::Union{Nothing, Vector{ModeOccupation}, Vector{PartitionOccupancy}}
+	proba::Union{Nothing,Vector{Real}}
+
+	MultipleCounts() = new(nothing,nothing)
+	MultipleCounts(counts, proba) = new(counts,proba)
+
+end
+
+"""
+
+	EventProbability(probability::Union{Nothing, Number})
+	EventProbability(mc::MultipleCounts)
+
+Holds the probability or probabilities of an `Event`.
+
+"""
 mutable struct EventProbability
-    probability::Union{Number,Nothing, Vector{Number}}
-    precision::Union{Number,Nothing, Vector{Number}} # see remarks in conventions
-    failure_probability::Union{Number,Nothing, Vector{Number}}
+    probability::Union{Number,Nothing, MultipleCounts}
+    precision::Union{Number,Nothing} # see remarks in conventions
+    failure_probability::Union{Number,Nothing}
 
-    function EventProbability(probability = nothing)
+    function EventProbability(probability::Union{Nothing, Number})
 
         if probability == nothing
             new(nothing, nothing, nothing)
@@ -18,9 +43,25 @@ mutable struct EventProbability
             end
         end
     end
+
+	function EventProbability(mc::MultipleCounts)
+
+		try
+			mc.proba = clean_pdf(mc.proba)
+			new(mc,nothing,nothing)
+		catch
+			error("invalid probability")
+		end
+
+	end
+
 end
 
+"""
+	Event{TIn<:InputType, TOut<:OutputMeasurementType}
 
+Event linking an input to an output.
+"""
 struct Event{TIn<:InputType, TOut<:OutputMeasurementType}
 
     input_state::Input{TIn}
@@ -41,7 +82,7 @@ struct Event{TIn<:InputType, TOut<:OutputMeasurementType}
 
 end
 
-function check_probability_empty(event::Event)
+function check_probability_empty(ev::Event)
     if ev.proba_params.probability != nothing
 		@warn "probability was already set in, rewriting"
 	end

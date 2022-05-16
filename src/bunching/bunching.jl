@@ -1,11 +1,13 @@
+"""
+	H_matrix(U, input_state, partition_occupancy_vector)
+
+H matrix for a partition defined by `partition_occupancy_vector`
+
+note: conventions follow the author's Boson bunching is not maximized by indistinguishable particles
+
+which are the ones compatible with Tichy (Shshnovitch has a different one for the evolution of the creation operators)
+"""
 function H_matrix(U, input_state, partition_occupancy_vector)
-
-	"""H matrix for a partition defined by partition_occupancy_vector
-
-	note: conventions follow the author's Boson bunching is not maximized by indistinguishable particles
-
-	which are the ones compatible with Tichy (Shshnovitch has a different one
-	for the evolution of the creation operators)"""
 
 	part = occupancy_vector_to_partition(partition_occupancy_vector)
 	input_modes = occupancy_vector_to_mode_occupancy(input_state)

@@ -1,3 +1,4 @@
+
 push!(LOAD_PATH, "path/to/BosonSampling.jl/src")
 
 using Documenter, BosonSampling

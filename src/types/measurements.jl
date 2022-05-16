@@ -49,7 +49,7 @@ struct OutputMeasurement{T<:OutputMeasurementType}
 
         @warn "OutputMeasurement{FockDetection} obsolete, replace with FockDetection"
 
-        at_most_one_photon_per_bin(s) ? new(s, nothing, nothing) : error("more than one detector per more")
+        at_most_one_photon_per_bin(s) ? new(s) : error("more than one detector per more")
 
     end
     OutputMeasurement(s::ModeOccupation) = OutputMeasurement{FockDetection}(s::ModeOccupation)

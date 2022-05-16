@@ -1,4 +1,4 @@
-function clean_proba(probability, atol=ATOL)
+function clean_proba(probability::Number, atol=ATOL)
 
     """checks if a (complex) number is a close enough probability
     converts it to a positive real number if complex or just positive if real"""

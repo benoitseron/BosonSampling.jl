@@ -255,6 +255,7 @@ ev = Event(i,o,interf)
 
 compute_probability!(ev)
 
+
 ### Visualization ###
 n = 4
 m = 8
@@ -272,3 +273,4 @@ data_exact = data_exact[1]
 
 nlist = output_mode_occupation(n,m) # get all the possible output
 visualize_proba(input, nlist[200], data_exact)
+

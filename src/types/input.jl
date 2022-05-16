@@ -1,11 +1,15 @@
 ### Inputs ###
 
 """
-Supertype to any concrete input type such as 'Bosonic'
+
+    InputType
+
+Supertype to any concrete input type such as `Bosonic`
 """
 abstract type InputType end
 
 """
+
 Type used to notify that the input is made of FockState indistinguishable photons.
 """
 struct Bosonic <: InputType
@@ -20,10 +24,30 @@ abstract type PartDist <: InputType end
 """
 One parameter model of partial distinguishability interpolating between indistinguishable
 photons FockState and fully distinguishable.
-!!! note
-    source : [Sampling of partially distinguishable bosons and the relation to the multidimensional permanent](https://arxiv.org/pdf/1410.7687.pdf)
+
+see for the definition of the x-model : 
+[Sampling of partially distinguishable bosons and the relation to the 
+multidimensional permanent](https://arxiv.org/pdf/1410.7687.pdf)
 """
 struct OneParameterInterpolation <: PartDist
+"""
+
+    Bosonic
+
+Type use to notify that the input is made of FockState indistinguishable photons.
+"""
+struct Bosonic <:InputType
+end
+
+"""
+
+    PartDist
+
+Type use to notify that the input is made of FockState partially distinguishable
+photons.
+"""
+struct PartDist <:InputType
+
 end
 
 """
@@ -42,10 +66,14 @@ end
 struct Undef <: InputType
 end
 
-mutable struct OrthonormalBasis
+"""
 
-    """basis of vectors v_1,...,v_n stored as columns in a n*r matrix
-    possibly empty"""
+    OrthonormalBasis
+
+Basis of vectors v_1,...,v_n stored as columns in a n*r matrix
+possibly empty.
+"""
+mutable struct OrthonormalBasis
 
     vectors_matrix::Union{Matrix,Nothing}
     function OrthonormalBasis(vectors_matrix = nothing)
@@ -58,6 +86,13 @@ mutable struct OrthonormalBasis
 
 end
 
+"""
+
+    GramMatrix{T<:InputType}
+
+Matrix of partial distinguishability. Will automatically generate the proper
+matrix if given an input type defining a specific gram matrix such as `Bosonic`.
+"""
 struct GramMatrix{T<:InputType}
 
     n::Int
@@ -98,6 +133,14 @@ struct GramMatrix{T<:InputType}
 
 end
 
+"""
+
+    Input{T<:InputType}
+    Input{T}(r::ModeOccupation) where {T<:InputType}
+    Input{T}(r::ModeOccupation, G::GramMatrix) where {T<:InputType}
+
+Input state at the entrance of the interferometer.
+"""
 struct Input{T<:InputType}
 
     r::ModeOccupation
