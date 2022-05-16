@@ -1,3 +1,7 @@
-# BosonSampling.jl
 
-Documentation for BosonSampling.jl
+# BosonSampling.jl Documentation
+
+```@autodocs
+Modules = [BosonSampling]
+Order = [:type]
+```

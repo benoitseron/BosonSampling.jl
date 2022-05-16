@@ -15,6 +15,26 @@ function fourier_matrix(n::Int; normalized = true)
     end
 end
 
+function hadamard_matrix(n::Int, normalized = true )
+
+	H = Array{ComplexF64}(undef, n, n)
+
+	for i in 1:n
+		for j in 1:n
+			bi = map(x->parse(Int,x), split(bitstring(Int8(i-1)),""))
+			bj = map(x->parse(Int,x), split(bitstring(UInt8(j-1)),""))
+			H[i,j] = (-1)^(sum(bi.&bj))
+		end
+	end
+
+	if normalized
+		return 1/sqrt(n) * H
+	else
+		return H
+	end
+
+end
+
 function sylvester_matrix(p; normalized = true)
 
     """returns the sylvester matrix of size 2^p"""
@@ -343,10 +363,11 @@ function gram_from_n_r_vectors(M)
 
 end
 
-function gram_matrix_toy_model(n::Int, x::Real)
+function gram_matrix_one_param(n::Int, x::Real)
+
+	@argcheck x>=0 && x<= 1
 
 	S = 1.0 * Matrix(I, n, n)
-
 	for i in 1:n
 		for j in 1:n
 			i!=j ? S[i,j] = x : continue
@@ -356,7 +377,6 @@ function gram_matrix_toy_model(n::Int, x::Real)
 	S
 
 end
-
 
 function column_normalize(M)
    for col in 1:size(M,2) #column normalize

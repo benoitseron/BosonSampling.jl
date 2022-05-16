@@ -1,4 +1,4 @@
-function noisy_distribution(;input, distinguishability, reflectivity, interf, exact=true, approx=true, samp=true)
+function noisy_distribution(;input::Input, reflectivity::Real, interf::Interferometer, exact=true, approx=true, samp=true)
 
     # https://arxiv.org/pdf/1809.01953.pdf
 
@@ -7,9 +7,15 @@ function noisy_distribution(;input, distinguishability, reflectivity, interf, ex
     δ = 1e-4
 
     input_modes = input.r.state
-    number_photons = input.r.n
-    number_modes = input.r.m
+    number_photons = input.n
+    number_modes = input.m
     U = interf.U
+
+    if get_parametric_type(input)[1] == OneParameterInterpolation
+        distinguishability = input.distinguishability_param
+    else
+        get_parametric_type(input)[1] == Bosonic ? distinguishability = 1.0 : distinguishability = 0.0
+    end
 
     number_output_photons = trunc(Int, number_photons*reflectivity)
     input_occupancy_modes = fill_arrangement(input_modes)
@@ -33,36 +39,19 @@ function noisy_distribution(;input, distinguishability, reflectivity, interf, ex
             perm = collect(permutations(combs[j]))
             for l = 1:length(perm)
 
-                count = sum(
-                    collect(
-                        Int(perm[l][ll] == combs[j][ll]) for
-                        ll = 1:length(perm[l])
-                    ),
-                )
+                count = sum(collect(Int(perm[l][ll] == combs[j][ll]) for ll = 1:length(perm[l])))
                 korder = k - count
 
                 if ans == true
-
-                    pterm =
-                        distinguishability^korder * ryser(
-                            U[combs[j], nlist[i]] .* conj(U[perm[l], nlist[i]]),
-                        )
-                    pterm = real(
-                        pterm / (binomial(number_photons, k) * factorial(k)),
-                    )
+                    pterm = distinguishability^korder * ryser(U[combs[j], nlist[i]] .* conj(U[perm[l], nlist[i]]))
+                    pterm = real(pterm / (binomial(number_photons, k) * factorial(k)))
                     res += pterm
-
                 elseif ans == false && korder <= kmax
-
-                    pterm =
-                        distinguishability^korder * ryser(
-                            U[combs[j], nlist[i]] .* conj(U[perm[l], nlist[i]]),
-                        )
-                    pterm = real(
-                        pterm / (binomial(number_photons, k) * factorial(k)),
-                    )
+                    pterm = distinguishability^korder * ryser(U[combs[j], nlist[i]] .* conj(U[perm[l], nlist[i]]))
+                    pterm = real(pterm / (binomial(number_photons, k) * factorial(k)))
                     res += pterm
                 end
+
             end
         end
 
@@ -70,7 +59,7 @@ function noisy_distribution(;input, distinguishability, reflectivity, interf, ex
 
     end
 
-    compute_full_distribution(ans) = [compute_pi(i,ans) for i = 1:length(nlist)]
+    compute_full_distribution(ans) = map(i->compute_pi(i,ans), 1:length(nlist))
 
     function sampling(n_samples = 1e5)
 
@@ -90,32 +79,24 @@ function noisy_distribution(;input, distinguishability, reflectivity, interf, ex
             prob_test = 0
 
             for j = 1:length(perm)
-
                 count = sum(collect(Int(k - sum(perm[j]) == comb_test)))
                 if count <= kmax
-                    prob_test += ryser(
-                        U[comb_test, b_test] .* conj(U[perm[j], b_test]),
-                    )
+                    prob_test += ryser(U[comb_test, b_test] .* conj(U[perm[j], b_test]))
                 end
-
             end
 
             prob_test = real(prob_test)
 
             if prob_test > proba
-
                 b = b_test
                 proba = prob_test
                 comb = comb_test
                 current_pos = pos_test
-
             elseif prob_test / proba > rand()
-
                 b = b_test
                 proba = prob_test
                 comb = comb_test
                 current_pos = pos_test
-
             end
 
             bprob[current_pos] += 1 / n_samples
@@ -134,4 +115,3 @@ function noisy_distribution(;input, distinguishability, reflectivity, interf, ex
     return output
 
 end
-

@@ -1,52 +1,25 @@
-using Documenter
-using BosonSampling
 
-About = "Introduction" => "intro.md"
+push!(LOAD_PATH, "path/to/BosonSampling.jl/src")
 
-# GettingStarted = "gettingstarted.md"
+using Documenter, BosonSampling
 
-Functions = "Functions" => "functions.md"
+About = "About" => " About.md"
 
-#
+GettingStarted = "gettingstarted.md"
 
-# Examples = "Examples" => [
+Types = "Types" => "index.md"
 
-#         "examples/flux.md"
-
-#     ]
-
-#
-
-# License = "License" => "license.md"
-
-PAGES = [About,  Functions]
-
-
+PAGES = [About,Types]
 
 makedocs(
-
+    source = "/Path/to/BosonSampling.jl/docs/src/",
     sitename = "BosonSampling.jl",
-
     modules = [BosonSampling],
-
     authors = "Benoit Seron, Antoine Restivo",
-
     format = Documenter.HTML(),
-
     pages = PAGES
-
 )
 
-# deploydocs(repo = "github.com/Evizero/Augmentor.jl.git")
-
-# Documenter can also automatically deploy documentation to gh-pages.
-
-# See "Hosting Documentation" and deploydocs() in the Documenter manual
-
-# for more information.
-
 deploydocs(
-
-    repo = "github.com/benoitseron/BosonSampling.jl.git"
-
+    repo = "https://github.com/benoitseron/BosonSampling.jl.git"
 )

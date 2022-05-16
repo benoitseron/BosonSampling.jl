@@ -130,7 +130,7 @@ function compute_probabilities_partition(physical_interferometer::Interferometer
         corresponding to the occupation numbers in the partition and the
         associated probability"""
 
-        @argcheck at_most_one_photon_per_bin(input_state) "more than one input per mode is not implemented"
+        @argcheck at_most_one_photon_per_bin(input_state.r) "more than one input per mode is not implemented"
 
         occupies_all_modes(part) ? (@warn "inefficient if no loss: partition occupies all modes thus extra calculations made that are unnecessary") : nothing
 
