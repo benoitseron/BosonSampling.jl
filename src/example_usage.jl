@@ -121,13 +121,13 @@ n = 2 # photon number
 m = 2 # mode number
 proba_bunching = Vector{Float64}(undef, 0)
 
-for x = 0.00001:0.01:1.0
+for x = 0.0:0.01:1.0
     input = Input{OneParameterInterpolation}(first_modes(n,m), x)
     p_theo = theoretical_distribution(input=input, interf=B)
 
     push!(proba_bunching, p_theo[2]) # store the probabilty to observe one photon in each mode
 end
-plot(0.001:0.01:1, proba_bunching, label=nothing, xlabel="distinguishability", ylabel="event probabilty")
+plot(0:0.01:1, proba_bunching, label=nothing, xlabel="distinguishability", ylabel="event probabilty")
 
 ### subsets ###
 
@@ -261,7 +261,7 @@ m = 8
 input = Input{Bosonic}(ModeOccupation(random_occupancy(n,m)))
 interf = RandHaar(m)
 output = cliffords_sampler(input=input, interf=interf)
-visualizeSampling(input, output)
+visualize_sampling(input, output)
 
 distinguishability = 0.7
 reflectivity = 0.7
@@ -271,4 +271,4 @@ data_exact = noisy_distribution(input=input, reflectivity=reflectivity, interf=i
 data_exact = data_exact[1]
 
 nlist = output_mode_occupation(n,m) # get all the possible output
-visualizeData(input, nlist[200], data_exact)
+visualize_proba(input, nlist[200], data_exact)
