@@ -1,13 +1,38 @@
+### Inputs ###
+
+"""
+Supertype to any concrete input type such as 'Bosonic'
+"""
 abstract type InputType end
 
+"""
+Type used to notify that the input is made of FockState indistinguishable photons.
+"""
 struct Bosonic <: InputType
 end
 
+"""
+Type used to notify that the input is made of FockState partially distinguishable
+photons.
+"""
 abstract type PartDist <: InputType end
+
+"""
+One parameter model of partial distinguishability interpolating between indistinguishable
+photons FockState and fully distinguishable.
+!!! note
+    source : [Sampling of partially distinguishable bosons and the relation to the multidimensional permanent](https://arxiv.org/pdf/1410.7687.pdf)
+"""
 struct OneParameterInterpolation <: PartDist
 end
+
+"""
+Model of partially distinguishable photons FockState described by a randomly generated Gram matrix.
+"""
 struct RandomGramMatrix <: PartDist
 end
+
+
 struct UserDefinedGramMatrix <: PartDist
 end
 
@@ -16,8 +41,6 @@ end
 
 struct Undef <: InputType
 end
-
-abstract type Gaussian <: InputType end
 
 mutable struct OrthonormalBasis
 
@@ -40,7 +63,7 @@ struct GramMatrix{T<:InputType}
     n::Int
     S::Matrix
     rank::Union{Int,Nothing}
-    distinguishability_param::Union{Float64,Nothing}
+    distinguishability_param::Union{Real,Nothing}
     generating_vectors::OrthonormalBasis
 
     function GramMatrix{T}(n::Int) where {T<:InputType}
@@ -57,7 +80,7 @@ struct GramMatrix{T<:InputType}
         end
     end
 
-    function GramMatrix{T}(n::Int, distinguishability_param::Float64) where {T<:InputType}
+    function GramMatrix{T}(n::Int, distinguishability_param::Real) where {T<:InputType}
         if T == OneParameterInterpolation
             return new{T}(n, gram_matrix_one_param(n,distinguishability_param), nothing, distinguishability_param, OrthonormalBasis())
         else
@@ -72,7 +95,7 @@ struct GramMatrix{T<:InputType}
             T in [Bosonic,Distinguishable,RandomGramMatrix,Undef] ? error("S matrix should not be specified for type ", T) : error("type ", T, " not implemented")
         end
     end
-    
+
 end
 
 struct Input{T<:InputType}
@@ -81,7 +104,7 @@ struct Input{T<:InputType}
     n::Int
     m::Int
     G::GramMatrix
-    distinguishability_param::Union{Float64,Nothing}
+    distinguishability_param::Union{Real,Nothing}
 
     function Input{T}(r::ModeOccupation) where {T<:InputType}
         if T in [Bosonic, Distinguishable, Undef, RandomGramMatrix]
@@ -91,7 +114,7 @@ struct Input{T<:InputType}
         end
     end
 
-    function Input{T}(r::ModeOccupation, distinguishability_param::Float64) where {T<:InputType}
+    function Input{T}(r::ModeOccupation, distinguishability_param::Real) where {T<:InputType}
         if T == OneParameterInterpolation
             return new{T}(r, r.n, r.m, GramMatrix{T}(r.n,distinguishability_param), distinguishability_param)
         else
@@ -108,3 +131,5 @@ struct Input{T<:InputType}
     end
 
 end
+
+at_most_one_photon_per_bin(input::Input) = at_most_one_photon_per_bin(input.r)
