@@ -1,6 +1,7 @@
 using BosonSampling
 using Test
 using Plots
+using JLD
 
 ### scattering ###
 
@@ -274,3 +275,12 @@ data_exact = data_exact[1]
 nlist = output_mode_occupation(n,m) # get all the possible output
 visualize_proba(input, nlist[200], data_exact)
 
+### Access to datasets ###
+data = load("datasets/cliffords_sampler.jld")
+output = data["first_modes"]["n=10;m=20;interf=Fourier"]
+output = data["random_occupancy"]["n=6;m=36;interf=RandHaar"]
+data = load("datasets/noisy_distribution.jld")
+p = data["OneParameterInterpolation"]["n=4;m=16;interf=Fourier;reflectivity=0.25;distinguishability_param=0.75"]
+p_theo = p[1]
+p_approx = p[2]
+p_samp = p[3]
