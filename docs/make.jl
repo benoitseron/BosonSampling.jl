@@ -1,18 +1,15 @@
-
-push!(LOAD_PATH, "path/to/BosonSampling.jl/src")
+push!(LOAD_PATH, "./src")
 
 using Documenter, BosonSampling
 
-About = "About" => " About.md"
+About = "About" => "about.md"
 
-GettingStarted = "gettingstarted.md"
-
-Types = "Types" => "index.md"
+Types = "Types" => "types.md"
 
 PAGES = [About,Types]
 
 makedocs(
-    source = "/Path/to/BosonSampling.jl/docs/src/",
+    source = "./src/",
     sitename = "BosonSampling.jl",
     modules = [BosonSampling],
     authors = "Benoit Seron, Antoine Restivo",

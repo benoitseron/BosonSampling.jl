@@ -12,7 +12,7 @@ end
 Type used to notify that the input is made of FockState partially distinguishable
 photons.
 """
-struct PartDist <: InputType
+abstract type PartDist <: InputType
 end
 
 """
