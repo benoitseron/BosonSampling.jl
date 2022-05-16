@@ -22,6 +22,11 @@ struct Fourier <: Interferometer
     Fourier(m::Int) = new(m,fourier_matrix(m))
 end
 
+struct Hadamard <: Interferometer
+    m::Int
+    U::Matrix
+    Hadamard(m::Int) = new(m,hadamard_matrix(m))
+end
 
 struct BeamSplitter <: Interferometer
     transmission_amplitude::Float64
