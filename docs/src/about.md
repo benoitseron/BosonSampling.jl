@@ -5,10 +5,9 @@ This project implements standard and scattershot BosonSampling in Julia, includi
 ## Conventions
 
 ### Basic conventions :
-  Photon creation operators are changed as
-  ``a_j \right_arrow \sum_j U_jk b_k``
+  Photon creation operators are changed as ``a_j \right_arrow \sum_j U_{jk} b_k``
   when going through the interferometer ``\op{U}``.
-  Thus, the rows correspond to the input, columns to the output, that is: the probability that a single goes from `j` to `k` is ``|U_jk|^2``
+  Thus, the rows correspond to the input, columns to the output, that is: the probability that a single goes from `j` to `k` is ``|U_{jk}|^2``
 
   This is the conventions used by most people. Let us warn that Valery Shchesnovich uses a convention that is incompatible: ``\op{U}`` needs to be changed to ``\op{U}^\dagger``. (And likewise defines the Gram matrix as the transpose of ours, see below.)
 
@@ -24,7 +23,7 @@ This project implements standard and scattershot BosonSampling in Julia, includi
 
 ### Bunching
 
-The H-matrix follows a convention different from that of Valery Shchesnovich: `H_{a,b} = \sum _{l \in \mathcal{K}} U_{l,a} U_{l,b}^{*}`.
+The H-matrix follows a convention different from that of Valery Shchesnovich: ``H_{a,b} = \sum _{l \in \mathcal{K}} U_{l,a} U_{l,b}^{*}``.
 
 
 ### Conventions regarding Julia:
