@@ -4,7 +4,7 @@ choose state truncation s.t the runtime goes as O(2^k + Poly(m,n,k)).
         https://arxiv.org/pdf/1907.00022.pdf
 """
 
-function noisy_sampler(;input::Input, reflectivity::Float64, interf::Interferometer)
+function noisy_sampler(;input::Input, reflectivity::Real, interf::Interferometer)
 
     list_assignement = fill_arrangement(input.r.state)
     l = rand(Binomial(input.n, reflectivity))
