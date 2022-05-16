@@ -30,6 +30,7 @@ see for the definition of the x-model :
 multidimensional permanent](https://arxiv.org/pdf/1410.7687.pdf)
 """
 struct OneParameterInterpolation <: PartDist
+end
 """
 
     Bosonic
