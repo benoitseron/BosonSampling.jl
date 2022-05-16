@@ -1,19 +1,11 @@
 ### Inputs ###
 
 """
-
-    InputType
-
 Supertype to any concrete input type such as `Bosonic`
 """
 abstract type InputType end
 
-"""
-
-Type used to notify that the input is made of FockState indistinguishable photons.
-"""
-struct Bosonic <: InputType
-end
+abstract type Bosonic <: InputType end
 
 """
 Type used to notify that the input is made of FockState partially distinguishable
@@ -25,30 +17,11 @@ abstract type PartDist <: InputType end
 One parameter model of partial distinguishability interpolating between indistinguishable
 photons FockState and fully distinguishable.
 
-see for the definition of the x-model : 
-[Sampling of partially distinguishable bosons and the relation to the 
+see for the definition of the x-model :
+[Sampling of partially distinguishable bosons and the relation to the
 multidimensional permanent](https://arxiv.org/pdf/1410.7687.pdf)
 """
 struct OneParameterInterpolation <: PartDist
-end
-"""
-
-    Bosonic
-
-Type use to notify that the input is made of FockState indistinguishable photons.
-"""
-struct Bosonic <:InputType
-end
-
-"""
-
-    PartDist
-
-Type use to notify that the input is made of FockState partially distinguishable
-photons.
-"""
-struct PartDist <:InputType
-
 end
 
 """
@@ -56,7 +29,6 @@ Model of partially distinguishable photons FockState described by a randomly gen
 """
 struct RandomGramMatrix <: PartDist
 end
-
 
 struct UserDefinedGramMatrix <: PartDist
 end
@@ -68,9 +40,6 @@ struct Undef <: InputType
 end
 
 """
-
-    OrthonormalBasis
-
 Basis of vectors v_1,...,v_n stored as columns in a n*r matrix
 possibly empty.
 """
@@ -88,9 +57,6 @@ mutable struct OrthonormalBasis
 end
 
 """
-
-    GramMatrix{T<:InputType}
-
 Matrix of partial distinguishability. Will automatically generate the proper
 matrix if given an input type defining a specific gram matrix such as `Bosonic`.
 """
