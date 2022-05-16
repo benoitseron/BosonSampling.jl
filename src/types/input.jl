@@ -5,16 +5,15 @@ Supertype to any concrete input type such as `Bosonic`
 """
 abstract type InputType end
 
-"""
-Type used to notify that the input is made of FockState indistinguishable photons.
-"""
-abstract type Bosonic <: InputType end
+struct Bosonic <: InputType
+end
 
 """
 Type used to notify that the input is made of FockState partially distinguishable
 photons.
 """
-abstract type PartDist <: InputType end
+struct PartDist <: InputType
+end
 
 """
 One parameter model of partial distinguishability interpolating between indistinguishable
