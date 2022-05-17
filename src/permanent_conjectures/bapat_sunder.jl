@@ -1,3 +1,9 @@
+"""
+	violates_bapat_sunder(A,B, tol = ATOL)
+
+Checks if matrices `A` and `B` violate the Bapat-Sunder conjecture, see
+[Boson bunching is not maximized by indistinguishable particles](https://arxiv.org/abs/2203.01306)
+"""
 function violates_bapat_sunder(A,B, tol = ATOL)
 
 	diagonal_el_product = prod([B[i,i] for i in 1:size(B)[1]])

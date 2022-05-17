@@ -2,17 +2,24 @@
 # photons in partitions of the output modes
 # a partition is a set of subsets of the output modes
 
+"""
+
+        all_mode_configurations(n,n_subset; only_photon_number_conserving = false)
+        all_mode_configurations(input_state::Input,part::Partition; only_photon_number_conserving = false)
+        all_mode_configurations(input_state::Input,sub::Subset; only_photon_number_conserving = false)
+
+generates all possible photon counts of `n` photons in a partition/subset
+of `n_subset` subsets
+
+does not take into account photon number conservation by default
+
+this is the photon counting in partitions and not events outputs
+
+but it can be used likewise
+"""
 function all_mode_configurations(n,n_subset; only_photon_number_conserving = false)
 
-        """generates all possible photon counts
-        of n photons in a partition/subset
-        of n_subset subsets
 
-        does not take into account photon number conservation by default
-
-        this is the photon counting in partitions and not events outputs
-
-        but it can be used likewise"""
 
         array = []
         for i in 1:(n+1)^(n_subset)
@@ -36,19 +43,25 @@ all_mode_configurations(input_state::Input,part::Partition; only_photon_number_c
 
 all_mode_configurations(input_state::Input,sub::Subset; only_photon_number_conserving = false) = all_mode_configurations(input_state.n,1; only_photon_number_conserving = only_photon_number_conserving)
 
-function remove_trivial_partitions!(part_list)
+"""
 
-    """in a list of partitions sizes, ex. [[2,0],[1,1],[0,2]], keeps only
-    the elements with non trivial subset size, in this ex. only [1,1]"""
+        remove_trivial_partitions!(part_list)
+
+In a list of partitions sizes, ex. [[2,0],[1,1],[0,2]], keeps only
+the elements with non trivial subset size, in this ex. only [1,1]."""
+function remove_trivial_partitions!(part_list)
 
     filter!(x -> !any(x .== 0), part_list)
 
 end
 
+"""
 
+        ranked_partition_list(part_list)
+
+removes partitions such as [1,2] when [2,1] is already counted as only the size of the partition counts; only keeps vectors of decreasing count
+"""
 function ranked_partition_list(part_list)
-
-    """ removes partitions such as [1,2] when [2,1] is already counted as only the size of the partition counts; only keeps vectors of decreasing count"""
 
     output_partitions = []
 
@@ -70,15 +83,19 @@ function ranked_partition_list(part_list)
     output_partitions
 end
 
+"""
+
+        photon_number_conserving_events(physical_indexes, n; partition_spans_all_modes = false)
+
+returns only the events conserving photon number `n`
+
+if `partition_spans_all_modes = false`, gives all events with less than `n` or `n`
+photons
+
+if `partition_spans_all_modes = true` only exact photon number conserving
+physical_indexes
+"""
 function photon_number_conserving_events(physical_indexes, n; partition_spans_all_modes = false)
-
-        """returns only the events conserving photon number n
-
-        if partition_spans_all_modes = false, gives all events with less than n or n
-        photons
-
-        if partition_spans_all_modes = true only exact photon number conserving
-        physical_indexes"""
 
         results = []
         for index in physical_indexes
@@ -96,19 +113,26 @@ function photon_number_conserving_events(physical_indexes, n; partition_spans_al
 
 end
 
+"""
 
+        photon_number_non_conserving_events(physical_indexes,n ; partition_spans_all_modes = false)
+
+returns the elements not conserving the number of photons
+"""
 function photon_number_non_conserving_events(physical_indexes,n ; partition_spans_all_modes = false)
-
-        """returns the elements not conserving the number of photons"""
 
         setdiff(physical_indexes, photon_number_conserving_events(physical_indexes, n, ; partition_spans_all_modes = partition_spans_all_modes))
 
 end
 
-function check_photon_conservation(physical_indexes,  pdf, n; atol = ATOL, partition_spans_all_modes = false)
+"""
 
-        """checks if probabilities corresponding to non photon number conserving
-        events are zero"""
+        check_photon_conservation(physical_indexes,  pdf, n; atol = ATOL, partition_spans_all_modes = false)
+
+checks if probabilities corresponding to non photon number conserving
+events are zero
+"""
+function check_photon_conservation(physical_indexes,  pdf, n; atol = ATOL, partition_spans_all_modes = false)
 
         events_to_check = photon_number_non_conserving_events(physical_indexes,n; partition_spans_all_modes = partition_spans_all_modes)
 
@@ -120,15 +144,18 @@ function check_photon_conservation(physical_indexes,  pdf, n; atol = ATOL, parti
 
 end
 
+"""
+        compute_probabilities_partition(physical_interferometer::Interferometer, part::Partition, input_state::Input)
+
+computes the probability to find a certain photon counts in a
+partition `part` of the output modes for the interferometer given
+
+returns : (counts = physical_indexes, probabilities = pdf)
+
+corresponding to the occupation numbers in the partition and the
+associated probability
+"""
 function compute_probabilities_partition(physical_interferometer::Interferometer, part::Partition, input_state::Input)
-
-        """computes the probability to find a certain photon counts in a
-        partition `part` of the output modes for the interferometer given
-
-        returns : (counts = physical_indexes, probabilities = pdf)
-
-        corresponding to the occupation numbers in the partition and the
-        associated probability"""
 
         @argcheck at_most_one_photon_per_bin(input_state.r) "more than one input per mode is not implemented"
 
@@ -188,12 +215,16 @@ function compute_probabilities_partition(physical_interferometer::Interferometer
         (physical_indexes, pdf)
 end
 
+"""
+
+        compute_probability_partition_occupancy(physical_interferometer::Interferometer, part_occupancy::PartitionOccupancy, input_state::Input)
+
+computes the probability to find a partition occupancy
+
+note: inefficient to use multiple times for the same physical setting,
+rather use compute_probabilities_partition
+"""
 function compute_probability_partition_occupancy(physical_interferometer::Interferometer, part_occupancy::PartitionOccupancy, input_state::Input)
-
-        """computes the probability to find a partition occupancy
-
-        note: inefficient to use multiple times for the same physical setting,
-        rather use compute_probabilities_partition"""
 
         (physical_indexes, pdf) = compute_probabilities_partition(physical_interferometer, part_occupancy.partition, input_state::Input)
 
@@ -221,6 +252,17 @@ function print_pdfs(physical_indexes, pdf, n; physical_events_only = false, part
         println("---------------")
 end
 
+"""
+        compute_probability!(ev::Event{TIn,TOut}) where {TIn<:InputType, TOut<:PartitionCount}
+        compute_probability!(ev::Event{TIn,TOut}) where {TIn<:InputType, TOut<:PartitionCountsAll}
+
+Given a defined Event, computes/updates its probability or set of probabilities
+(for instance if looking at partition outputs, with `MultipleCounts` begin filled).
+
+This function is defined separately as it is most often the most time consuming
+step of calculations and one may which to separate the evaluation of probabilities
+from preliminary definitions.
+"""
 function compute_probability!(ev::Event{TIn,TOut}) where {TIn<:InputType, TOut<:PartitionCount}
 
         check_probability_empty(ev)

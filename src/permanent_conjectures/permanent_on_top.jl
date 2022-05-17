@@ -1,9 +1,10 @@
 # functions relating to more general input to the generalized bunching conjecture
 # instead of pure state inputs
 
+"""
+computes the Schur matrix as defined in Eq. 1 of Linear Algebra and its Applications 490 (2016) 196–201
+"""
 function schur_matrix(H)
-
-    """computes the Schur matrix as defined in Eq. 1 of Linear Algebra and its Applications 490 (2016) 196–201"""
 
     @test is_positive_semidefinite(H)
 

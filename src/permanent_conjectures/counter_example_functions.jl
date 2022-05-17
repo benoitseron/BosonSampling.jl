@@ -1,9 +1,14 @@
 # functions relating to counter examples of the bapat sunder conjecture
 # and its physical realization
 
-function cholesky_semi_definite_positive(A)
+"""
 
-	"""cholesky decomposition (A = R' * R) for a sdp but not strictly positive definite matrix"""
+	 cholesky_semi_definite_positive(A)
+
+cholesky decomposition (`A` = R' * R) for a sdp but not strictly positive
+definite matrix
+"""
+function cholesky_semi_definite_positive(A)
 
 	# method found in some forum
 	X = sqrt(A)
@@ -24,9 +29,15 @@ function cholesky_semi_definite_positive(A)
 
 end
 
+"""
+
+	incorporate_in_a_unitary(X)
+
+incorporates the renormalized matrix X in a double sized unitary through the
+proof of Lemma 29  of Aaronson Arkipov seminal [The Computational Complexity of Linear Optics](https://arxiv.org/abs/1011.3245)
+"""
 function incorporate_in_a_unitary(X)
 
-	"""incorporates the renormalized matrix X in a double sized unitary through the proof of Lemma 29  of Aaronson Arkipov seminal https://arxiv.org/abs/1011.3245"""
 
 	Y = X / norm(X)
 
@@ -50,13 +61,17 @@ function incorporate_in_a_unitary(X)
 	@test is_unitary(W)
 
 	W
-	
+
 end
 
-function incorporate_in_a_unitary_non_square(X)
+"""
 
-	"""same as incorporate_in_a_unitary but for a matrix renormalized X of type (m,n) with m >= n
-	generates a minimally sized unitary (ex 9*9 interferometer for the 7*2 M' of the first counter example of drury)"""
+	incorporate_in_a_unitary_non_square(X)
+
+same as `incorporate_in_a_unitary` but for a matrix renormalized `X` of type (m,n) with m >= n
+generates a minimally sized unitary (ex 9*9 interferometer for the 7*2 M' of the first counter example of drury)
+"""
+function incorporate_in_a_unitary_non_square(X)
 
 	# pad X with zeros
 
@@ -95,9 +110,14 @@ function incorporate_in_a_unitary_non_square(X)
 
 end
 
-function add_columns_to_make_square_unitary(M_dagger)
+"""
 
-	"""makes a square matrix U of which the first columns are M_dagger, which has to be unitary by itself"""
+	add_columns_to_make_square_unitary(M_dagger)
+
+Makes a square matrix `U` of which the first columns are `M_dagger`, which has to be
+unitary by itself by a random choice of vectors that are then orthonormalized.
+"""
+function add_columns_to_make_square_unitary(M_dagger)
 
 	n,r = size(M_dagger)
 	U = rand(ComplexF64, (n,n))

@@ -1,8 +1,15 @@
 # follows Conjugate gradient algorithm for optimization under unitary Traian Abrudan  ,1,2 , Jan Eriksson 2 , Visa Koivunen
 # matrix constraint Signal Processing 89 (2009) 1704–1714
+
+
 function step_size(w_k, h_k; q, euclidian_gradient, p = 5)
 
-    """implements the geodesic search algorithm of table 1 in Conjugate gradient algorithm for optimization under unitary Traian Abrudan  ,1,2 , Jan Eriksson 2 , Visa Koivunen matrix constraint Signal Processing 89 (2009) 1704–1714"""
+    """
+
+        step_size(w_k, h_k; q, euclidian_gradient, p = 5)
+
+    implements the geodesic search algorithm of table 1 in Conjugate gradient algorithm for optimization under unitary Traian Abrudan  ,1,2 , Jan Eriksson 2 , Visa Koivunen matrix constraint Signal Processing 89 (2009) 1704–1714"""
+
     n = size(w_k)[1]
 
     omega_max = maximum(abs.(eigvals(h_k)))
@@ -56,11 +63,16 @@ function step_size(w_k, h_k; q, euclidian_gradient, p = 5)
 
 end
 
+"""
+
+    minimize_over_unitary_matrices(;euclidian_gradient, q, n, p=5, tol = 1e-6, max_iter = 100)
+
+returns the (optimized matrix, optimization_success)
+
+implements the minimization algorithm of table 3 in  Conjugate gradient algorithm for optimization under unitary Traian Abrudan  ,1,2 , Jan Eriksson 2 , Visa Koivunen matrix constraint Signal Processing 89 (2009) 1704–1714"""
 function minimize_over_unitary_matrices(;euclidian_gradient, q, n, p=5, tol = 1e-6, max_iter = 100)
 
-    """returns the (optimized matrix, optimization_success)
 
-    implements the minimization algorithm of table 3 in  Conjugate gradient algorithm for optimization under unitary Traian Abrudan  ,1,2 , Jan Eriksson 2 , Visa Koivunen matrix constraint Signal Processing 89 (2009) 1704–1714"""
 
     optimization_success = false
 

@@ -1,4 +1,9 @@
 # search for counter examples to bapat sunder to show that it is hard
+"""
+    search_until_user_stop(search_function)
+
+Runs `search_function` until user-stop (Ctrl+C).
+"""
 function search_until_user_stop(search_function)
 
     n_trials = 1
@@ -20,6 +25,11 @@ function search_until_user_stop(search_function)
     end
 end
 
+"""
+    random_search_counter_example_bapat_sunder(;m,n,r, physical_H = true)
+
+Brute-force search of counter-examples of rank `r`.
+"""
 function random_search_counter_example_bapat_sunder(;m,n,r, physical_H = true)
 
     S = rand_gram_matrix_rank(n,r)

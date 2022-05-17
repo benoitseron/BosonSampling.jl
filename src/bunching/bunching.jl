@@ -1,11 +1,15 @@
 """
 	H_matrix(U, input_state, partition_occupancy_vector)
+	H_matrix(interf::Interferometer, i::Input, o::OutputMeasurement{FockDetection})
+	H_matrix(interf::Interferometer, i::Input, subset_modes::ModeOccupation)
 
-H matrix for a partition defined by `partition_occupancy_vector`
+H matrix for a partition defined by `partition_occupancy_vector`, see definition
+in the article below
 
-note: conventions follow the author's Boson bunching is not maximized by indistinguishable particles
-
-which are the ones compatible with Tichy (Shshnovitch has a different one for the evolution of the creation operators)
+**note**: conventions follow the author's [Boson bunching is not
+maximized by indistinguishable particles](https://arxiv.org/abs/2203.01306)
+which are the ones compatible with Tichy's conventions (Shshnovitch has a
+different one for the evolution of the creation operators)
 """
 function H_matrix(U, input_state, partition_occupancy_vector)
 
@@ -37,35 +41,47 @@ H_matrix(interf::Interferometer, i::Input, o::OutputMeasurement{FockDetection}) 
 
 H_matrix(interf::Interferometer, i::Input, subset_modes::ModeOccupation) = isa_subset(subset_modes) ? H_matrix(interf.U, i.r.state, subset_modes.state) : error("invalid subset")
 
-function full_bunching_probability(interf::Interferometer, i::Input, subset_modes::Subset)
+"""
 
-	"""computes the probability that all n photons end up in the subset of chosen
-	output modes following https://arxiv.org/abs/1509.01561"""
+	full_bunching_probability(interf::Interferometer, i::Input, subset_modes::Subset)
+
+computes the probability that all n photons end up in the subset of chosen
+output modes following [Universality of Generalized Bunching and
+Efficient Assessment of Boson Sampling](https://arxiv.org/abs/1509.01561)
+"""
+function full_bunching_probability(interf::Interferometer, i::Input, subset_modes::Subset)
 
 	return clean_proba(permanent(H_matrix(interf,i,subset_modes) .* transpose(i.G.S)))
 
 end
 
-function bunching_events(input_state::Input, sub::Subset)
+#
+# """
+#
+# 	bunching_events(input_state::Input, sub::Subset)
+#
+# generates the output configurations corresponding to a full
+# bunching in the subset_modes
+# """
+# function bunching_events(input_state::Input, sub::Subset)
+#
+# 	#photon_distribution_in_subset_modes =
+# 	all_mode_configurations(input_state, sub, only_photon_number_conserving = false)
+#
+# 	######### convert to output ModeOccupations
+#
+# end
 
-	"""generates the output configurations corresponding to a full
-	bunching in the subset_modes"""
+"""
 
+	bunching_probability_brute_force_bosonic(U, input_state, output_state; print_output = false)
+	bunching_probability_brute_force_bosonic(interf::Interferometer, i::Input, subset_modes::ModeOccupation)
+	
+bosonic bunching probability by direct summation of all possible cases
 
-	#photon_distribution_in_subset_modes =
-	all_mode_configurations(input_state, sub, only_photon_number_conserving = false)
-
-	######### convert to output ModeOccupations
-
-end
-
-
-
+bunching_event_proba gives the probability to get the event of [1^n 0^(m-n)]
+"""
 function bunching_probability_brute_force_bosonic(U, input_state, output_state; print_output = false)
-
-    """bosonic bunching probability by direct summation of all possible cases
-
-    bunching_event_proba gives the probability to get the event of [1^n 0^(m-n)]"""
 
     n = sum(input_state)
     m = size(U,1)
