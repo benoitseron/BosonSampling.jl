@@ -11,8 +11,8 @@ makedocs(
     pages = [
         "About" => "about.md",
         "Types" => Any[
-            "inputs" => "type/input.md",
-            "events" => "type/events.md"],
+            "inputs" => "types/input.md",
+            "events" => "types/events.md"],
         "Functions" => Any[
             "bunching" => "functions/bunching.md"
         ]
