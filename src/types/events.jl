@@ -72,7 +72,7 @@ struct Event{TIn<:InputType, TOut<:OutputMeasurementType}
     function Event{TIn, TOut}(input_state, output_measurement, interferometer::Interferometer, proba_params = nothing) where {TIn<:InputType, TOut<:OutputMeasurementType}
 
         if proba_params == nothing
-            proba_params = EventProbability()
+            proba_params = EventProbability(nothing)
         end
 
         new{TIn,TOut}(input_state, output_measurement, proba_params, interferometer)
