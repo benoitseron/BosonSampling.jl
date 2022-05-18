@@ -9,8 +9,8 @@ m = 5
 n = 3
 
 interf = RandHaar(m)
-i = Input{RandomGramMatrix}(first_modes(n,m))
-o = OutputMeasurement{FockDetection}(first_modes(n,m))
+i = Input{RandomModel}(first_modes(n,m))
+o = FockDetection(first_modes(n,m))
 ev = Event(i,o,interf)
 
 compute_probability!(ev)
