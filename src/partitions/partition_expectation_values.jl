@@ -88,7 +88,7 @@ end
 function best_partition_size(;m,n, n_subsets, distance = tvd)
 
     """return the ideal partition_size_vector for a given number
-    of subsets n_subsets
+    of subsets n_subsets as well as the haar averaged tvd in second parameter
 
     for a single subset, n_subsets = 2 as we need a complete partition, occupying all modes"""
 
@@ -104,7 +104,7 @@ function best_partition_size(;m,n, n_subsets, distance = tvd)
 
     for part in ranked_partition_list(part_list)
 
-        events = all_mode_configurations(m,n_subsets, only_photon_number_conserving = true)
+        events = all_mode_configurations(n,n_subsets, only_photon_number_conserving = true)
 
         pdf = [partition_expectation_values(part, event) for event in events]
 
