@@ -11,7 +11,7 @@ maximized by indistinguishable particles](https://arxiv.org/abs/2203.01306)
 which are the ones compatible with Tichy's conventions (Shshnovitch has a
 different one for the evolution of the creation operators)
 """
-function H_matrix(U, input_state, partition_occupancy_vector)
+function H_matrix(U, input_state::Vector, partition_occupancy_vector::Vector)
 
 	part = occupancy_vector_to_partition(partition_occupancy_vector)
 	input_modes = occupancy_vector_to_mode_occupancy(input_state)
@@ -57,7 +57,7 @@ end
 
 function full_bunching_probability(interf::Interferometer, i::Input, mo::ModeOccupation)
 
-	return clean_proba(permanent(H_matrix(interf,i,mo.state) .* transpose(i.G.S)))
+	return clean_proba(permanent(H_matrix(interf,i,mo) .* transpose(i.G.S)))
 
 end
 

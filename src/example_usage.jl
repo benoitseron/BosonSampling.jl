@@ -27,6 +27,8 @@ ib = Input{Bosonic}(first_modes(n,m))
 ipd = Input{RandomGramMatrix}(first_modes(n,m))
 subset_modes = first_modes(n,m)
 
+typeof(subset_modes)
+
 pb = full_bunching_probability(interf, ib, subset_modes)
 ppd = full_bunching_probability(interf, ipd, subset_modes)
 
@@ -77,7 +79,7 @@ starting_state = iterate_until_collisionless(() -> random_occupancy(n,m))
 
 known_pdf(state) = process_probability_distinguishable(U, input_state, state)
 target_pdf(state) = process_probability(U, input_state, state)
-known_sampler = () -> iterate_until_collisionless(() -> classical_sampler(U = U, m = m, n = n)) # gives a classical sampler
+known_sampler = () -> iterate_until_collisionless(() -> classical_sampler(U, m, n)) # gives a classical sampler
 
 
 samples = metropolis_sampler(;target_pdf = target_pdf, known_pdf = known_pdf , known_sampler = known_sampler , starting_state = starting_state, n_iter = 100)
@@ -140,7 +142,7 @@ s3 = Subset([1,0,1,0,0])
 
 "subsets are not allowed to overlap"
 
-check_subset_overlap([s1,s2,s3])
+# check_subset_overlap([s1,s2,s3]) will fail
 
 ### HOM tests: one mode ###
 
@@ -195,17 +197,18 @@ collect(typeof(input_state).parameters)
 
 m = 4
 n = 3
+
+inp = Input{Bosonic}(first_modes(n,m))
 set1 = zeros(Int,m)
 set2 = zeros(Int,m)
 set1[1:2] .= 1
 set2[3:4] .= 1
 
-
 physical_interferometer = RandHaar(m)
 part = Partition([Subset(set1), Subset(set2)])
 
 
-(physical_indexes,  pdf) = compute_probabilities_partition(physical_interferometer, part, n)
+(physical_indexes,  pdf) = compute_probabilities_partition(physical_interferometer, part, inp)
 fourier_indexes = copy(physical_indexes)
 
 
@@ -214,30 +217,21 @@ print_pdfs(physical_indexes, pdf, n; physical_events_only = true, partition_span
 
 ### partitions, subsets ###
 
+n = 2
+m = 5
+
 s1 = Subset([1,1,0,0,0])
 s2 = Subset([0,0,1,1,0])
-n = 2
 
 part = Partition([s1,s2])
-part_occ = PartitionOccupancy(ModeOccupation([2,1]),n,part)
+part_occ = PartitionOccupancy(ModeOccupation([2,0]),n,part)
 
-OutputMeasurement(part_occ)
+i = Input{Bosonic}(first_modes(n,m))
+o = PartitionCount(part_occ)
+interf = RandHaar(m)
+ev = Event(i,o,interf)
 
-### bunching ###
-
-m = 4
-n = 3
-
-set1 = zeros(Int,m)
-set1[1:2] .= 1
-
-physical_interferometer = RandHaar(m)
-sub = Subset(set1)
-
-input_state = Input{Bosonic}(first_modes(n,m))
-
-bunching_events(input_state,sub)
-#### not what we want
+compute_probability!(ev)
 
 ### multiple counts probabilities ###
 
@@ -257,7 +251,6 @@ o = PartitionCountsAll(part)
 ev = Event(i,o,interf)
 
 compute_probability!(ev)
-
 
 ### Visualization ###
 n = 4
