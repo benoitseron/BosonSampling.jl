@@ -217,30 +217,28 @@ function process_probability_partial(U, S, input_state,output_state)
 
 end
 
-process_probability_partial(interf::Interferometer, input_state::Input{PartDist},output_state::OutputMeasurement{FockDetection}) = process_probability_partial(interf.U, input_state.G.S, input_state.r.state,output_state.s.state)
+process_probability_partial(interf::Interferometer, input_state::Input{TIn} where {TIn<:PartDist},output_state::FockDetection) = process_probability_partial(interf.U, input_state.G.S, input_state.r.state,output_state.s.state)
 
 function compute_probability!(ev::Event{TIn,TOut}) where {TIn<:InputType, TOut<:FockDetection}
 
 	check_probability_empty(ev)
 
-	if TIn in [Bosonic, Distinguishable, PartDist]
+	ev.proba_params.precision = eps()
+	ev.proba_params.failure_probability = 0
 
-		ev.proba_params.precision = eps()
-		ev.proba_params.failure_probability = 0
+	if TIn == Bosonic
 
-		if TIn == Bosonic
+		ev.proba_params.probability = bosonic_probability(ev.interferometer.U, ev.input_state.r.state, ev.output_measurement.s.state)
 
-			ev.proba_params.probability = bosonic_probability(ev.interferometer.U, ev.input_state.r.state, ev.output_measurement.s.state)
+	elseif TIn == Distinguishable
 
-		elseif TIn == Distinguishable
+		ev.proba_params.probability = distinguishable_probability(ev.interferometer.U, ev.input_state.r.state, ev.output_measurement.s.state)
 
-			ev.proba_params.probability = distinguishable_probability(ev.interferometer.U, ev.input_state.r.state, ev.output_measurement.s.state)
-
-		else
-			ev.proba_params.probability = process_probability_partial(ev.interferometer, ev.input_state, ev.output_measurement)
-		end
-			ev.proba_params.probability = clean_proba(ev.proba_params.probability)
+	else
+		ev.proba_params.probability = process_probability_partial(ev.interferometer, ev.input_state, ev.output_measurement)
 	end
+
+	ev.proba_params.probability = clean_proba(ev.proba_params.probability)
 
 end
 

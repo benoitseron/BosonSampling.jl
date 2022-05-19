@@ -27,6 +27,11 @@ struct Subset
 
                 isa_subset(state) ? new(sum(state), length(state), state) : error("invalid subset")
         end
+        function Subset(modeocc::ModeOccupation)
+
+                state = modeocc.state
+                isa_subset(state) ? new(sum(state), length(state), state) : error("invalid subset")
+        end
 end
 
 Base.show(io::IO, s::Subset) = print(io, "subset = ", convert(Vector{Int},occupancy_vector_to_partition(s.subset)))

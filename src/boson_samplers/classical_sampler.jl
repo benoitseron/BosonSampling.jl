@@ -1,4 +1,4 @@
-function classical_sampler(U::Matrix, n::Int, m::Int)
+function classical_sampler(U, n, m)
 
     output_state = zeros(Int,m)
     output_modes = collect(1:m)
@@ -13,5 +13,7 @@ function classical_sampler(U::Matrix, n::Int, m::Int)
     output_state
 
 end
+
+classical_sampler(input::Input, interf::Interferometer) = classical_sampler(interf.U, input.n, input.m)
 
 classical_sampler(;input::Input, interf::Interferometer) = classical_sampler(interf.U, input.n, input.m)
