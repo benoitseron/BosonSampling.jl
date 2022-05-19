@@ -31,13 +31,15 @@ end
 struct BeamSplitter <: Interferometer
     transmission_amplitude::Float64
     U::Matrix
-    BeamSplitter(transmission_amplitude) = new(transmission_amplitude, beam_splitter(transmission_amplitude))
+    m::Int
+    BeamSplitter(transmission_amplitude) = new(transmission_amplitude, beam_splitter(transmission_amplitude),2)
 end
 
 struct Rotation <: Interferometer
     angle::Float64
     U::Matrix
-    Rotation(angle) = new(angle, rotation_matrix(angle))
+    m::Int
+    Rotation(angle) = new(angle, rotation_matrix(angle),2)
 end
 
 struct PhaseShift <: Interferometer
