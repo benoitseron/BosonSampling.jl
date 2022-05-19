@@ -75,7 +75,7 @@ events = []
 for i in 1:n_events
 
     # generate a random output pattern
-    output_state = OutputMeasurement{FockDetection}(random_mode_occupation_collisionless(n,m))
+    output_state = FockDetection(random_mode_occupation_collisionless(n,m))
 
     # compute the event probability
     this_event = Event(input_state, output_state, interf)

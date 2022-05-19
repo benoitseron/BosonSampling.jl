@@ -15,6 +15,8 @@ ev = Event(i,o,interf)
 
 compute_probability!(ev)
 
+ev.proba_params
+
 ### bunching ###
 
 m = 5

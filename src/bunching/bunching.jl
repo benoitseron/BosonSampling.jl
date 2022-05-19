@@ -1,6 +1,6 @@
 """
 	H_matrix(U, input_state, partition_occupancy_vector)
-	H_matrix(interf::Interferometer, i::Input, o::OutputMeasurement{FockDetection})
+	H_matrix(interf::Interferometer, i::Input, o::FockDetection)
 	H_matrix(interf::Interferometer, i::Input, subset_modes::ModeOccupation)
 
 H matrix for a partition defined by `partition_occupancy_vector`, see definition
@@ -37,7 +37,7 @@ function H_matrix(U, input_state, partition_occupancy_vector)
 
 end
 
-H_matrix(interf::Interferometer, i::Input, o::OutputMeasurement{FockDetection}) = H_matrix(interf.U, i.r.state, o.s)
+H_matrix(interf::Interferometer, i::Input, o::FockDetection) = H_matrix(interf.U, i.r.state, o.s)
 
 H_matrix(interf::Interferometer, i::Input, subset_modes::ModeOccupation) = isa_subset(subset_modes) ? H_matrix(interf.U, i.r.state, subset_modes.state) : error("invalid subset")
 
@@ -52,6 +52,12 @@ Efficient Assessment of Boson Sampling](https://arxiv.org/abs/1509.01561)
 function full_bunching_probability(interf::Interferometer, i::Input, subset_modes::Subset)
 
 	return clean_proba(permanent(H_matrix(interf,i,subset_modes) .* transpose(i.G.S)))
+
+end
+
+function full_bunching_probability(interf::Interferometer, i::Input, mo::ModeOccupation)
+
+	return clean_proba(permanent(H_matrix(interf,i,mo.state) .* transpose(i.G.S)))
 
 end
 
@@ -76,7 +82,7 @@ end
 
 	bunching_probability_brute_force_bosonic(U, input_state, output_state; print_output = false)
 	bunching_probability_brute_force_bosonic(interf::Interferometer, i::Input, subset_modes::ModeOccupation)
-	
+
 bosonic bunching probability by direct summation of all possible cases
 
 bunching_event_proba gives the probability to get the event of [1^n 0^(m-n)]
