@@ -51,7 +51,7 @@ Computes the probability that all n photons end up in the subset of chosen
 output modes following.
 
 !!! note "Reference"
-[Universality of Generalized Bunching and Efficient Assessment of Boson Sampling](https://arxiv.org/abs/1509.01561)
+	[Universality of Generalized Bunching and Efficient Assessment of Boson Sampling](https://arxiv.org/abs/1509.01561)
 """
 function full_bunching_probability(interf::Interferometer, i::Input, subset_modes::Subset)
 
@@ -83,13 +83,12 @@ end
 # end
 
 """
-
 	bunching_probability_brute_force_bosonic(U, input_state, output_state; print_output = false)
 	bunching_probability_brute_force_bosonic(interf::Interferometer, i::Input, subset_modes::ModeOccupation)
 
-bosonic bunching probability by direct summation of all possible cases
+Bosonic bunching probability by direct summation of all possible cases
 
-bunching_event_proba gives the probability to get the event of [1^n 0^(m-n)]
+`bunching_event_proba` gives the probability to get the event of ``[1^n 0^(m-n)]``.
 """
 function bunching_probability_brute_force_bosonic(U, input_state, output_state; print_output = false)
 
