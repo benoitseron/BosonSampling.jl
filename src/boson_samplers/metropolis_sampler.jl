@@ -5,9 +5,8 @@ Implement a metropolis independent sampler for standard boson sampling following
 in period `n_burn`and the thinning interval `n_thinning` both have default value of 100.
 
 !!! note "Reference"
-    [https://arxiv.org/abs/1705.00686](https://arxiv.org/abs/1705.00686)
-    As the paper is limited to collinionless events, we keep track of this thanks
-    to `iterate_until_collisionless`.
+    [https://arxiv.org/abs/1705.00686](https://arxiv.org/abs/1705.00686): As the paper is limited to collinionless events, we keep track of this thanks
+    to [`iterate_until_collisionless`](@ref).
 
 !!! warning
     Burn in perdiod and thinning interval must have the same value.

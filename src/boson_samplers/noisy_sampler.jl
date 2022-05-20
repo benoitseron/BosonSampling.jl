@@ -2,10 +2,10 @@
     noisy_sampler(;input::Input, reflectivity::Real, interf::Interferometer)
 
 Sample partially-distinguishable photons through a lossy interferometer, which
-runs (at worst) in ``O(n2^m + Poly(n,m))`` time.
+runs (at most) in ``O(n2^m + Poly(n,m))`` time.
 
 !!! note "Reference"
-[https://arxiv.org/pdf/1907.00022.pdf](https://arxiv.org/pdf/1907.00022.pdf)
+    [https://arxiv.org/pdf/1907.00022.pdf](https://arxiv.org/pdf/1907.00022.pdf)
 """
 function noisy_sampler(;input::Input, reflectivity::Real, interf::Interferometer)
 

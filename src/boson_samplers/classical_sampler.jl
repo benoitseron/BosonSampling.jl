@@ -2,7 +2,7 @@
     classical_sampler(U, n, m)
     classical_sampler(;input::Input, interf::Interferometer)
 
-Sample photons according to the `Distinguishable` case.
+Sample photons according to the [`Distinguishable`](@ref) case.
 """
 function classical_sampler(U, n, m)
 
