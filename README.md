@@ -22,7 +22,7 @@ To install the package, launch a Julia REPL session and type
 Alternatively type on the `]` key. Then enter
 
     add BosonSampling
-    
+
 To use the package, write
 
     using BosonSampling
@@ -31,4 +31,4 @@ in your file.
 
 ## Authors
 
-This package is written by Benoit Seron and Antoine Restivo.
+This package is written by Benoit Seron and Antoine Restivo. The original research presented in the package is done in collaboration with Dr. Leonardo Novo, Prof. Nicolas Cerf.
