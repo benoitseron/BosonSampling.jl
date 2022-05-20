@@ -37,19 +37,19 @@ struct RandomGramMatrix <: PartDist
 end
 
 """
-    Model of partially distinguishable photons FockState described by a provided [`GramMatrix`](@ref).
+Model of partially distinguishable photons FockState described by a provided [`GramMatrix`](@ref).
 """
 struct UserDefinedGramMatrix <: PartDist
 end
 
 """
-    Model of distinguishable photons FockState.
+Model of distinguishable photons FockState.
 """
 struct Distinguishable <: InputType
 end
 
 """
-    Model of photons FockState with undefined [`GramMatrix`](@ref).
+Model of photons FockState with undefined [`GramMatrix`](@ref).
 """
 struct Undef <: InputType
 end
@@ -59,6 +59,9 @@ end
 
 Basis of vectors ``v_1,...,v_n`` stored as columns in a ``n``-by-``r`` matrix
 possibly empty.
+
+!!! tip "Fields"
+    `vector_matrix::Union{Matrix, Nothing}`
 """
 mutable struct OrthonormalBasis
 
@@ -74,10 +77,19 @@ mutable struct OrthonormalBasis
 end
 
 """
-    GramMatrix{T<:InputType}
-    
+    GramMatrix{T}(n::Int) where {T<:InputType}
+    GramMatrix{T}(n::Int, distinguishability_param::Real) where {T<:InputType}
+    GramMatrix{T}(n::Int, S::Matrix) where {T<:InputType}
+
 Matrix of partial distinguishability. Will automatically generate the proper
 matrix related to the provided [`InputType`](@ref).
+
+!!! tip "Fields"
+    - `n::Int`: photons number,
+    - `S::Matrix`: Gram matrix,
+    - `rank::Union{Int, Nothing}`: Gram matrix rank,
+    - `distinguishability_param::Union{Real, Nothing}`: overlap between internal wavefunction when `T`=[`OneParameterInterpolation`](@ref),
+    - `generating_vectors::OrthonormalBasis`
 """
 struct GramMatrix{T<:InputType}
 
@@ -126,6 +138,13 @@ end
     Input{T}(r::ModeOccupation, G::GramMatrix) where {T<:InputType}
 
 Input state at the entrance of the interferometer.
+
+!!! tip "Fields"
+    - `r::ModeOccupation`,
+    - `n::Int`: photon numbers,
+    - `m::Int`: modes numbers,
+    - `G::GramMatrix`,
+    - `distinguishability_param::Union{Real, Nothing}`
 """
 struct Input{T<:InputType}
 
