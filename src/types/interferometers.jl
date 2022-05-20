@@ -19,6 +19,10 @@ end
     RandHaar(m::Int)
 
 Creates an instance of `Interferometer` from a Haar distributed unitary matrix of dimension ``m``.
+
+!!! tip "Fields"
+    - `m::Int`: Matrix dimension,
+    - `U::Matrix{ComplexF64}`: Matrix representation of the interferometer
 """
 struct RandHaar <: Interferometer
     m::Int
@@ -30,6 +34,10 @@ end
     Fourier(m::Int)
 
 Creates a Fourier `Interferometer` of dimension ``m``.
+
+!!! tip "Fields"
+    - `m::Int`: Matrix dimension,
+    - `U::Matrix{ComplexF64}`: Matrix representation of the interferometer
 """
 struct Fourier <: Interferometer
     m::Int
@@ -41,6 +49,10 @@ end
     Hadamard(m::Int)
 
 Creates a Hadamard `Interferometer` of dimension ``m``.
+
+!!! tip "Fields"
+    - `m::Int`: Matrix dimension,
+    - `U::Matrix{ComplexF64}`: Matrix representation of the interferometer
 """
 struct Hadamard <: Interferometer
     m::Int
@@ -52,6 +64,11 @@ end
     BeamSplitter(transmission_amplitude::Float64)
 
 Creates a beam-splitter with tunable transmissivity.
+
+!!! tip "Fields"
+    - `transmission_amplitude::Float64`,
+    - `U::Matrix{ComplexF64}`: Matrix representation of the interferometer,
+    - `m::Int`: Matrix dimension
 """
 struct BeamSplitter <: Interferometer
     transmission_amplitude::Float64
@@ -64,6 +81,11 @@ end
     Rotation(angle::Float64)
 
 Creates a Rotation matrix with tunable angle.
+
+!!! tip "Fields"
+    - `angle::Float64`,
+    - `U::Matrix{ComplexF64}`: Matrix representation of the interferometer,
+    - `m::Int`: Matrix dimension
 """
 struct Rotation <: Interferometer
     angle::Float64
@@ -75,7 +97,13 @@ end
 """
     PhaseShift(shifted_modes::Array, param_::Array)
 
-Creates a phase-shifter that is applied on the modes precised by shifted_modes with phase shifts given in param_.    
+Creates a phase-shifter that is applied on the modes precised by shifted_modes with phase shifts given in param_.
+
+!!! tip "Fields"
+    - `shifted_modes::Array`,
+    - `param_::Array`,
+    - `m::Int`: Matrix dimension,
+    - `U::Matrix{ComplexF64}`: Matrix representation of the interferometer
 """
 struct PhaseShift <: Interferometer
     shifted_modes::Array
