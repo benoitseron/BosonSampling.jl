@@ -1,3 +1,10 @@
+"""
+    cliffords_sampler(;input::Input, interf::Interferometer)
+
+Sample photons according to the `Bosonic` case following
+[Clifford & Clifford](https://arxiv.org/pdf/2005.04214.pdf) algorithm performed
+(at most) in ``O(n2^m + Poly(n,m))`` time and ``O(m)`` space.
+"""
 function cliffords_sampler(;input::Input, interf::Interferometer)
 
     m = input.m
