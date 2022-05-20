@@ -3,6 +3,9 @@
 ### the functions are in the process of being rewritten for
 ### multisets
 
+"""
+	matrix_phi(k, U, occupancy_vector, n)
+"""
 function matrix_phi(k, U, occupancy_vector, n)
 
 	"""matrix P(phi_k) in the notes
@@ -32,6 +35,19 @@ function matrix_phi(k, U, occupancy_vector, n)
 
 end
 
+"""
+	proba_partition_partial(;U, S, occupancy_vector, input_state, checks=true)
+
+Return a ``n+1`` sized array giving the probability to find ``[0,1,...]``, photons
+inside the bins given by `occupancy_vector` at the output of `U`.
+
+!!! note
+	- We take `U` of dimension ``m`` while `M` is the scattering matrix, as in
+	  Tichy, ``M_ij = U_{d_i}, _{d_j}``.
+	- Given ``n`` photons, generally in the first modes, the distinguishability
+	  matrix is defined as in Tichy, ``S_{ij} = <phi_{d_i}|phi_{d_j}>``.
+	  This is not a problem as it does not depend on the output partition but be aware of it.
+"""
 function proba_partition_partial(; U, S, occupancy_vector, input_state, checks = true)
 
 	"""returns a n+1 sized array giving the probability of have [zero, one, ...]
@@ -98,6 +114,12 @@ function proba_partition_partial(; U, S, occupancy_vector, input_state, checks =
 
 end
 
+
+"""
+	proba_partition_bosonic(;U, occupancy_vector, input_state=ones(Int, size(U,1)), checks=true)
+
+Indistinguishable version of `proba_partition_partial`.
+"""
 function proba_partition_bosonic(;U, occupancy_vector, input_state = ones(Int, size(U,1)), checks = true)
 
 	"""indistinguishable version of proba_partition_partial"""
@@ -118,6 +140,13 @@ function proba_partition_distinguishable(;U, occupancy_vector, input_state = one
 	proba_partition_partial(U = U , S = Matrix{eltype(U)}(I,n,n), occupancy_vector = occupancy_vector, input_state = input_state, checks = checks)
 
 end
+
+"""
+	partition_probability_distribution_distinguishable_rand_walk(part, U)
+
+Generate a vector giving the probability to have ``k`` photons in the partition
+`part` at the output of the interferomter `U`.
+"""
 function partition_probability_distribution_distinguishable_rand_walk(part, U)
 
 	"""generates a vector giving the probability to have k photons in
@@ -159,5 +188,5 @@ function partition_probability_distribution_distinguishable_rand_walk(part, U)
 	end
 
 	probability_vector
-	
+
 end
