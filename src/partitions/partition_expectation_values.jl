@@ -9,7 +9,7 @@
     partition_expectation_values(part_occ::PartitionOccupancy)
 
 Return the Haar averaged probability of photon number count in binned outputs
-for `Distinguishable` and `Bosonic` particles.
+for [`Distinguishable`](@ref) and [`Bosonic`](@ref) particles.
 
 !!! note "Reference"
         [https://www.nature.com/articles/s41598-017-00044-8.pdf](https://www.nature.com/articles/s41598-017-00044-8.pdf)
@@ -41,9 +41,9 @@ partition_expectation_values(part_occ::PartitionOccupancy) = partition_expectati
 """
     subset_expectation_value(subset_size, k, n, m)
 
-Return the Haar averaged probability to find ``k`` among ``n`` photons inside a subset of
-binned output modes of length `size_subset` among ``m`` modes for the `Distinguishable`
-and `Bosonic` cases.
+Return the Haar averaged probability to find `k` from `n` photons inside a subset of
+binned output modes of length `size_subset` among `m` modes for [`Distinguishable`](@ref)
+and [`Bosonic`](@ref) cases.
 """
 function subset_expectation_value(subset_size, k,n,m)
 
@@ -56,8 +56,6 @@ end
 
 """
     subset_relative_distance_of_averages(subset_size, n, m)
-
-Return the distance between
 """
 function subset_relative_distance_of_averages(subset_size,n,m)
 
@@ -108,7 +106,7 @@ Return the ideal `partition_size_vector` for a given number of subsets `n_subset
 and the Haar averaged TVD in second parameter.
 
 !!! note
-    For a single subset, `n_subsets=2` as we need a complete partition, occupying all modes.
+    For a single subset, `n_subsets`=2 as we need a complete partition, occupying all modes.
 """
 function best_partition_size(;m,n, n_subsets, distance = tvd)
 

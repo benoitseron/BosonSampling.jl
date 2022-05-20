@@ -38,7 +38,7 @@ end
 """
 	proba_partition_partial(;U, S, occupancy_vector, input_state, checks=true)
 
-Return a ``n+1`` sized array giving the probability to find ``[0,1,...]``, photons
+Return a ``n+1`` sized array giving the probability to find `[0,1,...]`, photons
 inside the bins given by `occupancy_vector` at the output of `U`.
 
 !!! note
@@ -118,7 +118,7 @@ end
 """
 	proba_partition_bosonic(;U, occupancy_vector, input_state=ones(Int, size(U,1)), checks=true)
 
-Indistinguishable version of `proba_partition_partial`.
+Indistinguishable version of [`proba_partition_partial`](@ref).
 """
 function proba_partition_bosonic(;U, occupancy_vector, input_state = ones(Int, size(U,1)), checks = true)
 
