@@ -1,10 +1,10 @@
 # About
 
-This project implements standard and scattershot BosonSampling in Julia, including boson samplers and certification tools.
+This project implements standard and scattershot BosonSampling in [Julia](http://julialang.org), including boson samplers and certification tools.
 
 ## Conventions
 
-### Basic conventions :
+### Basic conventions:
   Photon creation operators are changed as ``a_j \right_arrow \sum_j U_{jk} b_k``
   when going through the interferometer ``\op{U}``.
   Thus, the rows correspond to the input, columns to the output, that is: the probability that a single goes from `j` to `k` is ``|U_{jk}|^2``
@@ -21,7 +21,7 @@ This project implements standard and scattershot BosonSampling in Julia, includi
   or where the number of photons is irrelevant or called number_photons)
   * number of modes occupied = `n`, `number_photons`
 
-### Bunching
+### Bunching:
 
 The H-matrix follows a convention different from that of Valery Shchesnovich: ``H_{a,b} = \sum _{l \in \mathcal{K}} U_{l,a} U_{l,b}^{*}``.
 
@@ -31,20 +31,31 @@ The H-matrix follows a convention different from that of Valery Shchesnovich: ``
   Unlike most languages, the counting goes from 1,2,3... instead of starting at
   zero as 0,1,2,...
 
-### Gram matrices :
+### Gram matrices:
 
   Gram matrices are defined as ``(<\phi_i|\phi_j>); i,j = 1:n``. This means that if the label of the photons are swapped, you need to enter another distinguishability matrix with
   swapped labels accordingly.
 
-### Warning about precision :
+### Warning about precision:
 
-  in EventProbability :
+  in EventProbability:
 
   precision is set to machine precision `eps()` when doing non-randomised methods
   although it is of course larger and this should be implemented
   with permanent approximations, see for instance
-  https://arxiv.org/abs/1904.06229
+  https://arxiv.org/abs/1904.06229.
 
-### Distances :
+### Distances:
 
-  Beware of the different TVD conventions (1/2 in front or not)
+  Beware of the different TVD conventions (1/2 in front or not).
+
+## Related package
+
+  The present package takes advantage of efficient computation of matrix permanent from [Permanents.jl](https://github.com/benoitseron/Permanents.jl.git).  
+
+## Authors & License
+
+  - [Benoît Seron](mailto:benoitseron@gmail.com)
+  - [Antoine Restivo](mailto:antoinerestivo@hotmail.fr)
+
+  BosonSampling.jl is licensied under the [MIT license](https://github.com/benoitseron/BosonSampling.jl/blob/main/LICENSE).
