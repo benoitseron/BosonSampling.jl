@@ -19,17 +19,10 @@ end
 
 
 """
-
     compute_confidence(events,p_q, p_a)
 
 A bayesian confidence estimator: return the probability that the null hypothesis
 Q is right compared to the alternative hypothesis A.
-
-arguments:
-    - The functions take in `events`
-    - `p_q` is a function that takes in an event and gives its probability in the null hypothesis
-    - `p_a` is the same for the alternative hypothesis
-    - ``χ`` is the ratio between null hypothesis probabilities and alternative ones.
 """
 function compute_confidence(events,p_q, p_a)
 
@@ -37,7 +30,6 @@ function compute_confidence(events,p_q, p_a)
 end
 
 """
-
     compute_confidence_array(events, p_q, p_a)
 
 Return an array of the probabilities of H being true as we process more and
