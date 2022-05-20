@@ -6,6 +6,10 @@
 Holds something like the photon counting probabilities with their respective
 probability (in order to use them as a single observation). Can be declared
 empty as a placeholder.
+
+!!! tip "Fields"
+	- `Union{Nothing, Vector{ModeOccupation}, Vector{PartitionOccupancy}}`,
+	- `proba::Union{Nothing,Vector{Real}}`
 """
 mutable struct MultipleCounts
 
@@ -22,8 +26,12 @@ end
 	EventProbability(probability::Union{Nothing, Number})
 	EventProbability(mc::MultipleCounts)
 
-Holds the probability or probabilities of an `Event`.
+Holds the probability or probabilities of an [`Event`](@ref).
 
+!!! tip "Fields"
+	- `probability::Union{Number,Nothing, MultipleCounts}`,
+	- `precision::Union{Number,Nothing}`,
+	- `failure_probability::Union{Number,Nothing}`
 """
 mutable struct EventProbability
     probability::Union{Number,Nothing, MultipleCounts}
@@ -61,6 +69,12 @@ end
 	Event{TIn<:InputType, TOut<:OutputMeasurementType}
 
 Event linking an input to an output.
+
+!!! tip "Fields"
+	- `input_state::Input{TIn}`,
+	- `output_measurement::TOut`,
+	- `proba_params::EventProbability`,
+	- `interferometer::Interferometer`
 """
 struct Event{TIn<:InputType, TOut<:OutputMeasurementType}
 
