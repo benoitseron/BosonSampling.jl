@@ -1,11 +1,18 @@
 ### Interferometers ###
-
+"""
+Supertype to any concrete interferomter type such as [`UserDefinedInterferometer`](@ref),
+[`RandHaar`](@ref), [`Fourier`](@ref),...
+"""
 abstract type Interferometer end
 
 """
     UserDefinedInterferometer(U::Matrix)
 
-Creates an instance of `Interferometer` from a provided unitary matrix ``U``.
+Creates an instance of [`Interferometer`](@ref) from a given unitary matrix `U`.
+
+    Fields:
+        - m::Int
+        - U::Matrix
 """
 struct UserDefinedInterferometer <: Interferometer
 
@@ -18,11 +25,11 @@ end
 """
     RandHaar(m::Int)
 
-Creates an instance of `Interferometer` from a Haar distributed unitary matrix of dimension ``m``.
+Creates an instance of [`Interferometer`](@ref) from a Haar distributed unitary matrix of dimension `m`.
 
-!!! tip "Fields"
-    - `m::Int`: Matrix dimension,
-    - `U::Matrix{ComplexF64}`: Matrix representation of the interferometer
+    Fields:
+        - m::Int
+        - U::Matrix
 """
 struct RandHaar <: Interferometer
     m::Int
@@ -33,11 +40,11 @@ end
 """
     Fourier(m::Int)
 
-Creates a Fourier `Interferometer` of dimension ``m``.
+Creates a Fourier [`Interferometer`](@ref) of dimension `m`.
 
-!!! tip "Fields"
-    - `m::Int`: Matrix dimension,
-    - `U::Matrix{ComplexF64}`: Matrix representation of the interferometer
+    Fields:
+        - m::Int
+        - U::Matrix
 """
 struct Fourier <: Interferometer
     m::Int
@@ -48,11 +55,11 @@ end
 """
     Hadamard(m::Int)
 
-Creates a Hadamard `Interferometer` of dimension ``m``.
+Creates a Hadamard [`Interferometer`](@ref) of dimension `m`.
 
-!!! tip "Fields"
-    - `m::Int`: Matrix dimension,
-    - `U::Matrix{ComplexF64}`: Matrix representation of the interferometer
+    Fields:
+        - m::Int
+        - U::Matrix
 """
 struct Hadamard <: Interferometer
     m::Int
@@ -65,10 +72,10 @@ end
 
 Creates a beam-splitter with tunable transmissivity.
 
-!!! tip "Fields"
-    - `transmission_amplitude::Float64`,
-    - `U::Matrix{ComplexF64}`: Matrix representation of the interferometer,
-    - `m::Int`: Matrix dimension
+    Fields:
+        - transmission_amplitude::Float64
+        - U::Matrix{ComplexF64}
+        - m::Int
 """
 struct BeamSplitter <: Interferometer
     transmission_amplitude::Float64
@@ -82,10 +89,10 @@ end
 
 Creates a Rotation matrix with tunable angle.
 
-!!! tip "Fields"
-    - `angle::Float64`,
-    - `U::Matrix{ComplexF64}`: Matrix representation of the interferometer,
-    - `m::Int`: Matrix dimension
+    Fields:
+        - angle::Float64
+        - U::Matrix{ComplexF64}
+        - m::Int
 """
 struct Rotation <: Interferometer
     angle::Float64
@@ -99,11 +106,11 @@ end
 
 Creates a phase-shifter that is applied on the modes precised by shifted_modes with phase shifts given in param_.
 
-!!! tip "Fields"
-    - `shifted_modes::Array`,
-    - `param_::Array`,
-    - `m::Int`: Matrix dimension,
-    - `U::Matrix{ComplexF64}`: Matrix representation of the interferometer
+    Fields:
+        - shifted_modes::Array
+        - param_::Array
+        - m::Int
+        - U::Matrix{ComplexF64}
 """
 struct PhaseShift <: Interferometer
     shifted_modes::Array

@@ -60,8 +60,8 @@ end
 Basis of vectors ``v_1,...,v_n`` stored as columns in a ``n``-by-``r`` matrix
 possibly empty.
 
-!!! tip "Fields"
-    `vector_matrix::Union{Matrix, Nothing}`
+    Fields:
+        vectors_matrix::Union{Matrix,Nothing}
 """
 mutable struct OrthonormalBasis
 
@@ -84,12 +84,12 @@ end
 Matrix of partial distinguishability. Will automatically generate the proper
 matrix related to the provided [`InputType`](@ref).
 
-!!! tip "Fields"
-    - `n::Int`: photons number,
-    - `S::Matrix`: Gram matrix,
-    - `rank::Union{Int, Nothing}`: Gram matrix rank,
-    - `distinguishability_param::Union{Real, Nothing}`: overlap between internal wavefunction when `T`=[`OneParameterInterpolation`](@ref),
-    - `generating_vectors::OrthonormalBasis`
+    Fields:
+        - n::Int: photons number
+        - S::Matrix: Gram matrix
+        - rank::Union{Int, Nothing}
+        - distinguishability_param::Union{Real, Nothing}
+        - generating_vectors::OrthonormalBasis
 """
 struct GramMatrix{T<:InputType}
 
@@ -139,12 +139,12 @@ end
 
 Input state at the entrance of the interferometer.
 
-!!! tip "Fields"
-    - `r::ModeOccupation`,
-    - `n::Int`: photon numbers,
-    - `m::Int`: modes numbers,
-    - `G::GramMatrix`,
-    - `distinguishability_param::Union{Real, Nothing}`
+    Fields:
+        - r::ModeOccupation
+        - n::Int
+        - m::Int: modes numbers
+        - G::GramMatrix
+        - distinguishability_param::Union{Real, Nothing}
 """
 struct Input{T<:InputType}
 

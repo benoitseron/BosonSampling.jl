@@ -5,7 +5,10 @@ abstract type OutputMeasurementType end
 """
     FockDetection(s::ModeOccupation)
 
-Measuring the probability of getting the mode occupation `s` at the output.
+Measuring the probability of getting the [`ModeOccupation`](@ref) `s` at the output.
+
+    Fields:
+        - s::ModeOccupation
 """
 struct FockDetection <: OutputMeasurementType
     s::ModeOccupation
@@ -15,7 +18,10 @@ end
 """
     PartitionCount(part_occupancy::PartitionOccupancy)
 
-Measuring the probability of getting a specifif count for a given partition `part_occupancy`.
+Measuring the probability of getting a specific count for a given partition `part_occupancy`.
+
+    Fields:
+        - part_occupancy::PartitionOccupancy
 """
 struct PartitionCount <: OutputMeasurementType
     part_occupancy::PartitionOccupancy
@@ -26,6 +32,9 @@ end
     PartitionCountsAll(part::Partition)
 
 Measuring all possible counts probabilities in the partition `part`.
+
+    Fields:
+        - part::Partition
 """
 struct PartitionCountsAll <: OutputMeasurementType
     part::Partition
