@@ -75,7 +75,7 @@ end
 """
 	random_mode_occupation(n::Int, m::Int)
 
-Create a `ModeOccupation` from a mode occupation list of `n` ramdomly placed ones
+Create a [`ModeOccupation`](@ref) from a mode occupation list of `n` ramdomly placed ones
 among `m` sites.
 """
 random_mode_occupation(n::Int, m::Int) = ModeOccupation(random_occupancy(n,m))
@@ -84,7 +84,7 @@ random_mode_occupation(n::Int, m::Int) = ModeOccupation(random_occupancy(n,m))
 """
 	random_mode_occupation_collisionless(n::Int, m::Int)
 
-Create a `ModeOccupation` from a random mode occupation that is likely collisionless.
+Create a [`ModeOccupation`](@ref) from a random mode occupation that is likely collisionless.
 """
 function random_mode_occupation_collisionless(n::Int, m::Int)
 
@@ -202,7 +202,7 @@ vector_factorial(o::FockDetection) = vector_factorial(o.s)
 	process_amplitude(U, input_state, output_state, permanent=ryser)
 
 Compute the probability amplitude to go from `input_state` to `output_state`
-through the interferomter `U` in the `Bosonic` case.
+through the interferomter `U` in the [`Bosonic`](@ref) case.
 """
 function bosonic_amplitude(U, input_state, output_state, permanent = ryser)
 
@@ -221,7 +221,7 @@ end
 	process_probability(U, input_state, output_state)
 
 Compute the probability to go from `input_state` to `output_state`
-through the interferometer `U` in the `Bosonic` case.
+through the interferometer `U` in the [`Bosonic`](@ref) case.
 """
 function bosonic_probability(U, input_state, output_state)
 
@@ -241,7 +241,7 @@ end
 	process_probability_distinguishable(U, input_state, output_state, permanent=ryser)
 
 Compute the probability to go from `input_state` to `output_state` through
-the interferomter `U` in the `Distinguishable` case.
+the interferomter `U` in the [`Distinguishable`](@ref) case.
 """
 function distinguishable_probability(U, input_state, output_state, permanent = ryser)
 
@@ -266,8 +266,8 @@ end
 	process_probability_partial(interf::Interferometer, input_state::Input{TIn} where {TIn<:PartDist},output_state::FockDetection)
 
 Compute the probability to go from `input_state` to `output_state` through the
-interferometer `U` in the `PartDist` case where partial distinguishable is described
-by the `GramMatrix` `S`.
+interferometer `U` in the [`PartDist`](@ref) case where partial distinguishable is described
+by the [`GramMatrix`](@ref) `S`.
 
 !!! note "Reference"
     [https://arxiv.org/abs/1410.7687](https://arxiv.org/abs/1410.7687)
