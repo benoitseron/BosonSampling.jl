@@ -5,10 +5,10 @@ Compute the probability distribution of all possible output configurations of
 fully/partially-indistinguishable photons through a lossless interferometer.
 
 !!! note
-    - The probabilities within the distribution are indexed following the same order as `output_mode_occupation(n,m)` which returns an array of all the possible configurations of ``n`` photons among ``m`` modes.
-    - If `i` (with default value `nothing`) is set to an integer,
+    - The probabilities within the distribution are indexed following the same order as `output_mode_occupation(n,m)`
+    - If `i` (with default value `nothing`) is set to an integer
       `theoretical_distribution` returns the probability to find the photons in
-      the i'th configuration given by `output_mode_occupation`.
+      the i'th configuration given by `output_mode_occupation`
 """
 function theoretical_distribution(;input::Input, interf::Interferometer, i=nothing)
 
