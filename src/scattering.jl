@@ -1,3 +1,8 @@
+"""
+	iterate_until_collisionless(f)
+
+Sample `f` until the result is collisionless.
+"""
 function iterate_until_collisionless(f)
 
     """samples f until the result is collisionless
@@ -18,6 +23,13 @@ function iterate_until_collisionless(f)
 
 end
 
+"""
+	fill_arrangement(occupation_vector)
+	fill_arrangement(r::ModeOccupation)
+	fill_arrangement(input::Input)
+
+Convert a mode occupation list to a mode assignement.
+"""
 function fill_arrangement(occupation_vector)
 
     """from a mode occupation list to a mode assignment list (Tichy : s to d(s))
@@ -42,7 +54,11 @@ fill_arrangement(r::ModeOccupation) = fill_arrangement(r.state)
 
 fill_arrangement(inp::Input) = fill_arrangement(inp.r)
 
+"""
+	random_occupancy(n::Int, m::Int)
 
+Return a vector of size `m`	with `n` randomly placed ones.
+"""
 function random_occupancy(n::Int, m::Int)
 
 	""" returns a vector of size m with n randomly placed ones """
@@ -56,20 +72,44 @@ function random_occupancy(n::Int, m::Int)
 	return occupancy_vector
 end
 
+"""
+	random_mode_occupation(n::Int, m::Int)
+
+Create a [`ModeOccupation`](@ref) from a mode occupation list of `n` ramdomly placed ones
+among `m` sites.
+"""
 random_mode_occupation(n::Int, m::Int) = ModeOccupation(random_occupancy(n,m))
 
+
+"""
+	random_mode_occupation_collisionless(n::Int, m::Int)
+
+Create a [`ModeOccupation`](@ref) from a random mode occupation that is likely collisionless.
+"""
 function random_mode_occupation_collisionless(n::Int, m::Int)
 
 	n<=m ? iterate_until_collisionless(() -> random_mode_occupation(n,m)) : error("n>m cannot make for collisionless mode occupations")
 
 end
 
+"""
+	at_most_one_photon_per_bin(occupancy_vector::Vector{Int})
+	check_at_most_one_particle_per_mode(occ)
+
+Check wether `occupancy_vector` contains more than one photon per site.
+"""
 function at_most_one_photon_per_bin(occupancy_vector::Vector{Int})
 	all(in([0,1]).(occupancy_vector))
 end
 
 check_at_most_one_particle_per_mode(occ) = at_most_one_photon_per_bin(occ) ? nothing : error("more than one input per mode")
 
+"""
+	occupancy_vector_to_partition(occupancy_vector)
+	occupancy_vector_to_mode_occupancy(occupancy_vector)
+
+Return a partition of occupied modes from an `occupancy_vector`.
+"""
 function occupancy_vector_to_partition(occupancy_vector)
 
 	"""returns a partition of occupied indexes (mode1,mode2,...) for an occupancy_vector"""
@@ -95,7 +135,17 @@ function occupancy_vector_to_mode_occupancy(occupancy_vector)
 	occupancy_vector_to_partition(occupancy_vector)
 end
 
+"""
+	scattering_matrix(U::Matrix, input_state::Vector{Int}, output_state::Vector{Int})
+	scattering_matrix(U::Interferometer, r::ModeOccupation, s::ModeOccupation)
+	scattering_matrix(U::Interferometer, i::Input, o::FockDetection)
 
+Return the submatrix of `U` whose rows and columns are respectively defined by
+`input_state` and `output_state`.
+
+!!! note "Reference"
+	[http://arxiv.org/abs/quant-ph/0406127v1](http://arxiv.org/abs/quant-ph/0406127v1)
+"""
 function scattering_matrix(U::Matrix, input_state::Vector{Int}, output_state::Vector{Int})
 
     """
@@ -147,6 +197,13 @@ vector_factorial(r::ModeOccupation) = vector_factorial(r.state)
 vector_factorial(i::Input) = vector_factorial(i.r)
 vector_factorial(o::FockDetection) = vector_factorial(o.s)
 
+"""
+	bosonic_amplitude(U, input_state, output_state, permanent=ryser)
+	process_amplitude(U, input_state, output_state, permanent=ryser)
+
+Compute the probability amplitude to go from `input_state` to `output_state`
+through the interferomter `U` in the [`Bosonic`](@ref) case.
+"""
 function bosonic_amplitude(U, input_state, output_state, permanent = ryser)
 
     """event amplitude"""
@@ -159,6 +216,13 @@ function process_amplitude(U, input_state, output_state, permanent = ryser)
 	bosonic_amplitude(U, input_state, output_state, permanent)
 end
 
+"""
+	bosonic_probability(U, input_state, output_state)
+	process_probability(U, input_state, output_state)
+
+Compute the probability to go from `input_state` to `output_state`
+through the interferometer `U` in the [`Bosonic`](@ref) case.
+"""
 function bosonic_probability(U, input_state, output_state)
 
 	"""bosonic process_probability"""
@@ -172,6 +236,13 @@ function process_probability(U, input_state, output_state)
 	bosonic_probability(U, input_state, output_state)
 end
 
+"""
+	distinguishable_probability(U, input_state, output_state, permanent=ryser)
+	process_probability_distinguishable(U, input_state, output_state, permanent=ryser)
+
+Compute the probability to go from `input_state` to `output_state` through
+the interferomter `U` in the [`Distinguishable`](@ref) case.
+"""
 function distinguishable_probability(U, input_state, output_state, permanent = ryser)
 
 	"""distinguishable (or classical) process_probability"""
@@ -179,8 +250,6 @@ function distinguishable_probability(U, input_state, output_state, permanent = r
 	permanent(abs.(scattering_matrix(U, input_state, output_state)).^2)/sqrt(vector_factorial(input_state) * vector_factorial(output_state))
 
 end
-
-
 
 function process_probability_distinguishable(U, input_state, output_state, permanent = ryser)
 
@@ -192,6 +261,17 @@ end
 
 ### need to implement partial distinguishability processs probabilities ###
 
+"""
+	process_probability_partial(U, S, input_state, output_state)
+	process_probability_partial(interf::Interferometer, input_state::Input{TIn} where {TIn<:PartDist},output_state::FockDetection)
+
+Compute the probability to go from `input_state` to `output_state` through the
+interferometer `U` in the [`PartDist`](@ref) case where partial distinguishable is described
+by the [`GramMatrix`](@ref) `S`.
+
+!!! note "Reference"
+    [https://arxiv.org/abs/1410.7687](https://arxiv.org/abs/1410.7687)
+"""
 function process_probability_partial(U, S, input_state,output_state)
 
     """computes the partially distinguishable process probability according to Tichy's tensor permanent https://arxiv.org/abs/1410.7687"""
@@ -242,6 +322,11 @@ function compute_probability!(ev::Event{TIn,TOut}) where {TIn<:InputType, TOut<:
 
 end
 
+"""
+	output_mode_occupation(n::Int, m::Int)
+
+Return all possible configurations of `n` photons among `m` modes.
+"""
 function output_mode_occupation(number_photons, number_modes)
 
 	nlist = collect(1:number_modes)
@@ -260,6 +345,11 @@ function output_mode_occupation(number_photons, number_modes)
 
 end
 
+"""
+	check_suppression_law(event)
+
+Check if the event is suppressed according to the [rule](https://arxiv.org/pdf/1002.5038.pdf).
+"""
 function check_suppression_law(event)
 
 	if mod(sum(event), length(event)) != 0

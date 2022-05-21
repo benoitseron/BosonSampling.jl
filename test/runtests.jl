@@ -79,153 +79,73 @@ using LinearAlgebra
 
 	@testset "theoretical_distribution" begin
 
-		@testset "normalization" begin
+		n = 3
+		occupation = ModeOccupation(random_occupancy(n,n))
+		i = Input{Bosonic}(occupation)
+		interf = Fourier(i.r.m)
+		p_theo = theoretical_distribution(input=i, interf=interf)
 
-			for n = 2:5
-				occupation = ModeOccupation(random_occupancy(n, n^2))
-				input = Input{Bosonic}(occupation)
-				interf = Fourier(input.r.m)
-				p_theo = theoretical_distribution(input=input, interf=interf)
+		@test sum(p_theo) ≈ 1 atol=1e-9
+		@test all(p -> p>=0, p_theo)
 
-				@test sum(p_theo) ≈ 1 atol=1e-9
-			end
-
-		end
-
-		@testset "positivity" begin
-
-	        for n = 2:5
-	            occupation = ModeOccupation(random_occupancy(n, n^2))
-	            input = Input{Bosonic}(occupation)
-	            interf = Fourier(input.r.m)
-	            p_theo = theoretical_distribution(input=input, interf=interf)
-
-	            @test all(p->p>=0, p_theo)
+		output_events = output_mode_occupation(n,n)
+	    for i = 1:length(output_events)
+	        if check_suppression_law(output_events[i])
+	            @test p_theo[i] ≈ 0 atol=1e-6
 	        end
-
-	    end
-
-	    @testset "suppression law" begin
-
-	        for n = 2:5
-	            occupation = ModeOccupation(random_occupancy(n,n))
-	            input = Input{Bosonic}(occupation)
-	            interf = Fourier(input.r.n)
-	            p_theo = theoretical_distribution(input=input, interf=interf)
-
-	            output_events = output_mode_occupation(n,n)
-	            for i = 1:length(output_events)
-	                if check_suppression_law(output_events[i])
-	                    @test p_theo[i] ≈ 0 atol=1e-6
-	                end
-	            end
-	        end
-
 	    end
 
 	end
 
 	@testset "noisy statistics" begin
 
-		@testset "normalization" begin
+		n = 3
+		occupation = ModeOccupation(random_occupancy(n,n))
+    	i = Input{OneParameterInterpolation}(occupation, 0.5)
+	    interf = Fourier(i.r.m)
+	    res = noisy_distribution(input=i, reflectivity=0.5, interf=interf)
 
-			for n = 2:4
-				occupation = ModeOccupation(random_occupancy(n, 2n))
-    			input = Input{OneParameterInterpolation}(occupation, 0.5)
-		        interf = Fourier(input.r.m)
-		        res = noisy_distribution(input=input, reflectivity=0.5, interf=interf)
+		p_exact = res[1]
+		p_approx = res[2]
+		p_samp = res[3]
 
-				p_exact = res[1]
-				p_approx = res[2]
-				p_samp = res[3]
+		@test sum(p_exact) ≈ 1 atol=1e-9
+		@test sum(p_approx) ≈ 1 atol=1e-9
+		@test sum(p_samp) ≈ 1 atol=1e-9
+		@test all(p->p>=0, p_exact)
+		@test all(p->p>=0, p_approx)
+		@test all(p->p>=0, p_samp)
 
-		       	@test sum(p_exact) ≈ 1 atol=1e-9
-		        @test sum(p_approx) ≈ 1 atol=1e-9
-		        @test sum(p_samp) ≈ 1 atol=1e-9
-      		end
-
-		end
-
-   		@testset "positivity" begin
-
-    		for n = 2:4
-     			occupation = ModeOccupation(random_occupancy(n, 2n))
-		       	input = Input{OneParameterInterpolation}(occupation, 0.5)
-		        interf = Fourier(input.r.m)
-		        res = noisy_distribution(input=input, reflectivity=0.5, interf=interf)
-
-				p_exact = res[1]
-				p_approx = res[2]
-				p_samp = res[3]
-
-		       	@test all(p->p>=0, p_exact)
-		        @test all(p->p>=0, p_approx)
-		       	@test all(p->p>=0, p_samp)
-		 	end
-
-		end
-
-    	@testset "suppression law" begin
-
-			# https://arxiv.org/pdf/1002.5038.pdf
-
-		    for n = 2:4
-
-       			occupation = ModeOccupation(random_occupancy(n,n))
-		        input = Input{Bosonic}(occupation)
-		        interf = Fourier(input.r.m)
-		        res = noisy_distribution(input=input, reflectivity=0.5, interf=interf, approx=false, samp=false)
-	         	p_exact = res[1]
-
-		        output_events = output_mode_occupation(n,n)
-		        for i = 1:length(output_events)
-            		if check_suppression_law(output_events[i])
-		            	@test p_exact[i] ≈ 0 atol=1e-6
-		            end
-		     	end
-
-			end
-
-		end
-
-	end
-
-	@testset "consistency" begin
-
-  		for n = 2:4
-      		occupation = ModeOccupation(random_occupancy(n, 2n))
-		    input = Input{Bosonic}(occupation)
-
-	      	for i = 1:10
-        		interf = RandHaar(input.r.m)
-		       	p_theo = theoretical_distribution(input=input, interf=interf)
-		        O = noisy_distribution(input=input, reflectivity=0.999, interf=interf, approx=false, samp=false)
-		        p_exact = O[1]
-
-		       	for j = 1:length(p_theo)
-		        	@test abs(p_theo[i]-p_exact[i]) ≈ 0 atol=1e-9
-		         end
-	 	 	end
+		i = Input{Bosonic}(ModeOccupation(random_occupancy(n,n)))
+		res = noisy_distribution(input=i, reflectivity=0.999, interf=interf, approx=false, samp=false)
+		p_exact = res[1]
+		output_events = output_mode_occupation(n,n)
+		for i = 1:length(output_events)
+            if check_suppression_law(output_events[i])
+		        @test p_exact[i] ≈ 0 atol=1e-6
+		    end
 		end
 
 	end
 
 	@testset "suppression law boson samplers" begin
 
-	    for n = 3:10
+		n = 3
+	    interf = Fourier(n)
 
-	        interf = Fourier(n)
+		input_clifford_sampler = Input{Bosonic}(first_modes(n,n))
+	   	input_noisy_sampler = Input{OneParameterInterpolation}(first_modes(n,n), 1.0)
 
-		   	input_clifford_sampler = Input{Bosonic}(first_modes(n,n))
-		    input_noisy_sampler = Input{OneParameterInterpolation}(first_modes(n,n), 1.0)
+	    out_clifford_sampler = cliffords_sampler(input=input_clifford_sampler, interf=interf)
+		out_noisy_sampler = noisy_sampler(input=input_noisy_sampler, reflectivity=1.0, interf=interf)
 
-	      	out_clifford_sampler = cliffords_sampler(input=input_clifford_sampler, interf=interf)
-		    out_noisy_sampler = noisy_sampler(input=input_noisy_sampler, reflectivity=1.0, interf=interf)
+	    @test !check_suppression_law(out_clifford_sampler)
+		@test !check_suppression_law(out_noisy_sampler)
 
-	    	@test !check_suppression_law(out_clifford_sampler)
-		    @test !check_suppression_law(out_noisy_sampler)
+	end
 
-  		end
+	@testset "examples usage" begin
+		@test_nowarn include("example_usage.jl")
 
 	end
 

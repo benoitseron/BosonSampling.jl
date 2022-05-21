@@ -1,10 +1,14 @@
 ### Inputs ###
 
 """
-Supertype to any concrete input type such as `Bosonic`
+Supertype to any concrete input type such as [`Bosonic`](@ref), [`PartDist`](@ref), [`Distinguishable`](@ref)
+and [`Undef`](@ref).
 """
 abstract type InputType end
 
+"""
+Type used to notify that the input is made of FockState indistiguishable photons.
+"""
 struct Bosonic <: InputType
 end
 
@@ -17,33 +21,47 @@ end
 
 """
 One parameter model of partial distinguishability interpolating between indistinguishable
-photons FockState and fully distinguishable.
+and fully distinguishable photons FockState.
 
-see for the definition of the x-model :
-[Sampling of partially distinguishable bosons and the relation to the
-multidimensional permanent](https://arxiv.org/pdf/1410.7687.pdf)
+!!! note "Reference"
+    [Sampling of partially distinguishable bosons and the relation to the
+    multidimensional permanent](https://arxiv.org/pdf/1410.7687.pdf)
 """
 struct OneParameterInterpolation <: PartDist
 end
 
 """
-Model of partially distinguishable photons FockState described by a randomly generated Gram matrix.
+Model of partially distinguishable photons FockState described by a randomly generated [`GramMatrix`](@ref).
 """
 struct RandomGramMatrix <: PartDist
 end
 
+"""
+Model of partially distinguishable photons FockState described by a provided [`GramMatrix`](@ref).
+"""
 struct UserDefinedGramMatrix <: PartDist
 end
 
+"""
+Model of distinguishable photons FockState.
+"""
 struct Distinguishable <: InputType
 end
 
+"""
+Model of photons FockState with undefined [`GramMatrix`](@ref).
+"""
 struct Undef <: InputType
 end
 
 """
-Basis of vectors v_1,...,v_n stored as columns in a n*r matrix
+    OrthonormalBasis(vector_matrix::Union{Matrix, Nothing})
+
+Basis of vectors ``v_1,...,v_n`` stored as columns in a ``n``-by-``r`` matrix
 possibly empty.
+
+    Fields:
+        vectors_matrix::Union{Matrix,Nothing}
 """
 mutable struct OrthonormalBasis
 
@@ -59,8 +77,19 @@ mutable struct OrthonormalBasis
 end
 
 """
+    GramMatrix{T}(n::Int) where {T<:InputType}
+    GramMatrix{T}(n::Int, distinguishability_param::Real) where {T<:InputType}
+    GramMatrix{T}(n::Int, S::Matrix) where {T<:InputType}
+
 Matrix of partial distinguishability. Will automatically generate the proper
-matrix if given an input type defining a specific gram matrix such as `Bosonic`.
+matrix related to the provided [`InputType`](@ref).
+
+    Fields:
+        - n::Int: photons number
+        - S::Matrix: Gram matrix
+        - rank::Union{Int, Nothing}
+        - distinguishability_param::Union{Real, Nothing}
+        - generating_vectors::OrthonormalBasis
 """
 struct GramMatrix{T<:InputType}
 
@@ -109,6 +138,13 @@ end
     Input{T}(r::ModeOccupation, G::GramMatrix) where {T<:InputType}
 
 Input state at the entrance of the interferometer.
+
+    Fields:
+        - r::ModeOccupation
+        - n::Int
+        - m::Int: modes numbers
+        - G::GramMatrix
+        - distinguishability_param::Union{Real, Nothing}
 """
 struct Input{T<:InputType}
 

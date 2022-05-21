@@ -3,12 +3,18 @@
 # particles in random networks
 # Valery S. Shchesnovich
 
-function partition_expectation_values(partition_size_vector, partition_counts)
 
-    """returns the haar averaged probability of photon number count in binned
-    outputs for distinguishable and bosonic particles as described in
-    Asymptotic Gaussian law for noninteracting indistinguishable particles
-    in random networks by Valery S. Shchesnovich (eqs 1,4)"""
+"""
+    partition_expectation_values(partition_size_vector, partition_counts)
+    partition_expectation_values(part_occ::PartitionOccupancy)
+
+Return the Haar averaged probability of photon number count in binned outputs
+for [`Distinguishable`](@ref) and [`Bosonic`](@ref) particles.
+
+!!! note "Reference"
+        [https://www.nature.com/articles/s41598-017-00044-8.pdf](https://www.nature.com/articles/s41598-017-00044-8.pdf)
+"""
+function partition_expectation_values(partition_size_vector, partition_counts)
 
     m = sum(partition_size_vector)
     number_partitions = length(partition_size_vector)
@@ -32,11 +38,14 @@ end
 
 partition_expectation_values(part_occ::PartitionOccupancy) = partition_expectation_values(partition_occupancy_to_partition_size_vector_and_counts(part_occ)...)
 
-function subset_expectation_value(subset_size, k,n,m)
+"""
+    subset_expectation_value(subset_size, k, n, m)
 
-    """returns the haar average probability of finding k photons
-    inside a subset of binned output modes of size subset_size for the
-    distinguishable and bosonic case with n photons and m modes"""
+Return the Haar averaged probability to find `k` from `n` photons inside a subset of
+binned output modes of length `size_subset` among `m` modes for [`Distinguishable`](@ref)
+and [`Bosonic`](@ref) cases.
+"""
+function subset_expectation_value(subset_size, k,n,m)
 
     partition_size_vector = [subset_size, m-subset_size]
     partition_counts = [k,n-k]
@@ -45,16 +54,21 @@ function subset_expectation_value(subset_size, k,n,m)
 
 end
 
+"""
+    subset_relative_distance_of_averages(subset_size, n, m)
+"""
 function subset_relative_distance_of_averages(subset_size,n,m)
-
-    """returns the distance between 0.5 ∑ₖ|<P_B(k) - P_D(k)>|"""
 
     @warn "check tvd conventions"
     0.5*abs(sum([abs(subset_expectation_value(subset_size, k,n,m)[1] - subset_expectation_value(subset_size, k,n,m)[2]) for k in 0:n]))
 
-
 end
 
+"""
+    choose_best_average_subset(;m, n, distance=tvd)
+
+Return the ideal subset size on average and its total variance distance.
+"""
 function choose_best_average_subset(;m,n, distance = tvd)
 
     """returns the ideal subset size on average and its TVD,
@@ -85,6 +99,15 @@ function choose_best_average_subset(;m,n, distance = tvd)
 end
 
 
+"""
+    best_partition_size(;m, n, n_subsets, distance=tvd)
+
+Return the ideal `partition_size_vector` for a given number of subsets `n_subsets`
+and the Haar averaged TVD in second parameter.
+
+!!! note
+    For a single subset, `n_subsets`=2 as we need a complete partition, occupying all modes.
+"""
 function best_partition_size(;m,n, n_subsets, distance = tvd)
 
     """return the ideal partition_size_vector for a given number

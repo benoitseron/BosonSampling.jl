@@ -4,12 +4,13 @@
 	H_matrix(interf::Interferometer, i::Input, subset_modes::ModeOccupation)
 
 H matrix for a partition defined by `partition_occupancy_vector`, see definition
-in the article below
+in the article below.
 
-**note**: conventions follow the author's [Boson bunching is not
-maximized by indistinguishable particles](https://arxiv.org/abs/2203.01306)
-which are the ones compatible with Tichy's conventions (Shshnovitch has a
-different one for the evolution of the creation operators)
+!!! note
+	Conventions follow the author's [Boson bunching is not
+	maximized by indistinguishable particles](https://arxiv.org/abs/2203.01306)
+	which are the ones compatible with Tichy's conventions (Shshnovitch has a
+	different one for the evolution of the creation operators).
 """
 function H_matrix(U, input_state::Vector, partition_occupancy_vector::Vector)
 
@@ -44,10 +45,13 @@ H_matrix(interf::Interferometer, i::Input, subset_modes::ModeOccupation) = isa_s
 """
 
 	full_bunching_probability(interf::Interferometer, i::Input, subset_modes::Subset)
+	full_bunching_probability(interf::Interferometer, i::Input, mo::ModeOccupation)
 
-computes the probability that all n photons end up in the subset of chosen
-output modes following [Universality of Generalized Bunching and
-Efficient Assessment of Boson Sampling](https://arxiv.org/abs/1509.01561)
+Computes the probability that all n photons end up in the subset of chosen
+output modes following.
+
+!!! note "Reference"
+	[Universality of Generalized Bunching and Efficient Assessment of Boson Sampling](https://arxiv.org/abs/1509.01561)
 """
 function full_bunching_probability(interf::Interferometer, i::Input, subset_modes::Subset)
 
@@ -79,13 +83,12 @@ end
 # end
 
 """
-
 	bunching_probability_brute_force_bosonic(U, input_state, output_state; print_output = false)
 	bunching_probability_brute_force_bosonic(interf::Interferometer, i::Input, subset_modes::ModeOccupation)
 
-bosonic bunching probability by direct summation of all possible cases
+Bosonic bunching probability by direct summation of all possible cases
 
-bunching_event_proba gives the probability to get the event of [1^n 0^(m-n)]
+`bunching_event_proba` gives the probability to get the event of ``[1^n 0^(m-n)]``.
 """
 function bunching_probability_brute_force_bosonic(U, input_state, output_state; print_output = false)
 

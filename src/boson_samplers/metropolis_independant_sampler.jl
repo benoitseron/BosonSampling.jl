@@ -1,10 +1,3 @@
-# implements a metropolis_independant_sampler that does standard boson sampling
-# following https://arxiv.org/abs/1705.00686
-
-# the paper is limited to collisionless events so we keep track of this in the
-# following through iterate_until_collisionless
-
-
 function metropolis_sampler(;target_pdf, known_pdf, known_sampler, starting_state, n_iter, n_burn = 100, n_thinning = 100)
 
     function transition_probability(target_pdf, known_pdf, new_state, previous_state)

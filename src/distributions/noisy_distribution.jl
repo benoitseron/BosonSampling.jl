@@ -1,6 +1,19 @@
-function noisy_distribution(;input::Input, reflectivity::Real, interf::Interferometer, exact=true, approx=true, samp=true)
+"""
+    noisy_distribution(;input::Input, reflectivity::Real, interf::Interferometer, exact=true, approx=true, samp=true)
 
-    # https://arxiv.org/pdf/1809.01953.pdf
+Compute the exact and/or approximated and/or sampled probability distribution of
+all possible output configurations of partially-distinguishable photons through a
+lossy interferometer.
+By default, `exact`, `approx` and `samp` are set to `true` meaning that `noisy_distribution`
+returns an array containing the three distributions.
+
+!!! note
+    - The probabilities within a distribution are indexed following the same order as [`output_mode_occupation(n,m)`](@ref)
+    - The approximated distribution has error and failure probability of ``1e^{-4}``.
+!!! note "Reference"
+    [https://arxiv.org/pdf/1809.01953.pdf](https://arxiv.org/pdf/1809.01953.pdf)
+"""
+function noisy_distribution(;input::Input, reflectivity::Real, interf::Interferometer, exact=true, approx=true, samp=true)
 
     output = []
     ϵ = 1e-4

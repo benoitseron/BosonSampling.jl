@@ -5,6 +5,9 @@
 ```@contents
 Pages = ["about.md"]
 ```
+
+## Library
+
 ## Types
 
 ```@contents
@@ -14,6 +17,6 @@ Depth = 1
 ## Functions
 
 ```@contents
-Pages = ["bunching.md"]
+Pages = ["bunching.md", "samplers.md"]
 Depth = 1
 ```

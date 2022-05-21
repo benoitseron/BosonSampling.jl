@@ -2,32 +2,43 @@
 
 abstract type OutputMeasurementType end
 
+"""
+    FockDetection(s::ModeOccupation)
+
+Measuring the probability of getting the [`ModeOccupation`](@ref) `s` at the output.
+
+    Fields:
+        - s::ModeOccupation
+"""
 struct FockDetection <: OutputMeasurementType
-
-    """detection as in the standard boson sampling"""
-
     s::ModeOccupation
     FockDetection(s::ModeOccupation) = at_most_one_photon_per_bin(s) ? new(s) : error("more than one detector per more")
-
 end
 
+"""
+    PartitionCount(part_occupancy::PartitionOccupancy)
+
+Measuring the probability of getting a specific count for a given partition `part_occupancy`.
+
+    Fields:
+        - part_occupancy::PartitionOccupancy
+"""
 struct PartitionCount <: OutputMeasurementType
-
-    """measuring the probability of getting a specific
-    count for a given partition"""
-
     part_occupancy::PartitionOccupancy
     PartitionCount(part_occupancy::PartitionOccupancy) = new(part_occupancy)
-
 end
 
+"""
+    PartitionCountsAll(part::Partition)
+
+Measuring all possible counts probabilities in the partition `part`.
+
+    Fields:
+        - part::Partition
+"""
 struct PartitionCountsAll <: OutputMeasurementType
-
-    """all possible counts probabilities in a partition"""
-
     part::Partition
     PartitionCountsAll(part::Partition) = new(part)
-
 end
 
 struct OutputMeasurement{T<:OutputMeasurementType}
@@ -53,7 +64,5 @@ struct OutputMeasurement{T<:OutputMeasurementType}
 
     end
     OutputMeasurement(s::ModeOccupation) = OutputMeasurement{FockDetection}(s::ModeOccupation)
-
-
 
 end

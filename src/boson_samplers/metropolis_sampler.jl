@@ -1,3 +1,16 @@
+"""
+    metropolis_sampler(;target_pdf, known_pdf, known_sampler, starting_state, n_iter, n_burn = 100, n_thinning = 100)
+
+Implement a metropolis independent sampler for standard boson sampling following. The burn
+in period `n_burn`and the thinning interval `n_thinning` both have default value of 100.
+
+!!! note "Reference"
+    [https://arxiv.org/abs/1705.00686](https://arxiv.org/abs/1705.00686): As the paper is limited to collinionless events, we keep track of this thanks
+    to [`iterate_until_collisionless`](@ref).
+
+!!! warning
+    Burn in perdiod and thinning interval must have the same value.
+"""
 function metropolis_sampler(;target_pdf, known_pdf, known_sampler, starting_state, n_iter, n_burn = 100, n_thinning = 100)
 
     function transition_probability(target_pdf, known_pdf, new_state, previous_state)

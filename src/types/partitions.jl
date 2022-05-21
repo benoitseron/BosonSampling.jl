@@ -1,5 +1,11 @@
-### Partitions ###
+"""
+   ModeOccupation(state)
 
+   fields:
+        - n::Int
+        - m::Int
+        - state::Vector{Int}
+"""
 struct ModeOccupation
     n::Int
     m::Int
@@ -15,9 +21,23 @@ at_most_one_photon_per_bin(r::ModeOccupation) = at_most_one_photon_per_bin(r.sta
 isa_subset(subset_modes::Vector{Int}) = (at_most_one_photon_per_bin(subset_modes) && sum(subset_modes) != 0)
 isa_subset(subset_modes::ModeOccupation) = isa_subset(subset_modes.state)
 
+"""
+   first_modes(n::Int, m::Int)
+
+Create a [`ModeOccupation`](@ref) with `n` photons in the first sites of `m` modes.
+"""
 first_modes(n::Int,m::Int) = n<=m ? ModeOccupation([i <= n ? 1 : 0 for i in 1:m]) : error("n>m")
 
+"""
+   Subset(state::Vector{Int})
 
+Create a mode occupation list with at most one count per mode.
+
+   Fields:
+        - n::Int
+        - m::Int
+        - subset::Vector{Int}
+"""
 struct Subset
         # basically a mode occupation list with at most one count per mode
         n::Int
@@ -54,6 +74,11 @@ function check_subset_overlap(subsets::Vector{Subset})
 
 end
 
+"""
+   Partition(subsets::Vector{Subset})
+
+Create a partition from multiple [`Subset`](@ref).
+"""
 struct Partition
         subsets::Vector{Subset}
         n_subset::Int
@@ -72,7 +97,11 @@ Base.show(io::IO, part::Partition) = begin
     end
 end
 
+"""
+   partition_from_subset_lengths(subset_lengths)
 
+Return a partition from a vector of subset lengths.
+"""
 function partition_from_subset_lengths(subset_lengths)
 
         """returns a partition from a vector of subset lengths, such as [2,1] gives Partition([[1,1],[1]])"""
@@ -127,6 +156,11 @@ function equilibrated_partition(m,n_subsets)
 
 end
 
+"""
+   occupies_all_modes(part::Partition)
+
+Check wether a partition occupies all modes or not.
+"""
 function occupies_all_modes(part::Partition)
 
         """checks if a partition occupies all m modes"""
@@ -140,6 +174,15 @@ function occupies_all_modes(part::Partition)
 
 end
 
+"""
+   PartitionOccupancy(counts::ModeOccupation, n::Int, partition::Partition)
+
+   Fields:
+        - counts::ModeOccupation
+        - partition::Partition
+        - n::Int
+        - m::Int
+"""
 struct PartitionOccupancy
         counts::ModeOccupation
         partition::Partition

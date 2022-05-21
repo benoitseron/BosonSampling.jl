@@ -1,3 +1,8 @@
+"""
+    visualize_sampling(input::Input, output)
+
+Draw a schematic representation of the setup.
+"""
 function visualize_sampling(input::Input, output)
 
     Drawing(1500, 1500, "basic_test.png")
@@ -49,6 +54,11 @@ function visualize_sampling(input::Input, output)
     preview()
 end
 
+"""
+    visualize_proba(input::Input, output, data)
+
+Draw a schematic representation associated to the event with probability `data`.    
+"""
 function visualize_proba(input::Input, output, data)
 
     nlist = output_mode_occupation(input.n, input.m)

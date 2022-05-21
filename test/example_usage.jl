@@ -1,6 +1,5 @@
 using BosonSampling
 using Test
-using Plots
 using JLD
 
 ### scattering ###
@@ -81,7 +80,7 @@ known_pdf(state) = process_probability_distinguishable(U, input_state, state)
 target_pdf(state) = process_probability(U, input_state, state)
 known_sampler = () -> iterate_until_collisionless(() -> classical_sampler(U, m, n)) # gives a classical sampler
 
-samples = metropolis_sampler(;target_pdf = target_pdf, known_pdf = known_pdf, known_sampler = known_sampler, starting_state = starting_state, n_iter = 100)
+# samples = metropolis_sampler(;target_pdf = target_pdf, known_pdf = known_pdf, known_sampler = known_sampler, starting_state = starting_state, n_iter = 100)
 
 
 ### Noisy distribution ###
@@ -99,15 +98,6 @@ p_exact = output_statistics[1]
 p_approx = output_statistics[2]
 p_sampled = output_statistics[3]
 
-fig_approx = plot(title="approximative computation", xlabel="modes occupation", ylabel="probability");
-plot!(fig_approx, p_exact, label="p_exact");
-plot!(fig_approx, p_approx, label="p_approx");
-fig_samp = plot(title="sampling computation", xlabel="modes occupation", ylabel="probability");
-plot!(fig_samp, p_exact, label="p_exact");
-plot!(fig_samp, p_sampled, label="p_sampled");
-
-plot(fig_approx, fig_samp, layout=(2,1))
-
 ### Theoretical distribution ###
 
 n = 3
@@ -115,7 +105,6 @@ m = 6
 
 input = Input{Bosonic}(first_modes(n,m))
 interf = RandHaar(m)
-
 output_distribution = theoretical_distribution(input=input, interf=interf)
 
 ### Usage Interferometer ###
@@ -126,12 +115,11 @@ m = 2 # mode number
 proba_bunching = Vector{Float64}(undef, 0)
 
 for x = 0.0:0.01:1.0
-    input = Input{OneParameterInterpolation}(first_modes(n,m), x)
+    local input = Input{OneParameterInterpolation}(first_modes(n,m), x)
     p_theo = theoretical_distribution(input=input, interf=B)
 
     push!(proba_bunching, p_theo[2]) # store the probabilty to observe one photon in each mode
 end
-plot(0:0.01:1, proba_bunching, label=nothing, xlabel="distinguishability", ylabel="event probabilty")
 
 ### subsets ###
 
@@ -250,31 +238,3 @@ o = PartitionCountsAll(part)
 ev = Event(i,o,interf)
 
 compute_probability!(ev)
-
-### Visualization ###
-n = 4
-m = 8
-input = Input{Bosonic}(ModeOccupation(random_occupancy(n,m)))
-interf = RandHaar(m)
-output = cliffords_sampler(input=input, interf=interf)
-visualize_sampling(input, output)
-
-distinguishability = 0.7
-reflectivity = 0.7
-input = Input{OneParameterInterpolation}(ModeOccupation(random_occupancy(n,m)), distinguishability)
-interf = RandHaar(m)
-data_exact = noisy_distribution(input=input, reflectivity=reflectivity, interf=interf, approx=false, samp=false)
-data_exact = data_exact[1]
-
-nlist = output_mode_occupation(n,m) # get all the possible output
-visualize_proba(input, nlist[200], data_exact)
-
-### Access to datasets ###
-data = load("datasets/cliffords_sampler.jld")
-output = data["first_modes"]["n=10;m=20;interf=Fourier"]
-output = data["random_occupancy"]["n=6;m=36;interf=RandHaar"]
-data = load("datasets/noisy_distribution.jld")
-p = data["OneParameterInterpolation"]["n=4;m=16;interf=Fourier;reflectivity=0.25;distinguishability_param=0.75"]
-p_theo = p[1]
-p_approx = p[2]
-p_samp = p[3]
