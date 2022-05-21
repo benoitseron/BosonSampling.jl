@@ -1,5 +1,8 @@
 # BosonSampling
 
+[![](https://img.shields.io/badge/docs-stable-blue.svg)](https://benoitseron.github.io/BosonSampling.jl/stable)
+[![](https://img.shields.io/badge/docs-dev-blue.svg)](https://benoitseron.github.io/BosonSampling.jl/dev)
+
 This project implements standard and scattershot BosonSampling in Julia, including boson samplers and certification and optimization tools.
 
 ## Functionalities
