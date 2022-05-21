@@ -7,10 +7,20 @@ makedocs(
     sitename = "BosonSampling.jl",
     modules = [BosonSampling],
     authors = "Benoit Seron, Antoine Restivo",
-    format = Documenter.HTML(prettyurls = false),
+    format = Documenter.HTML(prettyurls=false, sidebar_sitename=false),
     pages = [
         "About" => "about.md",
-        "Library" => Any[
+        "Tutorials" => Any[
+                "installation" => "tutorial/installation.md",
+                "basic usage" => "tutorial/basic_usage.md",
+                "samplers" => "tutorial/boson_samplers.md",
+                "bunching" => "tutorial/bunching.md",
+                "certification" => "tutorial/certification.md",
+                "optimization" => "tutorial/optimization.md",
+                "circuits" => "tutorial/circuits.md",
+                "permanent conjectures" => "tutorial/permanent_conjectures.md"
+                        ],
+        "API" => Any[
             "Types" => Any[
                 "inputs" => "types/input.md",
                 "events" => "types/events.md",
