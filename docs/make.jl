@@ -44,5 +44,5 @@ makedocs(
 )
 
 deploydocs(
-    repo = "github.com/benoitseron/BosonSampling.jl.git"
+    repo = "https://benoitseron.github.io/BosonSampling.jl/"
 )
