@@ -44,9 +44,19 @@ makedocs(
 )
 
 deploydocs(
-    repo = "github.com/AntoineRestivo/BosonSampling.jl.git",
+    root = "BosonSampling/docs/src",
     target = "build",
-    branch = "gh-pages",
-    forcepush = true,
-    )
+    dirname = "",
+    repo = "github.com/AntoineRestivo/BosonSampling.jl.git",
+    deps = nothing | <Function>,
+    make = nothing | <Function>,
+    devbranch = nothing,
+    devurl = "dev",
+    versions = ["stable" => "v^", "v#.#", devurl => devurl],
+    forcepush = false,
+    deploy_config = auto_detect_deploy_system(),
+    push_preview = false,
+    repo_previews = repo,
+    branch_previews = branch,
 )
+
