@@ -45,4 +45,8 @@ makedocs(
 
 deploydocs(
     repo = "github.com/AntoineRestivo/BosonSampling.jl.git",
+    target = "pdf/build-pdf/commit",
+    branch = "gh-pages-pdf",
+    forcepush = true,
+    )
 )
