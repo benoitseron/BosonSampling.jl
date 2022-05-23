@@ -3,7 +3,7 @@
 
 """
 
-	 cholesky_semi_definite_positive(A)
+    cholesky_semi_definite_positive(A)
 
 cholesky decomposition (`A` = R' * R) for a sdp but not strictly positive
 definite matrix
@@ -31,7 +31,7 @@ end
 
 """
 
-	incorporate_in_a_unitary(X)
+    incorporate_in_a_unitary(X)
 
 incorporates the renormalized matrix X in a double sized unitary through the
 proof of Lemma 29  of Aaronson Arkipov seminal [The Computational Complexity of Linear Optics](https://arxiv.org/abs/1011.3245)
