@@ -11,7 +11,7 @@ probability to get a defined [`OutputMeasurement`](@ref).
 distinguishability of the particles we want to make interfere: [`Bosonic`](@ref),
 [`PartDist`](@ref) and [`Distinguishable`](@ref). In order to define the input, we first need to provide a [`ModeOccupation`](@ref) that describes the repartition of the particles among the modes.
 
-```jldoctest
+```
 julia> n = 3; # photon number
 
 julia> m = 6; # mode number
@@ -23,7 +23,7 @@ state = [1, 0, 0, 1, 1, 0]
 In the example above, `my_mode_occupation` has been created thanks to [`random_occupancy`](@ref) that randomly places `n` particles among `m` modes. Here we have one particle in the first, fourth and fifth modes.
 Let's build an input made off indistinguishable photons by using the type [`Bosonic`](@ref)
 
-```jldoctest
+```
 julia> my_input = Input{Bosonic}(my_mode_occupation)
 Type:Input{Bosonic}
 r:state = [1, 1, 0, 0, 1, 0]
@@ -35,7 +35,7 @@ distinguishability_param:nothing
 
 where `my_input` holds the information defined above and an additional field, the [`GramMatrix`](@ref):
 
-```jldoctest
+```
 help?> GramMatrix
 
 Fields:
@@ -48,7 +48,7 @@ Fields:
 
 which contains everything about the distinguishability of the particles within `my_input`. The matrix itself can be accessed via the field `S`:
 
-```jldoctest
+```
 julia> my_input.G.S
 3×3 Matrix{ComplexF64}:
  1.0+0.0im  1.0+0.0im  1.0+0.0im
@@ -58,7 +58,7 @@ julia> my_input.G.S
 
 One can do the same for [`Distinguishable`](@ref) particles placed in the [`first_modes`](@ref)
 
-```jldoctest
+```
 julia> my_mode_occupation = first_modes(n,m);
 
 julia> my_input = Input{Distinguishable}(my_mode_occupation);
@@ -72,7 +72,7 @@ julia> my_input.G.S
 
 We can move now to the [`PartDist`](@ref) case with a model of partially distinguishable particles defined by a [`RandomGramMatrix`](@ref)
 
-```jldoctest
+```
 julia> my_input = Input{RandomGramMatrix}(first_modes(n,m));
 ```
 
@@ -81,7 +81,7 @@ where `my_input.G.S` is a randomly generated Gram matrix.
 Finally, one can resort to a [`OneParameterInterpolation`](@ref) model taking a linear distinguishability
 parameter as an additional argument in the definition of `my_input`:
 
-```jldoctest
+```
 julia> my_mode_occupation = ModeOccupation(random_occupancy(n,m));
 
 julia> my_distinguishability_param = 0.7;
@@ -105,7 +105,7 @@ we want to apply on `my_input`. A common practice to study boson sampling is to
 pick up at random a Haar distributed unitary matrix that will represent the interferometer.
 This can be done as follow:
 
-```jldoctest
+```
 julia> my_random_interf = RandHaar(m);
 
 julia> my_random_interf.U
@@ -121,7 +121,7 @@ julia> my_random_interf.U
 where we have accessed to the matrix thanks to the field `.U`.
 We may also need to use a specific interferometer such as a [`quantum Fourier transform`](https://en.wikipedia.org/wiki/Quantum_Fourier_transform) or the [`Hadamard transform`](https://en.wikipedia.org/wiki/Hadamard_transform):
 
-```jldoctest
+```
 julia> my_fourier_interf = Fourier(m);
 
 julia> is_unitary(my_fourier_interf.U)
@@ -137,7 +137,7 @@ where we have checked the unitarity thanks to `is_unitary`.
 The implemented interferometers are listed in [`Interferometer`](@ref) but it is still
 possible to define our own unitary by resorting to the type [`UserDefinedInterferometer`](@ref):
 
-```jldoctest
+```
 julia> sigma_y = [0 -1im; 1im 0];
 
 julia> my_interf = UserDefinedInterferometer(sigma_y)
@@ -156,7 +156,7 @@ Unitary :
 
 Similary to the definition of the [`Input`](@ref), it is also possible to define an output configuration from a [`ModeOccupation`](@ref)
 
-```jldoctest
+```
 julia> n = 3;
 
 julia> m=n^2;
@@ -177,7 +177,7 @@ FockDetection(state = [1, 1, 1, 0, 0, 0, 0, 0, 0])
 
 using [`FockDetection`](@ref). Additionally, we can define an [`Event`](@ref) that stores our input-interferometer-output content
 
-```jldoctest
+```
 julia> my_interf = Fourier(my_input.m)
 Type : Fourier
 m : 9
@@ -198,7 +198,7 @@ m : 9)
 
 and then one can compute the probability that this event occurs
 
-```jldoctest
+```
 julia> compute_probability!(ev)
 0.015964548319225575
 ```
@@ -208,7 +208,7 @@ compute the probability that partially distinguishable photons pupulating the `n
 first modes of `m=9` modes end up in the `n` last output modes when interfering through
 a random interferometer:
 
-```jldoctest
+```
 julia> my_input = Input{RandomGramMatrix}(first_modes(n,m)); # input from a randomly generated Gram matrix
 
 julia> out = FockDetection(ModeOccupation([0,0,0,0,0,0,1,1,1]));
