@@ -19,7 +19,6 @@ makedocs(
                 "Basic usage" => "tutorial/basic_usage.md",
                 "Samplers" => "tutorial/boson_samplers.md",
                 "Bunching" => "tutorial/bunching.md",
-                "Full distribution" => "tutorial/compute_distr.md",
                 "Certification" => "tutorial/certification.md",
                 "Optimization" => "tutorial/optimization.md",
                 "Circuits" => "tutorial/circuits.md",
@@ -49,8 +48,8 @@ makedocs(
 )
 
 deploydocs(
-     repo = "github.com/BosonSampling.jl.git",
-     target = "build",
-     branch = "gh-pages",
-     versions = ["stable" => "v^", "v#.#"],
- )
+    repo = "github.com/BosonSampling.jl.git",
+    target = "build",
+    branch = "gh-pages",
+    versions = ["stable" => "v^", "v#.#"],
+)
