@@ -21,12 +21,21 @@ function noisy_sampler(;input::Input, reflectivity::Real, interf::Interferometer
     bosonic_subset = rand(collect(multiset_combinations(list_assignement, i)))
     bosonic_input[bosonic_subset] .= 1
 
-    classical_input = input.r.state .- bosonic_input
+    classical_input = remaining_photons .- bosonic_input
     classical_input = Input{Distinguishable}(ModeOccupation(classical_input))
     bosonic_input = Input{Bosonic}(ModeOccupation(bosonic_input))
 
-    classical_output = fill_arrangement(classical_sampler(input=classical_input, interf=interf))
-    bosonic_output = cliffords_sampler(input=bosonic_input, interf=interf)
+    if classical_input.r.state != zeros(input.m)
+        classical_output = fill_arrangement(classical_sampler(input=classical_input, interf=interf))
+    else
+        classical_output = []
+    end
+
+    if bosonic_input.r.state != zeros(input.m)
+        bosonic_output = cliffords_sampler(input=bosonic_input, interf=interf)
+    else
+        bosonic_output = []
+    end
 
     return sort(append!(classical_output, bosonic_output))
 
