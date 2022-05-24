@@ -43,6 +43,8 @@ The output vector of length `n` tells us which of the output modes contain a pho
 
     julia> visualize_sampling(my_input, res)
 
+![samp](boson_samp.png)    
+
 
 ## Noisy sampler
 
