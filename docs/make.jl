@@ -3,6 +3,8 @@ Pkg.add("Documenter")
 using Documenter, BosonSampling
 push!(LOAD_PATH, "./src")
 
+DocMeta.setdocmeta!(BosonSampling, :DocTestSetup, :(using MyPackage); recursive=true)
+
 makedocs(
     source = "./src/",
     sitename = "BosonSampling.jl",
@@ -13,34 +15,34 @@ makedocs(
     pages = [
         "About" => "about.md",
         "Tutorials" => Any[
-                "installation" => "tutorial/installation.md",
-                "basic usage" => "tutorial/basic_usage.md",
-                "samplers" => "tutorial/boson_samplers.md",
-                "bunching" => "tutorial/bunching.md",
-                "certification" => "tutorial/certification.md",
-                "optimization" => "tutorial/optimization.md",
-                "circuits" => "tutorial/circuits.md",
-                "permanent conjectures" => "tutorial/permanent_conjectures.md"
+                "Installation" => "tutorial/installation.md",
+                "Basic usage" => "tutorial/basic_usage.md",
+                "Samplers" => "tutorial/boson_samplers.md",
+                "Bunching" => "tutorial/bunching.md",
+                "Certification" => "tutorial/certification.md",
+                "Optimization" => "tutorial/optimization.md",
+                "Circuits" => "tutorial/circuits.md",
+                "Permanent conjectures" => "tutorial/permanent_conjectures.md"
                         ],
         "API" => Any[
             "Types" => Any[
-                "inputs" => "types/input.md",
-                "events" => "types/events.md",
-                "interferomters" => "types/interferometers.md",
-                "measurements" => "types/measurements.md",
-                "partitions" => "types/partitions.md",
-                "type utilities" => "types/type_functions.md"],
+                "Inputs" => "types/input.md",
+                "Events" => "types/events.md",
+                "Interferomters" => "types/interferometers.md",
+                "Measurements" => "types/measurements.md",
+                "Partitions" => "types/partitions.md",
+                "Type utilities" => "types/type_functions.md"],
             "Functions" => Any[
-                "certification" => "functions/bayesian.md",
-                "bunching" => "functions/bunching.md",
-                "distributions" => "functions/distributions.md",
-                "partitions" => "functions/partitions.md",
-                "permanent conjectures" => "functions/permanent_conjectures.md",
-                "tools" => "functions/proba_tools.md",
-                "samplers" => "functions/samplers.md",
-                "scattering" => "functions/scattering.md",
-                "special_matrices" => "functions/special_matrices.md",
-                "visualization" => "functions/visualize.md"]
+                "Certification" => "functions/bayesian.md",
+                "Bunching" => "functions/bunching.md",
+                "Distributions" => "functions/distributions.md",
+                "Partitions" => "functions/partitions.md",
+                "Permanent conjectures" => "functions/permanent_conjectures.md",
+                "Tools" => "functions/proba_tools.md",
+                "Samplers" => "functions/samplers.md",
+                "Scattering" => "functions/scattering.md",
+                "Special_matrices" => "functions/special_matrices.md",
+                "Visualization" => "functions/visualize.md"]
                 ]
     ]
 )

@@ -9,12 +9,11 @@ function cliffords_sampler(;input::Input, interf::Interferometer)
 
     m = input.m
     n = input.n
-    n_ = collect(1:n)
-    perm_n_ = collect(permutations(n_))
+    perm_n_ = permutations(1:n)
 
     U = interf.U
-    A = U[:, n_]
-    A = A[:, rand(perm_n_)]
+    A = U[:, 1:n]
+    A = A[:, nthperm(1:n, rand(1:factorial(big(n))))]
 
     weight_array = [abs(A[i,1])^2 for i in 1:m]
     sample_array = [wsample(1:m, Weights(weight_array))]

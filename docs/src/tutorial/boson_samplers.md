@@ -10,7 +10,7 @@ We present here the general syntax to simulate `n=4` indistinguishable photons a
 `m=16` modes. To do so, we first need to define our [`Bosonic`](@ref) input with
 randomly placed photons
 
-```
+```jldoctest
 julia> n = 4;
 
 julia> m = n^2;
@@ -26,7 +26,7 @@ distinguishability_param:nothing
 
 and we use a random interferometer
 
-```
+```jldoctest
 julia> my_interf = RandHaar(m)
 Interferometer :
 
@@ -36,7 +36,7 @@ m : 16
 
 and then call [`cliffords_sampler`](@ref) to run the simulation
 
-```
+```jldoctest
 julia> res = cliffords_sampler(input=my_input, interf=my_interf)
 4-element Vector{Int64}:
   2
@@ -47,15 +47,15 @@ julia> res = cliffords_sampler(input=my_input, interf=my_interf)
 
 The output vector of length `n` tells us which of the output modes contain a photon. One can have a schematic look at the input/output configurations:
 
-```
-julia> visualze_sample(my_input, res)
+```jldoctest
+julia> visualize_sampling(my_input, res)
 ```
 
 ## Noisy sampler
 
 A boson sampling experiment can also be simulated by adding noise either from the interferometer or directly by playing with partial distinguishability. As before, one creates an input of particles that are not completely indistinguishable from [`OneParameterInterpolation`](@ref)
 
-```
+```jldoctest
 julia> my_distinguishability_param = 0.7;
 
 julia> my_mode_occupation = ModeOccupation(random_occupancy(n,m));
@@ -66,7 +66,7 @@ julia> my_input = Input{OneParameterInterpolation}(my_mode_occupation, my_distin
 and still using `my_interf` with some loss `η=0.7`, one simulates our noisy boson
 sampling experiment  with
 
-```
+```jldoctest
 julia> res = noisy_sampler(input=my_input, reflectivity=η, interf=my_interf)
 3-element Vector{Int64}:
   5
@@ -82,7 +82,7 @@ are populated by one photon.
 Finally, we repeat the steps to simulate fully distinguishable particles by using
 [`classical_sampler`](@ref)
 
-```
+```jldoctest
 julia> my_mode_occupation = ModeOccupation(random_occupancy(n,m));
 
 julia> my_input = Input{Distinguishable}(my_mode_occupation);
@@ -100,4 +100,3 @@ julia> res = classical_sampler(input=my_input, interf=my_interf)
  1
  0
 ```
-
