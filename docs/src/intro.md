@@ -39,7 +39,7 @@ where our convention identifies the $j$ th row (column) with the $j$ th input (o
 
 ## Bunching
 
-The H-matrix follows a convention different from that of Valery Shchesnovich: `H_{a,b} = \sum _{l \in \mathcal{K}} U_{l,a} U_{l,b}^{*}`, see [H_matrix](@ref).
+The H-matrix follows a convention different from that of Valery Shchesnovich: `H_{a,b} = \sum _{l \in \mathcal{K}} U_{l,a} U_{l,b}^{*}`, see [`H_matrix`](@ref).
 
 
 ## Conventions regarding Julia:
@@ -49,11 +49,11 @@ The H-matrix follows a convention different from that of Valery Shchesnovich: `H
 
 ## Gram matrices :
 
-  Gram matrices are defined as ``(<\phi_i|\phi_j>); i,j = 1:n``. This means that if the label of the photons are swapped, you need to enter another distinguishability matrix with swapped labels accordingly. See [GramMatrix](@ref).
+  Gram matrices are defined as ``(<\phi_i|\phi_j>); i,j = 1:n``. This means that if the label of the photons are swapped, you need to enter another distinguishability matrix with swapped labels accordingly. See [`GramMatrix`](@ref).
 
 ## Warning about precision :
 
-  in [EventProbability](@ref) :
+  in [`EventProbability`](@ref) :
 
   precision is set to machine precision `eps()` when doing non-randomised methods
   although it is of course larger and this should be implemented
@@ -62,4 +62,4 @@ The H-matrix follows a convention different from that of Valery Shchesnovich: `H
 
 ## Distances :
 
-  Beware of the different TVD conventions (1/2 in front or not). See [tvd](@ref) for instance.
+  Beware of the different TVD conventions (1/2 in front or not). See [`tvd`](@ref) for instance.
