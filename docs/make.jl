@@ -47,3 +47,10 @@ makedocs(
                 ]
     ]
 )
+
+deploydocs(
+     repo = "github.com/BosonSampling.jl.git",
+     target = "build",
+     branch = "gh-pages",
+     versions = ["stable" => "v^", "v#.#"],
+ )
