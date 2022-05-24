@@ -129,12 +129,17 @@ function partition_from_subset_lengths(subset_lengths)
 
 end
 
+"""
 
+    equilibrated_partition_vector(m,n_subsets)
+
+Returns a (most) equilibrated partition possible by euclidian division.
+
+(a problem is that euclidian distribution may give n_subsets or n_subsets+1 if not done like below - here it is the most obvious thing I could think of to get a somewhat equilibrated partition with a constant number of subsets)
+"""
 function equilibrated_partition_vector(m,n_subsets)
 
-    """returns a (most) equilibrated partition possible by euclidian division
 
-    (a problem is that euclidian distribution may give n_subsets or n_subsets+1 if not done like below - here it is the most obvious thing I could think of to get a somewhat equilibrated partition with a constant number of subsets)"""
     q = div(m,n_subsets)
     y = n_subsets
     r = rem(m,n_subsets)
@@ -148,9 +153,12 @@ end
 
 equilibrated_mode_occupation(m,n_subsets) = ModeOccupation(equilibrated_partition_vector(m,n_subsets))
 
-function equilibrated_partition(m,n_subsets)
+"""
+    equilibrated_partition(m,n_subsets)
 
-        """returns a most equilibrated_partition according to the principles of equilibrated_partition_vector"""
+Returns a most equilibrated_partition according to the principles of [`equilibrated_partition_vector`](@ref).
+"""
+function equilibrated_partition(m,n_subsets)
 
         partition_from_subset_lengths(equilibrated_partition_vector(m,n_subsets))
 
