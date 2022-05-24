@@ -1,7 +1,7 @@
 """
 	clean_proba_(probability:Number, atol=ATOL)
 
-Check wether a (complex) number is close enough to a valid probability with tolerance
+Checks whether a (complex) number is close enough to a valid probability with tolerance
 `ATOL`. If so, convert it to a positive real number.
 """
 function clean_proba(probability::Number, atol=ATOL)
@@ -32,7 +32,7 @@ end
 """
 	clean_pdf(A::Array, atol=ATOL)
 
-Check wether an array is an acceptable discrete probability distribution with
+Checks wether an array is an acceptable discrete probability distribution with
 tolerance `ATOL`. If so, converts its elements to normalized positive real numbers.
 """
 function clean_pdf(A::Array, atol = ATOL)
@@ -54,7 +54,7 @@ end
 """
 	isa_pdf(pdf)
 
-Assert if `pdf`	is a valid probability distribution.
+Asserts if `pdf`	is a valid probability distribution.
 """
 function isa_pdf(pdf)
 
@@ -66,17 +66,17 @@ end
 """
 	tvd(a,b)
 
-Compute the total variation distance between two probability distributions.
+Computes the total variation distance between two probability distributions.
 """
 function tvd(a,b)
 	"""total variation distance"""
-	0.5*sum(abs.(a-b))
+	sum(abs.(a-b))
 end
 
 """
 	sqr(a,b)
 
-Compute the euclidian distance between two probability distributions.	
+Computes the euclidian distance between two probability distributions.
 """
 function sqr(a,b)
 	"""euclidian distance"""
