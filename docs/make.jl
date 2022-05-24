@@ -1,6 +1,7 @@
-push!(LOAD_PATH, "./src")
-
+import Pkg
+Pkg.add("Documenter")
 using Documenter, BosonSampling
+push!(LOAD_PATH, "./src")
 
 makedocs(
     source = "./src/",
@@ -8,6 +9,7 @@ makedocs(
     modules = [BosonSampling],
     authors = "Benoit Seron, Antoine Restivo",
     format = Documenter.HTML(prettyurls=false, sidebar_sitename=false),
+    doctest = false,
     pages = [
         "About" => "about.md",
         "Tutorials" => Any[
@@ -44,9 +46,8 @@ makedocs(
 )
 
 deploydocs(
-    repo = "github.com/AntoineRestivo/BosonSampling.jl.git",
+    repo = "github.com/BosonSampling.jl.git",
     target = "build",
     branch = "gh-pages",
     versions = ["stable" => "v^", "v#.#"],
 )
-
