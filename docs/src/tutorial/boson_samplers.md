@@ -1,12 +1,13 @@
 # Samplers
 
-This tutorial gives some examples of the usage for the samplers. That is, from an
-[`Input`](@ref) configuration and an [`Interferometer`](@ref) we simulate the
-resulting configuration.
+This tutorial gives some examples of the usage for the samplers, a classical simulation/approximation of genuine boson samplers. That is, from an
+[`Input`](@ref) configuration and an [`Interferometer`](@ref) we provide tools to sample for the classically hard to simulate boson sampling distribution.
 
 ## Bosonic sampler
 
-We present here the general syntax to simulate `n=4` indistinguishable photons among
+This model is an exact sampler based on the famous algorithm of [Clifford-Clifford](https://arxiv.org/abs/1706.01260). (Note that we did not yet implement the [faster version](https://arxiv.org/abs/2005.04214) for non vanishing boson density.)
+
+We present here the general syntax through an example. We simulate `n=4` indistinguishable photons among
 `m=16` modes. To do so, we first need to define our [`Bosonic`](@ref) input with
 randomly placed photons
 
@@ -48,7 +49,9 @@ The output vector of length `n` tells us which of the output modes contain a pho
 
 ## Noisy sampler
 
-A boson sampling experiment can also be simulated by adding noise either from the interferometer or directly by playing with partial distinguishability. As before, one creates an input of particles that are not completely indistinguishable from [`OneParameterInterpolation`](@ref)
+We present here the current best known approximate sampler, based on truncating probabilities in `k` perfectly interfering bosons and `n-k` perfectly distinguishable ones, an algorithm from ANTOINE CHANGE HERE [](https://arxiv.org/pdf/1907.00022.pdf). This decomposition is successful when some partial distinguishability is present. By simplicity, we restrict to the colloquial model of a one parameter `x` describing the overlap between two different photons (assumed to be equal for all pairs), which is implemented with [`OneParameterInterpolation`](@ref). Similary, loss is also accounted for.
+
+Let us now explain the usage of this algorithm. As before, one creates an input of particles that are not completely indistinguishable from [`OneParameterInterpolation`](@ref)
 
     julia> my_distinguishability_param = 0.7;
 
