@@ -120,6 +120,15 @@ struct PhaseShift <: Interferometer
     PhaseShift(shifted_modes, param_) = new(shifted_modes, param_, length(shifted_modes), phase_shift(shifted_modes, param_))
 end
 
+# struct Circuit <: Interferometer
+#
+#     circuit_elements::Vector{Vector{Interferometer}}
+#     layers::Vector
+#     U::Matrix{ComplexF64}
+#
+#     Circuit(circuit_elements::Vector{Vector{Interferometer}}, layers::Vector) = new(circuit_elements::Vector{Vector{Interferometer}}, layers::Vector, build_circuit(circuit_elements,layers))
+# end
+
 Base.show(io::IO, interf::Interferometer) = print(io, "Interferometer :\n\n", "Type : ", typeof(interf), "\n", "m : ", interf.m)
 
 Base.show(io::IO, interf::UserDefinedInterferometer) = begin

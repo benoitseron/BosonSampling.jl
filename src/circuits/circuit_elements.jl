@@ -69,14 +69,64 @@ function rotation_matrix(angle::Float64)
 
  function phase_shift(shifted_modes::Array, param_::Array)
 
-	  U = zeros(length(shifted_modes), length(shifted_modes))
+	U = zeros(length(shifted_modes), length(shifted_modes))
 
-	  for i in length(shifted_modes)
-		  for j in length(shifted_modes)
-			  i == j && i in shifted_modes ? U[i,j] = exp(1im * param_[i]) : continue
-		  end
-	  end
+ 	for i in length(shifted_modes)
+		for j in length(shifted_modes)
+			i == j && i in shifted_modes ? U[i,j] = exp(1im * param_[i]) : continue
+		end
+	end
 
 	  U
 
-  end
+end
+
+# function build_circuit(mode_occ::ModeOccupation, circuit_elements::Vector{Vector{T}}, layers::Vector) where T <: Interferometer
+#
+# 	m = mode_occ.m
+# 	id = Matrix{ComplexF64}(LinearAlgebra.I, m, m)
+# 	res = id
+#
+# 	for i in 1:length(circuit_elements)
+# 		u = id
+# 		for j in 1:length(circuit_elements[i])
+# 			U = circuit_elements[i][j].U
+# 			u[layers[i][j], layers[i][j]] = U
+# 		end
+#
+# 		res *= u
+# 	end
+#
+# 	res
+# end
+#
+# mode_occ = first_modes(3,5)
+#
+# m = mode_occ.m
+#
+# b1 = BeamSplitter(1/sqrt(6))
+#
+# is_unitary(b1.U)
+#
+# U1 = RandHaar(1)
+#
+# is_unitary(U1.U)
+#
+# b2 = BeamSplitter(1/sqrt(2))
+#
+# is_unitary(b2.U)
+#
+# U2 = RandHaar(1)
+#
+# is_unitary(U2.U)
+#
+# circuit_elem = [[b1,U1],[b2,U2]]
+#
+# v_ = [[[1,2],[3]], [[1,3],[2]]]
+#
+# res = build_circuit(mode_occ, circuit_elem, v_)
+#
+# is_unitary(res)
+#
+# res * conj(transpose(res))
+#
