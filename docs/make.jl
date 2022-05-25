@@ -21,6 +21,7 @@ makedocs(
                 "Bunching" => "tutorial/bunching.md",
                 "Certification" => "tutorial/certification.md",
                 "Optimization" => "tutorial/optimization.md",
+                "Counting statistics" => "tutorial/compute_distr.md",
                 "Circuits" => "tutorial/circuits.md",
                 "Permanent conjectures" => "tutorial/permanent_conjectures.md"
                         ],
