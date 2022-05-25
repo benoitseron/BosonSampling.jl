@@ -1,4 +1,4 @@
-<img src="https://github.com/AntoineRestivo/BosonSampling.jl/tree/main/docs/src/assets/logo-dark.png" alt="BosonSampling.jl" width="400">
+<img src="https://github.com/AntoineRestivo/BosonSampling.jl/blob/main/docs/src/assets/logo-dark.png" alt="BosonSampling.jl" width="400">
 
 # 
 
