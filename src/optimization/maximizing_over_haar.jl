@@ -90,4 +90,4 @@ for n_modes = 2:16
     end
 end
 
-brute_force_maximize_over_haar_partition_pdf(n_modes = 100, n_trials = 10000, n_photons = 10, partition_size = 50, dist = sqr, start_with_fourier_special_partition = true))
+brute_force_maximize_over_haar_partition_pdf(n_modes = 100, n_trials = 10000, n_photons = 10, partition_size = 50, dist = sqr, start_with_fourier_special_partition = true)
