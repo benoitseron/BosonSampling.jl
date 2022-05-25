@@ -1,7 +1,14 @@
-# BosonSampling
+<img src="https://github.com/AntoineRestivo/BosonSampling.jl/tree/main/docs/src/assets/logo-dark.png" alt="BosonSampling.jl" width="400">
+
+# 
 
 [![](https://img.shields.io/badge/docs-stable-blue.svg)](https://AntoineRestivo.github.io/BosonSampling.jl/stable)
 [![](https://img.shields.io/badge/docs-dev-blue.svg)](https://AntoineRestivo.github.io/BosonSampling.jl/dev)
+
+**Latest release:**
+  * Version: [![Latest version tag][version-img]][version-url]
+  * Test coverage:
+        [![Test coverage status on codecov][codecov-img]][codecov-url]
 
 This project implements standard and scattershot BosonSampling in Julia, including boson samplers and certification and optimization tools.
 
