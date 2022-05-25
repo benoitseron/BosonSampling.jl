@@ -17,6 +17,7 @@ makedocs(
         "Tutorials" => Any[
                 "Installation" => "tutorial/installation.md",
                 "Basic usage" => "tutorial/basic_usage.md",
+                "Implementing new models" => "tutorial/user_defined_models.md"
                 "Samplers" => "tutorial/boson_samplers.md",
                 "Bunching" => "tutorial/bunching.md",
                 "Certification" => "tutorial/certification.md",

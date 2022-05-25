@@ -3,13 +3,21 @@
 This tutorial will introduce you to the definition of the building blocks for your
 boson sampling experiment. The general workflow for a simple simulation is to define
 an [`Input`](@ref) that enters into a [`Interferometer`](@ref) and ask what is the
-probability to get a defined `OutputMeasurement`.
+probability to get a defined [`OutputMeasurement`](@ref).
+
+They are linked together through an [`Event`](@ref) type, which holds the respective probabilities. As the computation of probabilities is often the most time consuming step, you need to explicitly as for it through [`compute_probability!`](@ref) which updates the [`EventProbability`](@ref) data.
 
 ## Input
 
 `BosonSampling.jl` provides three distinct types of input depending on the
 distinguishability of the particles we want to make interfere: [`Bosonic`](@ref),
-[`PartDist`](@ref) and [`Distinguishable`](@ref). In order to define the input, we first need to provide a [`ModeOccupation`](@ref) that describes the repartition of the particles among the modes.
+[`PartDist`](@ref) and [`Distinguishable`](@ref). The type [`PartDist`](@ref) is a container for different models of partial distinguishability. Currently available models are:
+* [`OneParameterInterpolation`](@ref)
+* [`RandomGramMatrix`](@ref)
+* [`UserDefinedGramMatrix`](@ref)
+* [`Undef`](@ref)
+
+In order to define the input, we first need to provide a [`ModeOccupation`](@ref) that describes the repartition of the particles among the modes.
 
     julia> n = 3; # photon number
 
@@ -103,7 +111,7 @@ This can be done as follow:
      0.179322+0.240927im    0.0369079+0.110875im     0.100647-0.0206654im   -0.153966+0.577663im     0.154379+0.372127im    -0.366647+0.481086im
 
 where we have accessed to the matrix thanks to the field `.U`.
-We may also need to use a specific interferometer such as a [`quantum Fourier transform`](https://en.wikipedia.org/wiki/Quantum_Fourier_transform) or the [`Hadamard transform`](https://en.wikipedia.org/wiki/Hadamard_transform):
+We may also need to use a specific interferometer such as a [`Discrete Fourier Transform`](https://en.wikipedia.org/wiki/Discrete_Fourier_transform) or the [`Hadamard transform`](https://en.wikipedia.org/wiki/Hadamard_transform):
 
     julia> my_fourier_interf = Fourier(m);
 
@@ -134,6 +142,8 @@ possible to define our own unitary by resorting to the type [`UserDefinedInterfe
      └────────┴────────┘
 
 ## OutputMeasurement
+
+Now consider what you want to observe, in this numerical experiment. If looking at the case of a single output, we would use an [`OutputMeasurement`](@ref) type called [`FockDetection`](@ref). Other types are currently defined such as [`PartitionCount`](@ref), which would evaluate the probability of finding a photon count in a partition of the output modes.
 
 Similary to the definition of the [`Input`](@ref), it is also possible to define an output configuration from a [`ModeOccupation`](@ref)
 
