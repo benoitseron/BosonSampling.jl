@@ -112,7 +112,6 @@ Return a partition of occupied modes from an `occupancy_vector`.
 """
 function occupancy_vector_to_partition(occupancy_vector)
 
-	"""returns a partition of occupied indexes (mode1,mode2,...) for an occupancy_vector"""
 	partition = []
 
 	check_at_most_one_particle_per_mode(occupancy_vector)
@@ -128,10 +127,13 @@ function occupancy_vector_to_partition(occupancy_vector)
 
 end
 
+
+"""
+	occupancy_vector_to_mode_occupancy(occupancy_vector)
+
+Return a partition of occupied modes from an `occupancy_vector`.
+"""
 function occupancy_vector_to_mode_occupancy(occupancy_vector)
-
-	"""the same as occupancy_vector_to_partition but renamed for clarity when used in the case of, for instance, photon input states"""
-
 	occupancy_vector_to_partition(occupancy_vector)
 end
 
@@ -299,6 +301,12 @@ end
 
 process_probability_partial(interf::Interferometer, input_state::Input{TIn} where {TIn<:PartDist},output_state::FockDetection) = process_probability_partial(interf.U, input_state.G.S, input_state.r.state,output_state.s.state)
 
+"""
+	compute_probability(ev::Event{TIn, TOut}) where {TIn<:InputType, TOut<:FockDetection}
+
+Given an [`Event`](@ref), gives the probability to get the outcome `TOut` when `TIn`
+passes though the interferometer `ev.interferometer`. 	
+"""
 function compute_probability!(ev::Event{TIn,TOut}) where {TIn<:InputType, TOut<:FockDetection}
 
 	check_probability_empty(ev)

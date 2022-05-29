@@ -27,11 +27,12 @@ makedocs(
                 "Circuits" => "tutorial/circuits.md",
                 "Permanent conjectures" => "tutorial/permanent_conjectures.md"
                         ],
+        "Benchmarks" => "benchmarks/bench.md",
         "API" => Any[
             "Types" => Any[
                 "Inputs" => "types/input.md",
                 "Events" => "types/events.md",
-                "Interferomters" => "types/interferometers.md",
+                "Interferometers" => "types/interferometers.md",
                 "Measurements" => "types/measurements.md",
                 "Partitions" => "types/partitions.md",
                 "Type utilities" => "types/type_functions.md"],

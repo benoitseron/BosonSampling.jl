@@ -5,7 +5,7 @@ boson sampling experiment. The general workflow for a simple simulation is to de
 an [`Input`](@ref) that enters into a [`Interferometer`](@ref) and ask what is the
 probability to get a defined [`OutputMeasurement`](@ref).
 
-They are linked together through an [`Event`](@ref) type, which holds the respective probabilities. As the computation of probabilities is often the most time consuming step, you need to explicitly as for it through [`compute_probability!`](@ref) which updates the [`EventProbability`](@ref) data.
+They are linked together through an [`Event`](@ref) type, which holds the respective probabilities. As the computation of probabilities is often the most time consuming step, you need to explicitly ask for it through [`compute_probability!`](@ref) which updates the [`EventProbability`](@ref) data.
 
 ## Input
 
@@ -189,7 +189,7 @@ and then one can compute the probability that this event occurs
      0.015964548319225575
 
 Those steps can be repeated for different types of input. Let's say we want to
-compute the probability that partially distinguishable photons pupulating the `n=3`
+compute the probability that partially distinguishable photons populating the `n=3`
 first modes of `m=9` modes end up in the `n` last output modes when interfering through
 a random interferometer:
 

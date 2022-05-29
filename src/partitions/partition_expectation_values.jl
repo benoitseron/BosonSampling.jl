@@ -12,7 +12,7 @@ Return the Haar averaged probability of photon number count in binned outputs
 for [`Distinguishable`](@ref) and [`Bosonic`](@ref) particles.
 
 !!! note "Reference"
-        [https://www.nature.com/articles/s41598-017-00044-8.pdf](https://www.nature.com/articles/s41598-017-00044-8.pdf)
+    [https://www.nature.com/articles/s41598-017-00044-8.pdf](https://www.nature.com/articles/s41598-017-00044-8.pdf)
 """
 function partition_expectation_values(partition_size_vector, partition_counts)
 
