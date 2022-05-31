@@ -1,7 +1,7 @@
-<img src="https://github.com/AntoineRestivo/BosonSampling.jl/blob/main/docs/src/assets/logo-dark.png" alt="BosonSampling.jl" width="400">
+<img src="https://github.com/benoitseron/BosonSampling.jl/blob/main/docs/src/assets/logo-dark.png" alt="BosonSampling.jl" width="400">
 
-[![](https://img.shields.io/badge/docs-stable-blue.svg)](https://AntoineRestivo.github.io/BosonSampling.jl/stable)
-[![](https://img.shields.io/badge/docs-dev-blue.svg)](https://AntoineRestivo.github.io/BosonSampling.jl/dev)
+[![](https://img.shields.io/badge/docs-stable-blue.svg)](https://benoitseron.github.io/BosonSampling.jl/stable)
+[![](https://img.shields.io/badge/docs-dev-blue.svg)](https://benoitseron.github.io/BosonSampling.jl/dev)
 
 #
 

@@ -52,7 +52,7 @@ makedocs(
 )
 
 deploydocs(
-    repo = "github.com/AntoineRestivo/BosonSampling.jl.git",
+    repo = "github.com/benoitseron/BosonSampling.jl.git",
     target = "build",
     branch = "gh-pages",
     versions = ["stable" => "v^", "v#.#"],
