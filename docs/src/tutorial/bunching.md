@@ -12,4 +12,5 @@ maximized by indistinguishable particles](https://arxiv.org/abs/2203.01306)).
 Although inefficient, we also provide a check function to evaluate by direct summation the bunching probabilities for `Bosonic` inputs
 
     bunching_probability_brute_force_bosonic(interf::Interferometer, i::Input, subset_modes::ModeOccupation)
+    
 in order to check the implementation of the above functions.
