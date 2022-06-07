@@ -40,7 +40,7 @@ Only ten years elapsed between the theoretical proposal of Boson Sampling and go
 
 `BosonSampling.jl` is a Julia package for simulating linear optics interferometry, including various models of Boson Samplers. Given the speed with which this research domain grows, Julia is an ideal language for researchers: it allows for easy to write code, while providing fast execution times out-of-the-box.
 
-We laid out a basic type hierarchy that allows users to access a practical API while still being able to create new models. These new models can include anything from imperfect detectors to new types of Boson Sampling (nonlinear,...). Our package allows user to conveniently keep the same syntax even though the underlying models or calculations may be changed according to researcher's need.
+We laid out a basic type hierarchy that allows users to access a practical API while still being able to create new models. These new models can include anything from imperfect detectors to new types of Boson Sampling (nonlinear, Gaussian,...). Our package allows users to conveniently keep the same syntax even though the underlying models or calculations may be changed according to researcher's need.
 
 A wide variety of practical functions are implemented in this package, including:
 * Boson-samplers, including partial distinguishability and loss
