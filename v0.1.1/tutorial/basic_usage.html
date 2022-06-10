@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Basic usage · BosonSampling.jl</title><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.044/juliamono.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.11/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../about.html"><img class="docs-light-only" src="../assets/logo.png" alt="BosonSampling.jl logo"/><img class="docs-dark-only" src="../assets/logo-dark.png" alt="BosonSampling.jl logo"/></a><form class="docs-search" action="../search.html"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../about.html">About</a></li><li><span class="tocitem">Tutorials</span><ul><li><a class="tocitem" href="installation.html">Installation</a></li><li class="is-active"><a class="tocitem" href="basic_usage.html">Basic usage</a><ul class="internal"><li><a class="tocitem" href="#Input"><span>Input</span></a></li><li><a class="tocitem" href="#Interferometer"><span>Interferometer</span></a></li><li><a class="tocitem" href="#OutputMeasurement"><span>OutputMeasurement</span></a></li></ul></li><li><a class="tocitem" href="user_defined_models.html">Implementing new models</a></li><li><a class="tocitem" href="boson_samplers.html">Samplers</a></li><li><a class="tocitem" href="partitions.html">Partitions</a></li><li><a class="tocitem" href="bunching.html">Bunching</a></li><li><a class="tocitem" href="certification.html">Certification</a></li><li><a class="tocitem" href="optimization.html">Optimization</a></li><li><a class="tocitem" href="compute_distr.html">Counting statistics</a></li><li><a class="tocitem" href="circuits.html">Circuits</a></li><li><a class="tocitem" href="permanent_conjectures.html">Permanent conjectures</a></li></ul></li><li><a class="tocitem" href="../benchmarks/bench.html">Benchmarks</a></li><li><span class="tocitem">API</span><ul><li><input class="collapse-toggle" id="menuitem-4-1" type="checkbox"/><label class="tocitem" for="menuitem-4-1"><span class="docs-label">Types</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../types/input.html">Inputs</a></li><li><a class="tocitem" href="../types/events.html">Events</a></li><li><a class="tocitem" href="../types/interferometers.html">Interferometers</a></li><li><a class="tocitem" href="../types/measurements.html">Measurements</a></li><li><a class="tocitem" href="../types/partitions.html">Partitions</a></li><li><a class="tocitem" href="../types/type_functions.html">Type utilities</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4-2" type="checkbox"/><label class="tocitem" for="menuitem-4-2"><span class="docs-label">Functions</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../functions/bayesian.html">Certification</a></li><li><a class="tocitem" href="../functions/bunching.html">Bunching</a></li><li><a class="tocitem" href="../functions/distributions.html">Distributions</a></li><li><a class="tocitem" href="../functions/partitions.html">Partitions</a></li><li><a class="tocitem" href="../functions/permanent_conjectures.html">Permanent conjectures</a></li><li><a class="tocitem" href="../functions/proba_tools.html">Tools</a></li><li><a class="tocitem" href="../functions/samplers.html">Samplers</a></li><li><a class="tocitem" href="../functions/scattering.html">Scattering</a></li><li><a class="tocitem" href="../functions/special_matrices.html">Special_matrices</a></li><li><a class="tocitem" href="../functions/visualize.html">Visualization</a></li></ul></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Tutorials</a></li><li class="is-active"><a href="basic_usage.html">Basic usage</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href="basic_usage.html">Basic usage</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/benoitseron/BosonSampling.jl/blob/master/docs/src/tutorial/basic_usage.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Basic-usage"><a class="docs-heading-anchor" href="#Basic-usage">Basic usage</a><a id="Basic-usage-1"></a><a class="docs-heading-anchor-permalink" href="#Basic-usage" title="Permalink"></a></h1><p>This tutorial will introduce you to the definition of the building blocks for your boson sampling experiment. The general workflow for a simple simulation is to define an <a href="../types/input.html#BosonSampling.Input"><code>Input</code></a> that enters into a <a href="../types/interferometers.html#BosonSampling.Interferometer"><code>Interferometer</code></a> and ask what is the probability to get a defined <a href="tutorial/@ref"><code>OutputMeasurement</code></a>.</p><p>They are linked together through an <a href="../types/events.html#BosonSampling.Event"><code>Event</code></a> type, which holds the respective probabilities. As the computation of probabilities is often the most time consuming step, you need to explicitly ask for it through <a href="../functions/partitions.html#BosonSampling.compute_probability!-Union{Tuple{Event{TIn, TOut}}, Tuple{TOut}, Tuple{TIn}} where {TIn&lt;:InputType, TOut&lt;:PartitionCount}"><code>compute_probability!</code></a> which updates the <a href="../types/events.html#BosonSampling.EventProbability"><code>EventProbability</code></a> data.</p><h2 id="Input"><a class="docs-heading-anchor" href="#Input">Input</a><a id="Input-1"></a><a class="docs-heading-anchor-permalink" href="#Input" title="Permalink"></a></h2><p><code>BosonSampling.jl</code> provides three distinct types of input depending on the distinguishability of the particles we want to make interfere: <a href="../types/input.html#BosonSampling.Bosonic"><code>Bosonic</code></a>, <a href="../types/input.html#BosonSampling.PartDist"><code>PartDist</code></a> and <a href="../types/input.html#BosonSampling.Distinguishable"><code>Distinguishable</code></a>. The type <a href="../types/input.html#BosonSampling.PartDist"><code>PartDist</code></a> is a container for different models of partial distinguishability. Currently available models are:</p><ul><li><a href="../types/input.html#BosonSampling.OneParameterInterpolation"><code>OneParameterInterpolation</code></a></li><li><a href="../types/input.html#BosonSampling.RandomGramMatrix"><code>RandomGramMatrix</code></a></li><li><a href="../types/input.html#BosonSampling.UserDefinedGramMatrix"><code>UserDefinedGramMatrix</code></a></li><li><a href="../types/input.html#BosonSampling.Undef"><code>Undef</code></a></li></ul><p>In order to define the input, we first need to provide a <a href="../types/partitions.html#BosonSampling.ModeOccupation"><code>ModeOccupation</code></a> that describes the repartition of the particles among the modes.</p><pre><code class="nohighlight hljs">julia&gt; n = 3; # photon number
+
+julia&gt; m = 6; # mode number
+
+julia&gt; my_mode_occupation = ModeOccupation(random_occupancy(n,m))
+ state = [1, 0, 0, 1, 1, 0]</code></pre><p>In the example above, <code>my_mode_occupation</code> has been created thanks to <a href="../functions/scattering.html#BosonSampling.random_occupancy-Tuple{Int64, Int64}"><code>random_occupancy</code></a> that randomly places <code>n</code> particles among <code>m</code> modes. Here we have one particle in the first, fourth and fifth modes. Let&#39;s build an input made off indistinguishable photons by using the type <a href="../types/input.html#BosonSampling.Bosonic"><code>Bosonic</code></a></p><pre><code class="nohighlight hljs">julia&gt; my_input = Input{Bosonic}(my_mode_occupation)
+ Type:Input{Bosonic}
+ r:state = [1, 1, 0, 0, 1, 0]
+ n:3
+ m:6
+ G:GramMatrix{Bosonic}(3, ComplexF64[1.0 + 0.0im 1.0 + 0.0im 1.0 + 0.0im; 1.0 + 0.0im 1.0 + 0.0im 1.0 + 0.0im; 1.0 + 0.0im 1.0 + 0.0im 1.0 + 0.0im], nothing, nothing, OrthonormalBasis(nothing))
+ distinguishability_param:nothing</code></pre><p>where <code>my_input</code> holds the information defined above and an additional field, the <a href="../types/input.html#BosonSampling.GramMatrix"><code>GramMatrix</code></a>:</p><pre><code class="nohighlight hljs">help?&gt; GramMatrix
+
+ Fields:
+  - n::Int: photons number
+  - S::Matrix: Gram matrix
+  - rank::Union{Int, Nothing}
+  - distinguishability_param::Union{Real, Nothing}
+  - generating_vectors::OrthonormalBasis</code></pre><p>which contains everything about the distinguishability of the particles within <code>my_input</code>. The matrix itself can be accessed via the field <code>S</code>:</p><pre><code class="nohighlight hljs">julia&gt; my_input.G.S
+ 3×3 Matrix{ComplexF64}:
+ 1.0+0.0im  1.0+0.0im  1.0+0.0im
+ 1.0+0.0im  1.0+0.0im  1.0+0.0im
+ 1.0+0.0im  1.0+0.0im  1.0+0.0im</code></pre><p>One can do the same for <a href="../types/input.html#BosonSampling.Distinguishable"><code>Distinguishable</code></a> particles placed in the <a href="../types/partitions.html#BosonSampling.first_modes-Tuple{Int64, Int64}"><code>first_modes</code></a></p><pre><code class="nohighlight hljs">julia&gt; my_mode_occupation = first_modes(n,m);
+
+julia&gt; my_input = Input{Distinguishable}(my_mode_occupation);
+
+julia&gt; my_input.G.S
+ 3×3 Matrix{ComplexF64}:
+ 1.0+0.0im  0.0+0.0im  0.0+0.0im
+ 0.0+0.0im  1.0+0.0im  0.0+0.0im
+ 0.0+0.0im  0.0+0.0im  1.0+0.0im</code></pre><p>We can move now to the <a href="../types/input.html#BosonSampling.PartDist"><code>PartDist</code></a> case with a model of partially distinguishable particles defined by a <a href="../types/input.html#BosonSampling.RandomGramMatrix"><code>RandomGramMatrix</code></a></p><pre><code class="nohighlight hljs">julia&gt; my_input = Input{RandomGramMatrix}(first_modes(n,m));</code></pre><p>where <code>my_input.G.S</code> is a randomly generated Gram matrix.</p><p>Finally, one can resort to a <a href="../types/input.html#BosonSampling.OneParameterInterpolation"><code>OneParameterInterpolation</code></a> model taking a linear distinguishability parameter as an additional argument in the definition of <code>my_input</code>:</p><pre><code class="nohighlight hljs">julia&gt; my_mode_occupation = ModeOccupation(random_occupancy(n,m));
+
+julia&gt; my_distinguishability_param = 0.7;
+
+julia&gt; my_input = Input{OneParameterInterpolation}(my_mode_occupation, my_distinguishability_param)
+ Type:Input{OneParameterInterpolation}
+ r:state = [1, 1, 1, 0, 0, 0]
+ n:3
+ m:6
+ G:GramMatrix{OneParameterInterpolation}(3, [1.0 0.7 0.7; 0.7 1.0 0.7; 0.7 0.7 1.0], nothing, 0.7, OrthonormalBasis(nothing))
+ distinguishability_param:0.7</code></pre><p>Notice that the <a href="../types/input.html#BosonSampling.Bosonic"><code>Bosonic</code></a> Gram matrix is recovered for <code>my_distinguishability_param = 1</code> while we find the <a href="../types/input.html#BosonSampling.Distinguishable"><code>Distinguishable</code></a> case for <code>my_distinguishability_param = 0</code>.  </p><h2 id="Interferometer"><a class="docs-heading-anchor" href="#Interferometer">Interferometer</a><a id="Interferometer-1"></a><a class="docs-heading-anchor-permalink" href="#Interferometer" title="Permalink"></a></h2><p>The second building block of our boson sampler is the interferometer we want to apply on <code>my_input</code>. A common practice to study boson sampling is to pick up at random a Haar distributed unitary matrix that will represent the interferometer. This can be done as follow:</p><pre><code class="nohighlight hljs">julia&gt; my_random_interf = RandHaar(m);
+
+julia&gt; my_random_interf.U
+ 6×6 Matrix{ComplexF64}:
+ -0.398793-0.162392im     0.500654+0.239935im   -0.0822224-0.189055im     0.361289+0.048139im   -0.0639807+0.521608im   -0.0608676-0.226158im
+ 0.331232+0.312918im    -0.362433-0.0585051im    0.172619+0.157846im       0.6224-0.0656408im   -0.186285+0.215539im    -0.233294-0.274952im
+ -0.085377+0.00861048im  -0.427763+0.1271im      -0.140581-0.541889im   -0.0407117+0.219472im     0.499523-0.0486383im  -0.0711764-0.416309im
+ -0.180636+0.294002im    -0.376353+0.0943096im   -0.489498-0.206616im   0.00169099-0.221399im    -0.260862+0.305118im     0.313454+0.373737im
+ 0.619915-0.0776736im     0.29879-0.323099im    -0.398401-0.371214im    -0.132369+0.0411683im   -0.242868+0.0913286im  -0.0282651-0.179273im
+ 0.179322+0.240927im    0.0369079+0.110875im     0.100647-0.0206654im   -0.153966+0.577663im     0.154379+0.372127im    -0.366647+0.481086im</code></pre><p>where we have accessed to the matrix thanks to the field <code>.U</code>. We may also need to use a specific interferometer such as a <a href="https://en.wikipedia.org/wiki/Discrete_Fourier_transform"><code>Discrete Fourier Transform</code></a> or the <a href="https://en.wikipedia.org/wiki/Hadamard_transform"><code>Hadamard transform</code></a>:</p><pre><code class="nohighlight hljs">julia&gt; my_fourier_interf = Fourier(m);
+
+julia&gt; is_unitary(my_fourier_interf.U)
+ true
+
+julia&gt; my_hadamard_tf = Hadamard(2^m);
+
+julia&gt; is_unitary(my_hadamard_tf.U)
+ true</code></pre><p>where we have checked the unitarity thanks to <code>is_unitary</code>.</p><p>The implemented interferometers are listed in <a href="../types/interferometers.html#BosonSampling.Interferometer"><code>Interferometer</code></a> but it is still possible to define our own unitary by resorting to the type <a href="../types/interferometers.html#BosonSampling.UserDefinedInterferometer"><code>UserDefinedInterferometer</code></a>:</p><pre><code class="nohighlight hljs">julia&gt; sigma_y = [0 -1im; 1im 0];
+
+julia&gt; my_interf = UserDefinedInterferometer(sigma_y)
+ Type : UserDefinedInterferometer
+ m : 2
+ Unitary :
+ ┌────────┬────────┐
+ │ Col. 1 │ Col. 2 │
+ ├────────┼────────┤
+ │  0+0im │  0-1im │
+ │  0+1im │  0+0im │
+ └────────┴────────┘</code></pre><h2 id="OutputMeasurement"><a class="docs-heading-anchor" href="#OutputMeasurement">OutputMeasurement</a><a id="OutputMeasurement-1"></a><a class="docs-heading-anchor-permalink" href="#OutputMeasurement" title="Permalink"></a></h2><p>Now consider what you want to observe, in this numerical experiment. If looking at the case of a single output, we would use an <a href="tutorial/@ref"><code>OutputMeasurement</code></a> type called <a href="../types/measurements.html#BosonSampling.FockDetection"><code>FockDetection</code></a>. Other types are currently defined such as <a href="../types/measurements.html#BosonSampling.PartitionCount"><code>PartitionCount</code></a>, which would evaluate the probability of finding a photon count in a partition of the output modes.</p><p>Similary to the definition of the <a href="../types/input.html#BosonSampling.Input"><code>Input</code></a>, it is also possible to define an output configuration from a <a href="../types/partitions.html#BosonSampling.ModeOccupation"><code>ModeOccupation</code></a></p><pre><code class="nohighlight hljs">julia&gt; n = 3;
+
+julia&gt; m=n^2;
+
+julia&gt; my_mode_occupation = first_modes(n,m);
+
+julia&gt; my_input = Input{Bosonic}(my_mode_occupation)
+ Type:Input{Bosonic}
+ r:state = [1, 1, 1, 0, 0, 0, 0, 0, 0]
+ n:3
+ m:9
+ G:GramMatrix{Bosonic}(3, ComplexF64[1.0 + 0.0im 1.0 + 0.0im 1.0 + 0.0im; 1.0 + 0.0im 1.0 + 0.0im 1.0 + 0.0im; 1.0 + 0.0im 1.0 + 0.0im 1.0 + 0.0im], nothing, nothing, OrthonormalBasis(nothing))
+ distinguishability_param:nothing
+
+julia&gt; out = FockDetection(my_mode_occupation)
+ FockDetection(state = [1, 1, 1, 0, 0, 0, 0, 0, 0])</code></pre><p>using <a href="../types/measurements.html#BosonSampling.FockDetection"><code>FockDetection</code></a>. Additionally, we can define an <a href="../types/events.html#BosonSampling.Event"><code>Event</code></a> that stores our input-interferometer-output content</p><pre><code class="nohighlight hljs">julia&gt; my_interf = Fourier(my_input.m)
+ Type : Fourier
+ m : 9
+
+julia&gt; ev = Event(my_input, out, my_interf)
+ Event{Bosonic, FockDetection}(Input:
+
+ Type:Input{Bosonic}
+ r:state = [1, 1, 1, 0, 0, 0, 0, 0, 0]
+ n:3
+ m:9
+ G:GramMatrix{Bosonic}(3, ComplexF64[1.0 + 0.0im 1.0 + 0.0im 1.0 + 0.0im; 1.0 + 0.0im 1.0 + 0.0im 1.0 + 0.0im; 1.0 + 0.0im 1.0 + 0.0im 1.0 + 0.0im], nothing, nothing, OrthonormalBasis(nothing))
+ distinguishability_param:nothing, FockDetection(state = [1, 1, 1, 0, 0, 0, 0, 0, 0]), EventProbability(nothing, nothing, nothing), Interferometer :
+
+ Type : Fourier
+ m : 9)</code></pre><p>and then one can compute the probability that this event occurs</p><pre><code class="nohighlight hljs">julia&gt; compute_probability!(ev)
+ 0.015964548319225575</code></pre><p>Those steps can be repeated for different types of input. Let&#39;s say we want to compute the probability that partially distinguishable photons populating the <code>n=3</code> first modes of <code>m=9</code> modes end up in the <code>n</code> last output modes when interfering through a random interferometer:</p><pre><code class="nohighlight hljs">julia&gt; my_input = Input{RandomGramMatrix}(first_modes(n,m)); # input from a randomly generated Gram matrix
+
+julia&gt; out = FockDetection(ModeOccupation([0,0,0,0,0,0,1,1,1]));
+
+julia&gt; my_interf = RandHaar(m);
+
+julia&gt; ev = Event(my_input, out, my_interf);
+
+julia&gt; compute_probability!(ev)
+ 0.014458823860031098</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="installation.html">« Installation</a><a class="docs-footer-nextpage" href="user_defined_models.html">Implementing new models »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.17 on <span class="colophon-date" title="Friday 10 June 2022 08:03">Friday 10 June 2022</span>. Using Julia version 1.7.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
