@@ -4,41 +4,50 @@ using BenchmarkPlots, StatsPlots
 using Permanents
 using LaTeXStrings
 using JLD
-using FileIO
 
 BenchmarkTools.DEFAULT_PARAMETERS.samples = 50
 BenchmarkTools.DEFAULT_PARAMETERS.seconds = 1
 BenchmarkTools.DEFAULT_PARAMETERS.evals = 1
 
 suite_permanent = BenchmarkGroup(["string"])
-for n in 15:25
+suite_permanent["ryser-jl"] = BenchmarkGroup(["string"])
+suite_permanent["glynn-jl"] = BenchmarkGroup(["string"])
+for n in 2:30
     A = RandHaar(n)
-    suite_permanent["n=$n"] = @benchmarkable ryser($A.U)
+    suite_permanent["ryser-jl"]["n=$n"] = @benchmarkable ryser($A.U)
+    suite_permanent["glynn-jl"]["n=$n"] = @benchmarkable fast_glynn_perm($A.U)
 end
 
 res = run(suite_permanent, verbose=true, seconds=1)
-data_mean = []
+data_ryser = []
+data_glynn = []
 
-for i in 15:25
-    mean_res = mean(res["n=$i"])
-    push!(data_mean, (mean_res.time)/10^9)
+for i in 2:30
+    mean_res = mean(res["ryser-jl"]["n=$i"])
+    push!(data_ryser, (mean_res.time)/10^9)
+    mean_res = mean(res["glynn-jl"]["n=$i"])
+    push!(data_glynn, (mean_res.time)/10^9)
 end
 
-f = open("data_python.txt")
-f = readlines(f)
-python_data = split(f[1], " ")
-python_data = map(e->parse(Float64,e), python_data)
+save("benchmarks/permanents_bench.jld", "permanents_benchmarkGroup",res)
+d = load("benchmarks/permanents_bench.jld")
 
-f = open("data_matlab.txt")
-f = readlines(f)
-matlab_data = split(f[1], " ")
-matlab_data = map(e->parse(Float64,e), matlab_data)
 
-perm_fig = plot(xlabel="n", ylabel="time (s)", legend=:topleft, dpi=300)
-scatter!(15:25, data_mean, label="Julia", dpi=300)
-scatter!(15:25, python_data, label="python", dpi=300)
-scatter!(15:25, matlab_data, label="Matlab", dpi=300)
-savefig(perm_fig, "docs/src/benchmarks/compute_perm.png")
+# f = open("data_python.txt")
+# f = readlines(f)
+# python_data = split(f[1], " ")
+# python_data = map(e->parse(Float64,e), python_data)
+#
+# f = open("data_matlab.txt")
+# f = readlines(f)
+# matlab_data = split(f[1], " ")
+# matlab_data = map(e->parse(Float64,e), matlab_data)
+#
+# perm_fig = plot(xlabel="n", ylabel="time (s)", legend=:topleft, dpi=300)
+# scatter!(15:25, data_ryser, label="Julia", dpi=300)
+# scatter!(15:25, python_data, label="python", dpi=300)
+# scatter!(15:25, matlab_data, label="Matlab", dpi=300)
+# savefig(perm_fig, "docs/src/benchmarks/compute_perm.png")
 
 
 suite_sampler = BenchmarkGroup()
@@ -64,13 +73,11 @@ for j in 2:30
     push!(data_noisy, (mean_noisy.time)/10^9)
 end
 
-jldopen("benchmarks/data_bosonic.jld", "w") do file
-    write(file, "data_bosonic", data_bosonic)
-end
+save("BosonSampling.jl/benchmarks/clifford_sampler.jld2", Dict("cliffords_benchmark" => data_bosonic))
+save("BosonSampling.jl/benchmarks/samplers.jld2",
+    Dict("cliffords_benchmarks" => data_bosonic,
+         "noisy_sampler_benchmarks" => data_noisy))
 
-d = jldopen("benchmarks/data_bosonic.jld", "r") do file
-    read(file, "data_bosonic")
-end
 
 fig_samp = plot(xlabel="n", ylabel="time (s)", legend=:topleft, dpi=300)
 scatter!(2:30, data_bosonic, label="cliffords sampler", dpi=300)
