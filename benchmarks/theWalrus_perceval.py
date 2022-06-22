@@ -1,3 +1,4 @@
+import thewalrus
 from thewalrus import perm
 import perceval as pcvl
 import quandelibc as qc
@@ -34,7 +35,8 @@ for ind, reps in enumerate(nreps):
     for i in range(reps):
         size = ind+1
         nth = 1
-        matrices.append(pcvl.Matrix.random_unitary(size))
+        # matrices.append(pcvl.Matrix.random_unitary(size))
+        matrices.append(haar_measure(size))
     start_walrus = time.time()
     for matrix in matrices:
         res = thewalrus.perm(matrix)
@@ -46,6 +48,9 @@ for ind, reps in enumerate(nreps):
 
     times_walrus[ind] = (end_walrus - start_walrus)/reps
     times_qc_1[ind] = (end_qc_1 - start_qc_1)/reps
+
+    print(ind+1, times_walrus[ind], times_qc_1[ind], times_qc_4[ind], times_qc_0[ind])
+    # print(ind+1, times_walrus[ind])
 
 res_thewalrus = list(times_walrus)
 with open("data_thewalrus.txt", 'w') as f:
