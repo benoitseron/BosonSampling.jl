@@ -5,9 +5,9 @@ using Permanents
 using LaTeXStrings
 using JLD
 
-BenchmarkTools.DEFAULT_PARAMETERS.samples = 50
-BenchmarkTools.DEFAULT_PARAMETERS.seconds = 1
-BenchmarkTools.DEFAULT_PARAMETERS.evals = 1
+BenchmarkTools.DEFAULT_PARAMETERS.samples = 1000
+BenchmarkTools.DEFAULT_PARAMETERS.seconds = 5
+BenchmarkTools.DEFAULT_PARAMETERS.evals = 10
 
 suite_permanent = BenchmarkGroup(["string"])
 suite_permanent["ryser-jl"] = BenchmarkGroup(["string"])
@@ -22,16 +22,35 @@ res = run(suite_permanent, verbose=true, seconds=1)
 data_ryser = []
 data_glynn = []
 
-for i in 2:30
-    mean_res = mean(res["ryser-jl"]["n=$i"])
-    push!(data_ryser, (mean_res.time)/10^9)
-    mean_res = mean(res["glynn-jl"]["n=$i"])
-    push!(data_glynn, (mean_res.time)/10^9)
-end
+# for i in 2:30
+#     mean_res = mean(res["ryser-jl"]["n=$i"])
+#     push!(data_ryser, (mean_res.time)/10^9)
+#     mean_res = mean(res["glynn-jl"]["n=$i"])
+#     push!(data_glynn, (mean_res.time)/10^9)
+# end
 
 save("benchmarks/permanents_bench.jld", "permanents_benchmarkGroup",res)
 d = load("benchmarks/permanents_bench.jld")
+data_ryser = [mean(d["permanents_benchmarkGroup"]["ryser-jl"]["n=$n"]).time * 10^(-9) for n in 2:30]
 
+f = open("benchmarks/data_thewalrus.txt")
+f = readlines(f)
+the_walrus_data = split(f[:], " ")
+the_walrus_data = map(e->parse(Float64,e), the_walrus_data)
+
+f = open("benchmarks/data_pcvl.txt")
+f = readlines(f)
+pcvl = split(f[:], " ")
+pcvl = map(e->parse(Float64,e), pcvl)
+
+data_ryser = map(e -> log(e), data_ryser)
+the_walrus_data = map(e -> log(e), the_walrus_data)
+pcvl = map(e -> log(e), pcvl)
+
+fig = plot(xlabel="Matrix size n", ylabel="log(Time) (s)", legend=:bottomright)
+scatter!(the_walrus_data, marker=2)
+scatter!(data_ryser, marker=2)
+scatter!(pcvl, marker=2)
 
 # f = open("data_python.txt")
 # f = readlines(f)
@@ -73,11 +92,7 @@ for j in 2:30
     push!(data_noisy, (mean_noisy.time)/10^9)
 end
 
-save("BosonSampling.jl/benchmarks/clifford_sampler.jld2", Dict("cliffords_benchmark" => data_bosonic))
-save("BosonSampling.jl/benchmarks/samplers.jld2",
-    Dict("cliffords_benchmarks" => data_bosonic,
-         "noisy_sampler_benchmarks" => data_noisy))
-
+save("benchmarks/samplers.jld", "samplers", res)
 
 fig_samp = plot(xlabel="n", ylabel="time (s)", legend=:topleft, dpi=300)
 scatter!(2:30, data_bosonic, label="cliffords sampler", dpi=300)
