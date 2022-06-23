@@ -145,8 +145,7 @@ using LinearAlgebra
 	end
 
 	@testset "examples usage" begin
-		@test_nowarn include("example_usage.jl")
-
+		@test include("example_usage.jl")
 	end
 
 end
