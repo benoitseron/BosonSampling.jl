@@ -20,10 +20,10 @@ def haar_measure(n):
     return q
 
 # benchmark inspired from https://the-walrus.readthedocs.io/en/latest/gallery/permanent_tutorial.html &
-# https://github.com/Quandela/Perceval/blob/main/scripts/performance.py
+# https://github.com/Quandela/Perceval/blob/main/scripts/performance.py
 a0 = 300.
 anm1 = 2
-n = 30
+n = 15
 r = (anm1/a0)**(1./(n-1))
 nreps = [(int)(a0*(r**((i)))) for i in range(n)]
 times_walrus = np.empty(n)
@@ -35,7 +35,7 @@ for ind, reps in enumerate(nreps):
     for i in range(reps):
         size = ind+1
         nth = 1
-        # matrices.append(pcvl.Matrix.random_unitary(size))
+        # matrices.append(pcvl.Matrix.random_unitary(size))
         matrices.append(haar_measure(size))
     start_walrus = time.time()
     for matrix in matrices:
@@ -49,7 +49,7 @@ for ind, reps in enumerate(nreps):
     times_walrus[ind] = (end_walrus - start_walrus)/reps
     times_qc_1[ind] = (end_qc_1 - start_qc_1)/reps
 
-    print(ind+1, times_walrus[ind], times_qc_1[ind])
+    print(ind+1, times_walrus[ind], times_qc_1[ind], times_qc_4[ind], times_qc_0[ind])
     # print(ind+1, times_walrus[ind])
 
 res_thewalrus = list(times_walrus)
