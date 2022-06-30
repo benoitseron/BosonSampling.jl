@@ -59,6 +59,9 @@ Type used to notify that the input is made of Gaussian states.
 """
 abstract type Gaussian end
 
+"""
+Type used to notify that the input is made of the vacuum state.
+"""
 struct VacuumState <: Gaussian
 
     displacement::Vector{Complex}
@@ -70,6 +73,9 @@ struct VacuumState <: Gaussian
 
 end
 
+"""
+Type used to notify that the input is made of coherent state.
+"""
 struct CoherentState <: Gaussian
 
     trunc::Int
@@ -88,6 +94,9 @@ struct CoherentState <: Gaussian
 
 end
 
+"""
+Type used to notify that the input is made of thermal state.
+"""
 struct ThermalState <: Gaussian
 
     trunc::Int
@@ -107,6 +116,9 @@ struct ThermalState <: Gaussian
 
 end
 
+"""
+Type used to notify that the input is made of single mode squeezed state.
+"""
 struct SingleModeSqueezedVacuum <: Gaussian
 
     trunc::Int

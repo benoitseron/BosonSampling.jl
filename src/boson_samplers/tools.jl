@@ -7,7 +7,8 @@ function LaplaceExpansion(perm_mat, full_mat)
             return [v[setdiff(1:end)] for i in 1:length(v)]
         else
             sub_mat = [remove_row_col(A, [], [i]) for i in 1:size(A)[2]]
-            return [fast_glynn_perm(a) for a in sub_mat]
+            # return [fast_glynn_perm(a) for a in sub_mat]
+            return [ryser(a) for a in sub_mat]
         end
 
     end
