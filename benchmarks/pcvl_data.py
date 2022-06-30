@@ -57,3 +57,36 @@ f = open("benchmarks/ryser4-pcvl.txt", "w")
 for row in times_qc_ryser:
     np.savetxt(f, row)
 f.close()
+
+def Generating_Input(n ,m , modes = None):
+    "This function randomly chooses an input with n photons in m modes."
+    if modes == None :
+        modes = sorted(random.sample(range(m),n))
+    state = "|"
+    for i in range(m):
+        state = state + "0"*(1 - (i in modes)) +"1"*(i in modes)+ ","*(i < m-1)
+    return pcvl.BasicState(state + ">")
+
+time_cliffords = np.empty([n+1,1])
+Sampling_Backend = pcvl.BackendFactory().get_backend("CliffordClifford2017")
+
+for ind, reps in enumerate(nreps):
+    matrices = []
+    for i in range(reps):
+        size = ind+1
+        nth = 1
+        matrices.append(Unitary = pcvl.Matrix.random_unitary(size))
+
+    input_state = Generating_Input(ind+1,ind+1)
+    start_qc_cliffords = time.time()
+    for matrix in matrices:
+        Sampling_Backend(Unitary).sample(input_state)
+    end_qc_cliffords = time.time()
+
+    time_cliffords[ind] = (end_qc_cliffords - start_qc_cliffords)/reps
+    print(ind+1, time_cliffords[ind], times_qc_ryser)
+
+f = open("benchmarks/cliffords-pcvl.txt", "w")
+for row in time_cliffords:
+    np.savetxt(f, row)
+f.close()

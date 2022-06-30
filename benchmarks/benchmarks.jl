@@ -5,9 +5,7 @@ using Permanents
 using LaTeXStrings
 using JLD
 
-push!(LOAD_PATH, "/benchmarks")
-ENV["PYTHON"] = ""
-Pkg.build("PyCall")
+push!(LOAD_PATH, "./benchmarks")
 run(`python ./benchmarks/thewalrus_data.py`)
 run(`python ./benchmarks/pcvl_data.py`)
 
