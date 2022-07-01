@@ -20,7 +20,7 @@ from an [`Input`](@ref) and an [`Interferometer`](@ref). In the following, each
 generating probability distribution is indexed as [`output_mode_occupation`](@ref),
 that is, `p[i]` gives the probability to obtain the outcome `output_mode_occupation[i]`.
 
-## Theoretical distribution
+## Theoretical distribution
 
 We propose here to see the effect of partial distinguishability when two photons
 interfere through a 1:1 [`BeamSplitter`](@ref)
@@ -44,7 +44,7 @@ output port of the beam splitter (see above).
 
 ![distr](proba_bunching.png)
 
-## Noisy distributiom
+## Noisy distribution
 
 As for [`noisy_sampler`](@ref), we sometimes want to take into account imperfections
 in the experimental realisation of a circuit. One can use [`noisy_distribution`](@ref)
