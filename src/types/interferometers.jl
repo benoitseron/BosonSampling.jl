@@ -145,7 +145,7 @@ end
     add_element!(circuit::Circuit, interf::Interferometer, target_modes::Vector{Int})
 
 Adds the circuit element `interf` that will be applied on `target_modes` to the `circuit`.
-Will automatically update the unitary representing the circuit.      
+Will automatically update the unitary representing the circuit.
 """
 function add_element!(circuit::Circuit, interf::Interferometer, target_modes::Vector{Int})
 
@@ -163,7 +163,7 @@ function add_element!(circuit::Circuit, interf::Interferometer, target_modes::Ve
                 u[target_modes[i], target_modes[j]] = interf.U[i,j]
             end
         end
-        circuit.U = u
+        circuit.U = u * circuit.U
     end
 
 end
