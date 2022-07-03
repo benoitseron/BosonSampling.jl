@@ -55,6 +55,107 @@ struct Undef <: InputType
 end
 
 """
+Type used to notify that the input is made of Gaussian states.
+"""
+abstract type Gaussian end
+
+"""
+Type used to notify that the input is made of the vacuum state.
+"""
+struct VacuumState <: Gaussian
+
+    displacement::Vector{Complex}
+    covariance_matrix::Matrix{Complex}
+
+    function VacuumState()
+        new([0;0], [1/2 0; 0 1/2])
+    end
+
+end
+
+"""
+Type used to notify that the input is made of coherent state.
+"""
+struct CoherentState <: Gaussian
+
+    trunc::Int
+    displacement_parameter::Complex
+    displacement::Vector{Complex}
+    covariance_matrix::Matrix{Complex}
+    spectrum::Vector{Real}
+
+    function CoherentState(trunc::Int, displacement::Complex)
+        new(trunc,
+            displacement_parameter,
+            sqrt(2) * [displacement_parameter; conj(displacement_parameter)],
+            [1/2 0; 0 1/2],
+            [exp(-1/2*abs(displacement_parameter)^2) * displacement_parameter^j / sqrt(factorial(j)) for j in 0:trunc])
+    end
+
+end
+
+"""
+Type used to notify that the input is made of thermal state.
+"""
+struct ThermalState <: Gaussian
+
+    trunc::Int
+    mean_photon_number::Real
+    displacement::Vector{Complex}
+    covariance_matrix::Matrix{Complex}
+    spectrum::Vector{Real}
+
+    function ThermalState(trunc::Int, mean_photon_number::Real)
+        new(trunc,
+            0,
+            mean_photon_number,
+            zeros(2),
+            [mean_photon_number+1/2 0; 0 mean_photon_number+1/2],
+            [mean_photon_number^j / (1+mean_photon_number)^(j+1) for j in 0:trunc])
+    end
+
+end
+
+"""
+Type used to notify that the input is made of single mode squeezed state.
+"""
+struct SingleModeSqueezedVacuum <: Gaussian
+
+    trunc::Int
+    squeezing_parameter::Vector{Real}
+    displacement::Vector{Complex}
+    covariance_matrix::Matrix{Complex}
+    spectrum::Vector{Real}
+
+    function SingleModeSqueezedVacuum(trunc::Int, squeezing_parameter::Vector{Real})
+
+        r = squeezing_parameter[1]
+        θ = squeezing_parameter[2]
+        spectrum = zeros(trunc+1)'
+        for j in 1:length(spectrum)
+            iseven(j) ? spectrum[j] = sqrt(sech(r)) * sqrt(factorial(2j))/factorial(j) * (-1/2*exp(θ*im)*tanh(r))^j : nothing
+        end
+
+        new(trunc,
+            squeezing_parameter,
+            zeros(2),
+            1/2 * cosh(2r) * Matrix(I,2,2) - 1/2 * sinh(2r) * [cos(θ) sin(θ); sin(θ) -cos(θ)],
+            spectrum)
+    end
+
+end
+
+# struct TwoModeSqueezedVacuum <: Gaussian
+#
+#     trunc::Int
+#     squeezing_parameter::Vector{Real}
+#     displacement::Vector{Complex}
+#     covariance_matrix::Matrix{Complex}
+#     spectrum::Vector{Real}
+#
+#     function TwoModeSqueezedVacuum(trunc, squeezing_parameter)
+
+"""
     OrthonormalBasis(vector_matrix::Union{Matrix, Nothing})
 
 Basis of vectors ``v_1,...,v_n`` stored as columns in a ``n``-by-``r`` matrix

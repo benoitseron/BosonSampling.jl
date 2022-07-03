@@ -238,3 +238,14 @@ o = PartitionCountsAll(part)
 ev = Event(i,o,interf)
 
 compute_probability!(ev)
+
+### Circuit ###
+n = 6
+input = Input{Bosonic}(first_modes(n,n))
+my_circuit = Circuit(input.m)
+add_element!(circuit=my_circuit, interf=RandHaar(input.m), target_modes=input.r.state)
+add_element!(circuit=my_circuit, interf=BeamSplitter(0.2), target_modes=[1,3])
+add_element!(circuit=my_circuit, interf=Fourier(3), target_modes=[2,4,5])
+is_unitary(my_circuit.U)
+
+ans = true

@@ -78,10 +78,10 @@ Creates a beam-splitter with tunable transmissivity.
         - m::Int
 """
 struct BeamSplitter <: Interferometer
-    transmission_amplitude::Float64
+    transmission_amplitude::Real
     U::Matrix
     m::Int
-    BeamSplitter(transmission_amplitude) = new(transmission_amplitude, beam_splitter(transmission_amplitude),2)
+    BeamSplitter(transmission_amplitude::Real) = new(transmission_amplitude, beam_splitter(transmission_amplitude), 2)
 end
 
 """
@@ -95,39 +95,78 @@ Creates a Rotation matrix with tunable angle.
         - m::Int
 """
 struct Rotation <: Interferometer
-    angle::Float64
+    angle::Real
     U::Matrix
     m::Int
-    Rotation(angle) = new(angle, rotation_matrix(angle),2)
+    Rotation(angle::Real) = new(angle, rotation_matrix(angle),2)
 end
 
 """
-    PhaseShift(shifted_modes::Array, param_::Array)
+    PhaseShift(phase::Float64)
 
-Creates a phase-shifter that is applied on the modes precised by shifted_modes with phase shifts given in param_.
+Creates a phase-shifter with parameter `phase`.
 
     Fields:
-        - shifted_modes::Array
-        - param_::Array
+        - phase::Float64
         - m::Int
         - U::Matrix{ComplexF64}
 """
 struct PhaseShift <: Interferometer
-    shifted_modes::Array
-    param_::Array
-    m::Int
+    phase::Real
     U::Matrix
-    PhaseShift(shifted_modes, param_) = new(shifted_modes, param_, length(shifted_modes), phase_shift(shifted_modes, param_))
+    m::Int
+    PhaseShift(phase::Real) = new(phase, phase_shift(phase), 2)
 end
 
-# struct Circuit <: Interferometer
-#
-#     circuit_elements::Vector{Vector{Interferometer}}
-#     layers::Vector
-#     U::Matrix{ComplexF64}
-#
-#     Circuit(circuit_elements::Vector{Vector{Interferometer}}, layers::Vector) = new(circuit_elements::Vector{Vector{Interferometer}}, layers::Vector, build_circuit(circuit_elements,layers))
-# end
+"""
+    Circuit(m::Int)
+
+Creates an empty circuit with `m` input modes. The unitary representing the circuit
+is accessed via the field `.U`.
+
+    Fields:
+        - m::Int
+        - circuit_elements::Vector{Interferometer}
+        - U::Union{Matrix{ComplexF64}, Nothing}
+"""
+mutable struct Circuit <: Interferometer
+
+    m::Int
+    circuit_elements::Vector{Interferometer}
+    U::Union{Matrix{ComplexF64}, Nothing}
+
+    function Circuit(m::Int)
+        new(m, [], nothing)
+    end
+
+end
+
+"""
+    add_element!(circuit::Circuit, interf::Interferometer, target_modes::Vector{Int})
+
+Adds the circuit element `interf` that will be applied on `target_modes` to the `circuit`.
+Will automatically update the unitary representing the circuit.
+"""
+function add_element!(;circuit::Circuit, interf::Interferometer, target_modes::Vector{Int})
+
+    @argcheck interf.m == length(target_modes)
+
+    push!(circuit.circuit_elements, interf)
+    circuit.U == nothing ? circuit.U = Matrix{ComplexF64}(I, circuit.m, circuit.m) : nothing
+
+    if interf.m == circuit.m
+        circuit.U = interf.U * circuit.U
+    else
+        u = Matrix{ComplexF64}(I, circuit.m, circuit.m)
+        for i in 1:size(interf.U)[1]
+            for j in 1:size(interf.U)[2]
+                u[target_modes[i], target_modes[j]] = interf.U[i,j]
+            end
+        end
+        circuit.U = u * circuit.U
+    end
+
+end
 
 Base.show(io::IO, interf::Interferometer) = print(io, "Interferometer :\n\n", "Type : ", typeof(interf), "\n", "m : ", interf.m)
 

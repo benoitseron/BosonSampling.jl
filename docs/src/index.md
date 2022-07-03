@@ -25,5 +25,4 @@ Pages = ["tutorial/installation.md",
 ## API
 
 ### Types
-
 ### Functions
