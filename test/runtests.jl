@@ -144,6 +144,32 @@ using LinearAlgebra
 
 	end
 
+	@testset "check analytical counter example interferometer" begin
+
+		n = 7
+		r = 2
+
+		complete_interferometer = Matrix{ComplexF16}(I,n,n)
+		bottom_dft = Matrix{ComplexF64}(I,n,n)
+		bottom_dft[r+1:n, r+1:n] = fourier_matrix(n-r)
+		complete_interferometer *= bottom_dft
+
+		for top_mode in 1:r
+			complete_interferometer *= beam_splitter_modes(in_up=top_mode, in_down=top_mode+r, out_up=top_mode, out_down=top_mode+r,transmission_amplitude=sqrt(r/n), n=n)
+		end
+
+		complete_interferometer = transpose(complete_interferometer)
+
+		circuit = Circuit(n)
+		add_element!(circuit=circuit, interf=Fourier(n-r), target_modes=[i for i in r+1:n])
+		add_element!(circuit=circuit, interf=BeamSplitter(sqrt(r/n)), target_modes=[3,1])
+		add_element!(circuit=circuit, interf=BeamSplitter(sqrt(r/n)), target_modes=[4,2])
+
+		@test complete_interferometer == circuit.U
+
+	end
+
+
 	@testset "examples usage" begin
 		@test include("example_usage.jl")
 	end

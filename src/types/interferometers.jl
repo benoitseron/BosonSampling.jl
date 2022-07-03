@@ -78,10 +78,10 @@ Creates a beam-splitter with tunable transmissivity.
         - m::Int
 """
 struct BeamSplitter <: Interferometer
-    transmission_amplitude::Float64
+    transmission_amplitude::Real
     U::Matrix
     m::Int
-    BeamSplitter(transmission_amplitude::Float64) = new(transmission_amplitude, beam_splitter(transmission_amplitude), 2)
+    BeamSplitter(transmission_amplitude::Real) = new(transmission_amplitude, beam_splitter(transmission_amplitude), 2)
 end
 
 """
@@ -95,10 +95,10 @@ Creates a Rotation matrix with tunable angle.
         - m::Int
 """
 struct Rotation <: Interferometer
-    angle::Float64
+    angle::Real
     U::Matrix
     m::Int
-    Rotation(angle) = new(angle, rotation_matrix(angle),2)
+    Rotation(angle::Real) = new(angle, rotation_matrix(angle),2)
 end
 
 """
@@ -112,10 +112,10 @@ Creates a phase-shifter with parameter `phase`.
         - U::Matrix{ComplexF64}
 """
 struct PhaseShift <: Interferometer
-    phase::Float64
+    phase::Real
     U::Matrix
     m::Int
-    PhaseShift(phase::Float64) = new(phase, phase_shift(phase), 2)
+    PhaseShift(phase::Real) = new(phase, phase_shift(phase), 2)
 end
 
 """
@@ -147,7 +147,7 @@ end
 Adds the circuit element `interf` that will be applied on `target_modes` to the `circuit`.
 Will automatically update the unitary representing the circuit.
 """
-function add_element!(circuit::Circuit, interf::Interferometer, target_modes::Vector{Int})
+function add_element!(;circuit::Circuit, interf::Interferometer, target_modes::Vector{Int})
 
     @argcheck interf.m == length(target_modes)
 
