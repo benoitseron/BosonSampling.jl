@@ -15,6 +15,20 @@ end
 
 Base.show(io::IO, i::ModeOccupation) = print(io, "state = ", i.state)
 
+"""
+
+    :+(s1::ModeOccupation, s2::ModeOccupation)
+
+Adds two mode occupations, for instance
+s1 = ModeOccupation([0,1])
+s2 = ModeOccupation([1,0])
+
+(s1+s2).state == [1,1]
+"""
+Base.:+(s1::ModeOccupation, s2::ModeOccupation) = begin
+    return ModeOccupation(s1.state + s2.state)
+end
+
 at_most_one_photon_per_bin(state) = all(state[:] .<= 1)
 at_most_one_photon_per_bin(r::ModeOccupation) = at_most_one_photon_per_bin(r.state)
 
