@@ -11,24 +11,46 @@ struct SingleModeNonLinearPhaseShift
     V::Matrix
     W::Matrix
     ϕ::Real
+    x::Int #mode
 
     # if V and W are given
-    SingleModeNonLinearPhaseShift(V::Matrix,W::Matrix,ϕ) = size(V) == size(W) ? new(size(V,1), V,W, ϕ) : error("V and W do not have the same size")
+    SingleModeNonLinearPhaseShift(V::Matrix,W::Matrix,ϕ,x) = size(V) == size(W) ? new(size(V,1), V,W, ϕ, x) : error("V and W do not have the same size")
 
     # if they are not given, sample them from the haar measure
-    SingleModeNonLinearPhaseShift(m::Int,ϕ) = new(m, rand_haar(m),rand_haar(m), ϕ)
+    SingleModeNonLinearPhaseShift(m::Int,ϕ,x) = new(m, rand_haar(m),rand_haar(m), ϕ, x)
 end
 
 n = 2
 m = 4
 i = Input{Bosonic}(first_modes(n,m))
 o = FockDetection([1,0,1,0])
-interf = SingleModeNonLinearPhaseShift(m, π)
 
-println(".........................")
-for config in ranked_partition_list(all_mode_configurations(n,m, only_photon_number_conserving = true))
-    println(config)
-end
+ϕ = π
+x = 1
+interf = SingleModeNonLinearPhaseShift(m, π, 1)
+
+W = interf.W
+V = interf.V
+x = interf.x
+ϕ = interf.ϕ
+
+input_state = i.r.state
+output_state = o.s.state
+
+# matrix F
+
+F = copy(W)
+F = Matrix{eltype(W)}(I, size(W))
+F[x, x] =  exp(-1im * ϕ)
+
+
+U = W * F * V
+
+permanent(scattering_matrix(U, input_state, output_state))/sqrt(vector_factorial(i) * vector_factorial(o)) + sum()
+
+[ for rx in 2:n]
+
+
 ############# not yet what we want
 
 #
