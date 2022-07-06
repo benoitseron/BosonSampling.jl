@@ -1,5 +1,7 @@
 ### first, a simple bayesian estimator ###
 
+# for the theory, see 1904.12318 page 3
+
 confidence(χ) = χ/(1+χ)
 
 function update_confidence(event, p_q, p_a, χ)

@@ -22,7 +22,8 @@ By construction, we do not allow for Susbets to overlap (although there is no th
     s2 = Subset([0,0,1,1,0])
     s3 = Subset([1,0,1,0,0])
 
-    check_subset_overlap([s1,s2,s3]) # will fail
+    julia> check_subset_overlap([s1,s2,s3]) # will fail
+    ERROR: ArgumentError: subsets overlap
 
 ## Partitions
 
@@ -42,15 +43,25 @@ Consider now the case of partition of the output modes. A partition is composed 
 
 A partition can either span all modes or not (such as the above subset). This can be checked with
 
-    occupies_all_modes(part)
+    julia> occupies_all_modes(part)
+    true
 
 ### Direct output
 
 One can directly compute the various probabilities of photon counts through
 
-    (physical_indexes, pdf) = compute_probabilities_partition(physical_interferometer, part, input_state)
+    julia> (physical_indexes, pdf) = compute_probabilities_partition(physical_interferometer, part, input_state)
+    ┌ Warning: inefficient if no loss: partition occupies all modes thus extra calculations made that are unnecessary
+    └ @ BosonSampling ~/.julia/dev/BosonSampling/src/partitions/partitions.jl:162
+    (Any[[0, 0], [1, 0], [2, 0], [0, 1], [1, 1], [2, 1], [0, 2], [1, 2], [2, 2]], Real[3.083952846180989e-16, 9.63457668695859e-17, 0.49999999999999956, 1.2211830234207134e-16, 4.492871097348413e-17, 8.895480094414932e-17, 0.49999999999999956, 5.516742562771715e-17, 1.6000931161624119e-16])
 
-    print_pdfs(physical_indexes, pdf,n; partition_spans_all_modes = true, physical_events_only = true)
+    julia> print_pdfs(physical_indexes, pdf,n; partition_spans_all_modes = true, physical_events_only = true)
+    ---------------
+    Partition results :
+    index = [2, 0], p = 0.49999999999999956
+    index = [1, 1], p = 4.492871097348413e-17
+    index = [0, 2], p = 0.49999999999999956
+    ---------------
 
 ### Single partition output with Event
 
@@ -75,7 +86,9 @@ And now let's compute this probability
     interf = RandHaar(m)
     ev = Event(i,o,interf)
 
-    compute_probability!(ev)
+    julia> compute_probability!(ev)
+
+    0.07101423327641303
 
 ### All possible partition patterns
 
@@ -84,4 +97,18 @@ More generally, one will be interested in the probabilities of all possible outp
     o = PartitionCountsAll(part)
     ev = Event(i,o,interf)
 
-    compute_probability!(ev)
+    julia> compute_probability!(ev)
+
+    MultipleCounts(PartitionOccupancy[0 in subset = [1, 2]
+    0 in subset = [3, 4]
+    , 1 in subset = [1, 2]
+    0 in subset = [3, 4]
+    , 2 in subset = [1, 2]
+    0 in subset = [3, 4]
+    , 0 in subset = [1, 2]
+    1 in subset = [3, 4]
+    , 1 in subset = [1, 2]
+    1 in subset = [3, 4]
+    , 0 in subset = [1, 2]
+    2 in subset = [3, 4]
+    ], Real[0.0181983769680322, 0.027504255046333935, 0.07101423327641304, 0.3447008741997155, 0.23953787529662038, 0.29904438521288507])

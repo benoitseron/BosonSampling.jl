@@ -249,3 +249,47 @@ add_element!(circuit=my_circuit, interf=Fourier(3), target_modes=[2,4,5])
 is_unitary(my_circuit.U)
 
 ans = true
+
+### partition tutorial ###
+
+s1 = Subset([1,1,0,0,0])
+s2 = Subset([0,0,1,1,0])
+s3 = Subset([1,0,1,0,0])
+
+#check_subset_overlap([s1,s2,s3]) # will fail
+
+n = 2
+m = 2
+
+input_state = Input{Bosonic}(first_modes(n,m))
+
+set1 = [1,0]
+set2 = [0,1]
+physical_interferometer = Fourier(m)
+part = Partition([Subset(set1), Subset(set2)])
+
+occupies_all_modes(part)
+
+(physical_indexes, pdf) = compute_probabilities_partition(physical_interferometer, part, input_state)
+
+print_pdfs(physical_indexes, pdf,n; partition_spans_all_modes = true, physical_events_only = true)
+
+n = 2
+m = 5
+
+s1 = Subset([1,1,0,0,0])
+s2 = Subset([0,0,1,1,0])
+
+part = Partition([s1,s2])
+part_occ = PartitionOccupancy(ModeOccupation([2,0]),n,part)
+
+i = Input{Bosonic}(first_modes(n,m))
+o = PartitionCount(part_occ)
+interf = RandHaar(m)
+ev = Event(i,o,interf)
+compute_probability!(ev)
+
+o = PartitionCountsAll(part)
+ev = Event(i,o,interf)
+
+compute_probability!(ev)
