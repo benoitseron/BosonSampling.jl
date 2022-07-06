@@ -3,7 +3,8 @@
 s2 = Subset([0,0,1,1,0])
 s3 = Subset([1,0,1,0,0])
 
-check_subset_overlap([s1,s2,s3]) # will fail</code></pre><h2 id="Partitions"><a class="docs-heading-anchor" href="#Partitions">Partitions</a><a id="Partitions-1"></a><a class="docs-heading-anchor-permalink" href="#Partitions" title="Permalink"></a></h2><h3 id="Basic-definitions"><a class="docs-heading-anchor" href="#Basic-definitions">Basic definitions</a><a id="Basic-definitions-1"></a><a class="docs-heading-anchor-permalink" href="#Basic-definitions" title="Permalink"></a></h3><p>Consider now the case of partition of the output modes. A partition is composed of multiple subsets. Consider for instance the Hong-Ou-Mandel effect, where we will take the first mode as the first subset, and likewise for the second. (Note that in general subsets will span more than one mode.)</p><pre><code class="nohighlight hljs">n = 2
+julia&gt; check_subset_overlap([s1,s2,s3]) # will fail
+ERROR: ArgumentError: subsets overlap</code></pre><h2 id="Partitions"><a class="docs-heading-anchor" href="#Partitions">Partitions</a><a id="Partitions-1"></a><a class="docs-heading-anchor-permalink" href="#Partitions" title="Permalink"></a></h2><h3 id="Basic-definitions"><a class="docs-heading-anchor" href="#Basic-definitions">Basic definitions</a><a id="Basic-definitions-1"></a><a class="docs-heading-anchor-permalink" href="#Basic-definitions" title="Permalink"></a></h3><p>Consider now the case of partition of the output modes. A partition is composed of multiple subsets. Consider for instance the Hong-Ou-Mandel effect, where we will take the first mode as the first subset, and likewise for the second. (Note that in general subsets will span more than one mode.)</p><pre><code class="nohighlight hljs">n = 2
 m = 2
 
 input_state = Input{Bosonic}(first_modes(n,m))
@@ -11,9 +12,19 @@ input_state = Input{Bosonic}(first_modes(n,m))
 set1 = [1,0]
 set2 = [0,1]
 physical_interferometer = Fourier(m)
-part = Partition([Subset(set1), Subset(set2)])</code></pre><p>A partition can either span all modes or not (such as the above subset). This can be checked with</p><pre><code class="nohighlight hljs">occupies_all_modes(part)</code></pre><h3 id="Direct-output"><a class="docs-heading-anchor" href="#Direct-output">Direct output</a><a id="Direct-output-1"></a><a class="docs-heading-anchor-permalink" href="#Direct-output" title="Permalink"></a></h3><p>One can directly compute the various probabilities of photon counts through</p><pre><code class="nohighlight hljs">(physical_indexes, pdf) = compute_probabilities_partition(physical_interferometer, part, input_state)
+part = Partition([Subset(set1), Subset(set2)])</code></pre><p>A partition can either span all modes or not (such as the above subset). This can be checked with</p><pre><code class="nohighlight hljs">julia&gt; occupies_all_modes(part)
+true</code></pre><h3 id="Direct-output"><a class="docs-heading-anchor" href="#Direct-output">Direct output</a><a id="Direct-output-1"></a><a class="docs-heading-anchor-permalink" href="#Direct-output" title="Permalink"></a></h3><p>One can directly compute the various probabilities of photon counts through</p><pre><code class="nohighlight hljs">julia&gt; (physical_indexes, pdf) = compute_probabilities_partition(physical_interferometer, part, input_state)
+┌ Warning: inefficient if no loss: partition occupies all modes thus extra calculations made that are unnecessary
+└ @ BosonSampling ~/.julia/dev/BosonSampling/src/partitions/partitions.jl:162
+(Any[[0, 0], [1, 0], [2, 0], [0, 1], [1, 1], [2, 1], [0, 2], [1, 2], [2, 2]], Real[3.083952846180989e-16, 9.63457668695859e-17, 0.49999999999999956, 1.2211830234207134e-16, 4.492871097348413e-17, 8.895480094414932e-17, 0.49999999999999956, 5.516742562771715e-17, 1.6000931161624119e-16])
 
-print_pdfs(physical_indexes, pdf,n; partition_spans_all_modes = true, physical_events_only = true)</code></pre><h3 id="Single-partition-output-with-Event"><a class="docs-heading-anchor" href="#Single-partition-output-with-Event">Single partition output with Event</a><a id="Single-partition-output-with-Event-1"></a><a class="docs-heading-anchor-permalink" href="#Single-partition-output-with-Event" title="Permalink"></a></h3><p>And alternative, cleaner way is to use the formalism of an <a href="../types/events.html#BosonSampling.Event"><code>Event</code></a>. For this we present an example with another setup, where subsets span multiple modes and the partition is incomplete</p><pre><code class="nohighlight hljs">  n = 2
+julia&gt; print_pdfs(physical_indexes, pdf,n; partition_spans_all_modes = true, physical_events_only = true)
+---------------
+Partition results :
+index = [2, 0], p = 0.49999999999999956
+index = [1, 1], p = 4.492871097348413e-17
+index = [0, 2], p = 0.49999999999999956
+---------------</code></pre><h3 id="Single-partition-output-with-Event"><a class="docs-heading-anchor" href="#Single-partition-output-with-Event">Single partition output with Event</a><a id="Single-partition-output-with-Event-1"></a><a class="docs-heading-anchor-permalink" href="#Single-partition-output-with-Event" title="Permalink"></a></h3><p>And alternative, cleaner way is to use the formalism of an <a href="../types/events.html#BosonSampling.Event"><code>Event</code></a>. For this we present an example with another setup, where subsets span multiple modes and the partition is incomplete</p><pre><code class="nohighlight hljs">  n = 2
   m = 5
 
   s1 = Subset([1,1,0,0,0])
@@ -24,7 +35,23 @@ o = PartitionCount(part_occ)
 interf = RandHaar(m)
 ev = Event(i,o,interf)
 
-compute_probability!(ev)</code></pre><h3 id="All-possible-partition-patterns"><a class="docs-heading-anchor" href="#All-possible-partition-patterns">All possible partition patterns</a><a id="All-possible-partition-patterns-1"></a><a class="docs-heading-anchor-permalink" href="#All-possible-partition-patterns" title="Permalink"></a></h3><p>More generally, one will be interested in the probabilities of all possible outputs. This is done as follows</p><pre><code class="nohighlight hljs">o = PartitionCountsAll(part)
+julia&gt; compute_probability!(ev)
+
+0.07101423327641303</code></pre><h3 id="All-possible-partition-patterns"><a class="docs-heading-anchor" href="#All-possible-partition-patterns">All possible partition patterns</a><a id="All-possible-partition-patterns-1"></a><a class="docs-heading-anchor-permalink" href="#All-possible-partition-patterns" title="Permalink"></a></h3><p>More generally, one will be interested in the probabilities of all possible outputs. This is done as follows</p><pre><code class="nohighlight hljs">o = PartitionCountsAll(part)
 ev = Event(i,o,interf)
 
-compute_probability!(ev)</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="boson_samplers.html">« Samplers</a><a class="docs-footer-nextpage" href="bunching.html">Bunching »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.17 on <span class="colophon-date" title="Tuesday 5 July 2022 07:35">Tuesday 5 July 2022</span>. Using Julia version 1.7.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+julia&gt; compute_probability!(ev)
+
+MultipleCounts(PartitionOccupancy[0 in subset = [1, 2]
+0 in subset = [3, 4]
+, 1 in subset = [1, 2]
+0 in subset = [3, 4]
+, 2 in subset = [1, 2]
+0 in subset = [3, 4]
+, 0 in subset = [1, 2]
+1 in subset = [3, 4]
+, 1 in subset = [1, 2]
+1 in subset = [3, 4]
+, 0 in subset = [1, 2]
+2 in subset = [3, 4]
+], Real[0.0181983769680322, 0.027504255046333935, 0.07101423327641304, 0.3447008741997155, 0.23953787529662038, 0.29904438521288507])</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="boson_samplers.html">« Samplers</a><a class="docs-footer-nextpage" href="bunching.html">Bunching »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.17 on <span class="colophon-date" title="Wednesday 6 July 2022 14:25">Wednesday 6 July 2022</span>. Using Julia version 1.7.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
