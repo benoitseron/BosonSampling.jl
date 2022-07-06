@@ -305,10 +305,11 @@ process_probability_partial(interf::Interferometer, input_state::Input{TIn} wher
 	compute_probability(ev::Event{TIn, TOut}) where {TIn<:InputType, TOut<:FockDetection}
 
 Given an [`Event`](@ref), gives the probability to get the outcome `TOut` when `TIn`
-passes though the interferometer `ev.interferometer`. 	
+passes though the interferometer `ev.interferometer`.
 """
 function compute_probability!(ev::Event{TIn,TOut}) where {TIn<:InputType, TOut<:FockDetection}
 
+	
 	check_probability_empty(ev)
 
 	ev.proba_params.precision = eps()

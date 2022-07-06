@@ -29,6 +29,9 @@ o = FockDetection([1,0,1,0])
 x = 1
 interf = SingleModeNonLinearPhaseShift(m, π, 1)
 
+isa(interf, NonLinearInterferometer)
+
+
 ev = Event(i,o,interf)
 
 
@@ -59,3 +62,9 @@ function compute_probability!(ev::Event{TIn, TInterf, TOut}) where {TIn<:InputTy
 	ev.proba_params.probability = single_mode_nl_phase_shift_probability(ev)
 
 end
+
+struct A{T} end
+
+struct A{T1,T2} end
+
+A{Float16}
