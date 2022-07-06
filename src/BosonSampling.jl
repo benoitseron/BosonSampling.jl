@@ -24,6 +24,7 @@ using Parameters
 using ArgCheck
 using Distributions
 using Luxor
+using UnPack
 # using Distributed
 # using SharedArrays
 
@@ -59,6 +60,8 @@ include("permanent_conjectures/counter_example_numerical_search.jl")
 include("permanent_conjectures/permanent_on_top.jl")
 
 include("visual.jl")
+
+include("nonlinear/nl_types.jl")
 
 permanent = ryser
 

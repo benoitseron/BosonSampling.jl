@@ -90,7 +90,7 @@ struct Event{TIn<:InputType, TOut<:OutputMeasurementType}
         new{TIn,TOut}(input_state, output_measurement, proba_params, interferometer)
     end
 
-    Event(i,o,interf,p = nothing) = Event{get_parametric_type(i)[1], get_parametric_type(o)[1]}(i,o,interf,p)
+    Event(i,o,interf::Interferometer,p = nothing) = Event{get_parametric_type(i)[1], get_parametric_type(o)[1]}(i,o,interf,p)
 
 end
 
@@ -98,4 +98,36 @@ function check_probability_empty(ev::Event)
     if ev.proba_params.probability != nothing
 		@warn "probability was already set in, rewriting"
 	end
+end
+
+
+"""
+	Event{TIn<:InputType, TInterf<:NonLinearInterferometer, TOut<:OutputMeasurementType}
+
+Event linking an input to an output with a custom interferometer type.
+
+	Fields:
+		- input_state::Input{TIn}
+		- output_measurement::TOut
+		- proba_params::EventProbability
+		- interferometer::NonLinearInterferometer
+"""
+struct Event{TIn<:InputType, TInterf<:NonLinearInterferometer, TOut<:OutputMeasurementType}
+
+    input_state::Input{TIn}
+    output_measurement::TOut
+    proba_params::EventProbability
+    interferometer::NonLinearInterferometer
+
+    function Event{TIn, TInterf, TOut}(input_state, output_measurement, interferometer::NonLinearInterferometer, proba_params = nothing) where {TIn<:InputType, TInterf<:NonLinearInterferometer, TOut<:OutputMeasurementType}
+
+        if proba_params == nothing
+            proba_params = EventProbability(nothing)
+        end
+
+        new{TIn, TInterf, TOut}(input_state, output_measurement, proba_params, interferometer)
+    end
+
+    Event(i,o,interf::NonLinearInterferometer,p = nothing) = Event{get_parametric_type(i)[1], get_parametric_type(interf)[1], get_parametric_type(o)[1]}(i,o,interf,p)
+
 end
