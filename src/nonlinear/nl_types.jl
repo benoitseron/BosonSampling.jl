@@ -48,8 +48,10 @@ U = W * F * V
 
 permanent(scattering_matrix(U, input_state, output_state))/sqrt(vector_factorial(i) * vector_factorial(o)) + sum()
 
-[ for rx in 2:n]
 
+inner_term(r) = exp(-1im * r[x]^2 * ϕ) * permanent(scattering_matrix(V, r, output_state)) * permanent(scattering_matrix(W, input_state, r))/sqrt(vector_factorial(input_state) * vector_factorial(output_state) * vector_factorial(r)^2)
+
+abs(sum([inner_term(r) for r in all_mode_configurations(n,m, only_photon_number_conserving = true)]))^2
 
 ############# not yet what we want
 
