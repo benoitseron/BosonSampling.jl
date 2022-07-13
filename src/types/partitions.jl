@@ -92,6 +92,10 @@ function check_subset_overlap(subsets::Vector{Subset})
 
 end
 
+function check_subset_overlap(subset::Subset)
+        nothing
+end
+
 """
     Partition(subsets::Vector{Subset})
 
@@ -104,6 +108,10 @@ struct Partition
         function Partition(subsets)
                 check_subset_overlap(subsets)
                 new(subsets, length(subsets), subsets[1].m)
+        end
+
+        function Partition(subset::Subset)
+                Partition([subset])
         end
 end
 
