@@ -281,8 +281,18 @@ function compute_probability!(ev::Event{TIn,TOut}) where {TIn<:InputType, TOut<:
 
         for (i,occ) in enumerate(part_occ)
             if sum(occ) <= n
-                push!(part_occ_physical, occ)
-                push!(pdf_physical, pdf[i])
+                    if occupies_all_modes(ev.output_measurement.part)
+                            if sum(occ) == n
+
+                                push!(part_occ_physical, occ)
+                                push!(pdf_physical, pdf[i])
+
+                            end
+                    else
+                            push!(part_occ_physical, occ)
+                            push!(pdf_physical, pdf[i])
+                    end
+
             end
         end
 
