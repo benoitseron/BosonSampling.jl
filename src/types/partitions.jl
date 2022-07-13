@@ -15,6 +15,20 @@ end
 
 Base.show(io::IO, i::ModeOccupation) = print(io, "state = ", i.state)
 
+"""
+
+    :+(s1::ModeOccupation, s2::ModeOccupation)
+
+Adds two mode occupations, for instance
+s1 = ModeOccupation([0,1])
+s2 = ModeOccupation([1,0])
+
+(s1+s2).state == [1,1]
+"""
+Base.:+(s1::ModeOccupation, s2::ModeOccupation) = begin
+    return ModeOccupation(s1.state + s2.state)
+end
+
 at_most_one_photon_per_bin(state) = all(state[:] .<= 1)
 at_most_one_photon_per_bin(r::ModeOccupation) = at_most_one_photon_per_bin(r.state)
 
@@ -64,6 +78,10 @@ end
 
 function check_subset_overlap(subsets::Vector{Subset})
 
+        if length(subsets) == 1
+                return false
+        end
+
         for (i,subset_1) in enumerate(subsets)
                 for (j,subset_2) in enumerate(subsets)
                         if i>j
@@ -72,6 +90,10 @@ function check_subset_overlap(subsets::Vector{Subset})
                 end
         end
 
+end
+
+function check_subset_overlap(subset::Subset)
+        nothing
 end
 
 """
@@ -86,6 +108,10 @@ struct Partition
         function Partition(subsets)
                 check_subset_overlap(subsets)
                 new(subsets, length(subsets), subsets[1].m)
+        end
+
+        function Partition(subset::Subset)
+                Partition([subset])
         end
 end
 
