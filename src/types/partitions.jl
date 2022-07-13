@@ -78,6 +78,10 @@ end
 
 function check_subset_overlap(subsets::Vector{Subset})
 
+        if length(subsets) == 1
+                return false
+        end
+
         for (i,subset_1) in enumerate(subsets)
                 for (j,subset_2) in enumerate(subsets)
                         if i>j
