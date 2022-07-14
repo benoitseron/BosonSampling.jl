@@ -117,8 +117,13 @@ isa_transmissitivity(η::Vector{Real}) = isa_transmissitivity.(η)
 
 """
     UniformLossInterferometer <: LossyInterferometer
+    UniformLossInterferometer(η::Real, U_physical::Matrix)
+    UniformLossInterferometer(η::Real, U_physical::Interferometer)
+    UniformLossInterferometer(m::Int, η::Real)
 
 Simulates a simple, uniformly lossy interferometer: take a 2m*2m interferometer and introduce beam splitters in front with transmittance `η`. Returns the corresponding interferometer as a separate type.
+
+The last form, `UniformLossInterferometer(m::Int, η::Real)` samples from a Haar random unitary.
 """
 struct UniformLossInterferometer <: LossyInterferometer
     m_real::Int
@@ -137,6 +142,8 @@ struct UniformLossInterferometer <: LossyInterferometer
     end
 
     UniformLossInterferometer(η::Real, U_physical::Interferometer) = UniformLossInterferometer(η, U_physical.U)
+
+    UniformLossInterferometer(m::Int, η::Real) = UniformLossInterferometer(η, RandHaar(m))
 end
 
 """
@@ -164,5 +171,5 @@ struct GeneralLossInterferometer <: LossyInterferometer
             error("invalid η")
         end
     end
-    
+
 end
