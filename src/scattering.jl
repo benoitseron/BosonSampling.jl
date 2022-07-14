@@ -305,7 +305,7 @@ process_probability_partial(interf::Interferometer, input_state::Input{TIn} wher
 	compute_probability(ev::Event{TIn, TOut}) where {TIn<:InputType, TOut<:FockDetection}
 
 Given an [`Event`](@ref), gives the probability to get the outcome `TOut` when `TIn`
-passes though the interferometer `ev.interferometer`. 	
+passes though the interferometer `ev.interferometer`.
 """
 function compute_probability!(ev::Event{TIn,TOut}) where {TIn<:InputType, TOut<:FockDetection}
 
@@ -418,5 +418,3 @@ end
 
 is_collisionless(r::ModeOccupation) = is_collisionless(r.state)
 is_collisionless(i::Input) = is_collisionless(i.r.state)
-
-first_modes_array(n::Int,m::Int) = first_modes(n,m).state
