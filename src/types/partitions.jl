@@ -51,7 +51,7 @@ Create a [`ModeOccupation`](@ref) with `n` photons in the last sites of `m` mode
 """
 last_modes(n::Int,m::Int) = n<=m ? ModeOccupation([i > m-n ? 1 : 0 for i in 1:m]) : error("n>m")
 
-first_modes_array(n::Int,m::Int) = last_modes(n,m).state
+last_modes_array(n::Int,m::Int) = last_modes(n,m).state
 
 
 """
