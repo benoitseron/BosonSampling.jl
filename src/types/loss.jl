@@ -1,17 +1,16 @@
 """
-    virtual_interferometer_uniform_loss(real_interf, η)
+    virtual_interferometer_uniform_loss(real_interf::Matrix, η)
+    virtual_interferometer_uniform_loss(real_interf::Interferometer, η)
 
 Simulates a simple, uniformly lossy interferometer: take a 2m*2m interferometer and introduce beam splitters in front with transmittance `η`. Returns the corresponding virtual interferometer.
 """
-function virtual_interferometer_uniform_loss(real_interf, η)
+function virtual_interferometer_uniform_loss(real_interf::Matrix, η)
 
     # define a (2m) * (2m) virtual interferometer V
 
     # connect the remaining branches of the input beam splitters
     # (of course this could be made different but this is the simplest,
     # no thought case)
-
-    U = real_interf.U
 
     m = size(U,1)
     V = Matrix{eltype(U)}(I, (2m, 2m))
@@ -30,7 +29,41 @@ function virtual_interferometer_uniform_loss(real_interf, η)
 
     V = copy(transpose(V))
 
-    UserDefinedInterferometer(V)
+    V
+
+end
+
+function virtual_interferometer_uniform_loss(real_interf::Interferometer, η)
+    virtual_interferometer_uniform_loss(real_interf.U)
+end
+
+
+"""
+    virtual_interferometer_general_loss(V::Matrix, W::Matrix, η::Vector{Real})
+
+Generic lossy interferometer composed of two unitary matrices `V`, `W` forming the
+physical matrix `U` = `V*W`. In between `V` and `W` are sandwiched a diagonal array
+of beam splitters, with transmissivity `η` (`m`-dimensional vector corresponding
+to the transmissivity of each layer) : `U_total` = `V*Diag(η)*W`. This generates `U_total`.
+"""
+function virtual_interferometer_general_loss(V::Matrix, W::Matrix, η::Vector{Real})
+
+    # see GeneralLossInterferometer for info
+
+    m = size(U,1)
+    U_virtual = Matrix{eltype(U)}(I, (2m, 2m))
+    U_virtual[1:m, 1:m] = W
+
+    # loss beam splitters
+    for i in 1:m
+        U_virtual *= beam_splitter_modes(in_up = i, in_down = i+m, out_up = i, out_down = m+i, transmission_amplitude = η[i], n = 2m)
+    end
+
+    U_virtual *= V
+
+    U_virtual = copy(transpose(U_virtual))
+
+    U_virtual
 
 end
 
@@ -66,4 +99,70 @@ function to_lossy(part::Partition)
 
     Partition(new_subsets)
 
+end
+
+abstract type LossyInterferometer <: Interferometer end
+
+"""
+    isa_transmissitivity(η::Real)
+    isa_transmissitivity(η::Vector{Real})
+
+Asserts that η is a valid transmissivity.
+"""
+function isa_transmissitivity(η::Real)
+    (0<= η && η <= 1)
+end
+
+isa_transmissitivity(η::Vector{Real}) = isa_transmissitivity.(η)
+
+"""
+    UniformLossInterferometer <: LossyInterferometer
+
+Simulates a simple, uniformly lossy interferometer: take a 2m*2m interferometer and introduce beam splitters in front with transmittance `η`. Returns the corresponding interferometer as a separate type.
+"""
+struct UniformLossInterferometer <: LossyInterferometer
+    m_real::Int
+    m_virtual::Int
+    η::Real #transmissivity of the upfront beamsplitters
+    U_physical::Matrix{Complex} # physical matrix
+    U_virtual::Matrix{Complex} # virtual 2m*2m interferometer
+
+    function UniformLossInterferometer(η::Real, U_physical::Matrix)
+        if isa_transmissitivity(η)
+            U_virtual = virtual_interferometer_uniform_loss(U_physical, η)
+            new(size(U_physical,1), size(U_virtual,1), η, U_physical, U_virtual)
+        else
+            error("incorrect η")
+        end
+    end
+
+    UniformLossInterferometer(η::Real, U_physical::Interferometer) = UniformLossInterferometer(η, U_physical.U)
+end
+
+"""
+    GeneralLossInterferometer <: LossyInterferometer
+
+Generic lossy interferometer composed of two unitary matrices `V`, `W` forming the
+physical matrix `U` = `V*W`. In between `V` and `W` are sandwiched a diagonal array
+of beam splitters, with transmissivity `η` (`m`-dimensional vector corresponding
+to the transmissivity of each layer) : `U_total` = `V*Diag(η)*W`
+"""
+struct GeneralLossInterferometer <: LossyInterferometer
+    m_real::Int
+    m_virtual::Int
+    η::Vector{Real} #transmissivity of the upfront beamsplitters
+    U_physical::Matrix{Complex} # physical matrix
+    V::Matrix{Complex}
+    W::Matrix{Complex}
+    U_virtual::Matrix{Complex} # virtual 2m*2m interferometer
+
+    function GeneralLossInterferometer(η::Vector{Real}, V::Matrix, W::Matrix)
+        if isa_transmissitivity(η)
+            U_virtual = virtual_interferometer_general_loss(V,W, η)
+            new(size(U_physical,1), size(U_virtual,1), η, U_physical,V,W, U_virtual)
+        else
+            error("invalid η")
+        end
+    end
+    
 end
