@@ -143,11 +143,8 @@ struct UniformLossInterferometer <: LossyInterferometer
 
     UniformLossInterferometer(η::Real, U_physical::Interferometer) = UniformLossInterferometer(η, U_physical.U)
 
-<<<<<<< HEAD
     UniformLossInterferometer(m::Int, η::Real) = UniformLossInterferometer(η, RandHaar(m))
-=======
-    UniformLossInterferometer(m::Int, η::Real) = UniformLossInterferometer(η, rand_haar(m))
->>>>>>> 0dcad4ab993ccb412ca564e65d2285cc59e1d99e
+
 end
 
 """
