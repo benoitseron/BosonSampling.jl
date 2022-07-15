@@ -268,6 +268,10 @@ m = n
 part = Partition(Subset(first_modes(n,m)))
 part.subsets[1].n
 
+UniformLossInterferometer(3, 0.1)
+
+UniformLossInterferometer(m::Int, η::Real) = UniformLossInterferometer(η, RandHaar(m))
+
 ###### relative independance of the choice of partition size ######
 
 ###### bayesian certification examples ######
