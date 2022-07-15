@@ -4,7 +4,7 @@
 
 Simulates a simple, uniformly lossy interferometer: take a 2m*2m interferometer and introduce beam splitters in front with transmittance `η`. Returns the corresponding virtual interferometer.
 """
-function virtual_interferometer_uniform_loss(real_interf::Matrix, η)
+function virtual_interferometer_uniform_loss(U::Matrix, η)
 
     # define a (2m) * (2m) virtual interferometer V
 
@@ -50,8 +50,8 @@ function virtual_interferometer_general_loss(V::Matrix, W::Matrix, η::Vector{Re
 
     # see GeneralLossInterferometer for info
 
-    m = size(U,1)
-    U_virtual = Matrix{eltype(U)}(I, (2m, 2m))
+    m = size(V,1)
+    U_virtual = Matrix{eltype(V)}(I, (2m, 2m))
     U_virtual[1:m, 1:m] = W
 
     # loss beam splitters
