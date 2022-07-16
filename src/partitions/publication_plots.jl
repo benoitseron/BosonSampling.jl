@@ -144,37 +144,37 @@ plt
 
 ###### TVD with boson density ######
 
-begin
 
-    max_density = 1
-    min_density = 0.3
-    steps = 10
-    n_iter = 100
 
-    invert_densities = [max_density * (max_density/min_density)^((i-1)/(steps-1)) for i in 1:steps]
+max_density = 1
+min_density = 0.03
+steps = 10
+n_iter = 100
 
-    n = 15
-    m_array = Int.(floor.(n * invert_densities))
-    partition_sizes = 2:3
+invert_densities = [max_density * (max_density/min_density)^((i-1)/(steps-1)) for i in 1:steps]
 
-    tvd_array = zeros((length(partition_sizes), length(m_array)))
-    var_array = copy(tvd_array)
+n = 10
+m_array = Int.(floor.(n * invert_densities))
+partition_sizes = 2:4
 
-    for (k,n_subsets) in enumerate(partition_sizes)
+tvd_array = zeros((length(partition_sizes), length(m_array)))
+var_array = copy(tvd_array)
 
-        @show k
+for (k,n_subsets) in enumerate(partition_sizes)
 
-        @showprogress for i in 1:length(m_array)
+    @show n_subsets
 
-            this_tvd = tvd_equilibrated_partition_real_average(m_array[i], n_subsets, n, niter = n_iter)
+    @showprogress for i in 1:length(m_array)
 
-            tvd_array[k,i] = (n_subsets <= m_array[i] ? this_tvd[1] : missing)
-            var_array[k,i] = (n_subsets <= m_array[i] ? this_tvd[2] : missing)
-        end
+        this_tvd = tvd_equilibrated_partition_real_average(m_array[i], n_subsets, n, niter = n_iter)
 
+        tvd_array[k,i] = (n_subsets <= m_array[i] ? this_tvd[1] : missing)
+        var_array[k,i] = (n_subsets <= m_array[i] ? this_tvd[2] : missing)
     end
 
-    partition_color(k, partition_sizes) = get(color_map, k / length(partition_sizes))
+end
+
+partition_color(k, partition_sizes) = get(color_map, k / length(partition_sizes))
 
     plt = plot()
     for (k,K) in enumerate(partition_sizes)
@@ -188,9 +188,13 @@ begin
         #
         # scatter!(x_data , y_data, yerr = sqrt.(var_array[k,:]), c = lost_photon_color(k,lost_photons), label = "", m = :cross, xaxis=:log10)
 
-        scatter!(x_data , y_data, yerr = sqrt.(var_array[k,:]), c = partition_color(k,partition_sizes), label = "", m = :cross, xaxis=:log10)
+        # scatter!(x_data , y_data, yerr = sqrt.(var_array[k,:]), c = partition_color(k,partition_sizes), label = "", m = :cross, xaxis=:log10, yaxis = :log10)
 
-        plot!(x_data, y_data, c = partition_color(k,partition_sizes), label = "K = $K", xaxis=:log10)
+        scatter!(x_data , y_data, c = partition_color(k,partition_sizes), label = "", m = :cross, xaxis=:log10)
+
+        # scatter!(x_data , y_data, yerr = sqrt.(var_array[k,:]), c = partition_color(k,partition_sizes), label = "", m = :cross, xaxis=:log10)
+
+        plot!(x_spl, y_spl, c = partition_color(k,partition_sizes), label = "K = $K", xaxis=:log10)
         #
         # plot!(x_spl, y_spl, c = partition_color(k,partition_sizes), label = "K = $K", xaxis=:log10)
 
@@ -208,7 +212,7 @@ begin
     display(plt)
     savefig(plt, "images/publication/density.png")
 
-end
+
 
 ###### TVD with x-model ######
 
