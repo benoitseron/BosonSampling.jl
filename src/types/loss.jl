@@ -90,7 +90,7 @@ function to_lossy(part::Partition)
     n = part.subsets[1].n
     m = part.subsets[1].m
 
-    environment = Subset(last_modes(n,2m))
+    environment = Subset(last_modes(m,2m))
 
     new_subsets =  Vector{Subset}()
 

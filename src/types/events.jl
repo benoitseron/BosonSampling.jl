@@ -20,6 +20,17 @@ mutable struct MultipleCounts
 
 end
 
+Base.show(io::IO, pb::MultipleCounts) = begin
+
+	for i in 1:length(pb.proba)
+		
+		println(io, "output: \n")
+		println(io, pb.counts[i])
+		println(io, "p = $(pb.proba[i])")
+		println(io, "--------------------------------------")
+	end
+end
+
 """
 	EventProbability(probability::Union{Nothing, Number})
 	EventProbability(mc::MultipleCounts)

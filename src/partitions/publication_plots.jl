@@ -212,7 +212,7 @@ begin
 
     η_array = collect(range(0,1,length = 5))
     tvd_η_array = zeros((length(partition_sizes), length(η_array)))
-    niter = 100
+    niter = 10
 
 
     for (k,n_subsets) in enumerate(partition_sizes)
@@ -283,6 +283,13 @@ evb = Event(ib,o,interf)
 evd = Event(id,o,interf)
 
 pb = compute_probability!(evb)
+
+
+############# clearly the last partition is bad !
+
+
+
+
 
 
 
