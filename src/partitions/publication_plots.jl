@@ -268,16 +268,16 @@ end
 ###### TVD with how many photons were lost ######
 
 
-
-n = 6
+n = 4
 m = n
 
-lost_photons = collect(0:n)
+lost_photons = collect(0:4)
 n_subsets = 2
 
-η_array = collect(range(0.8,1,length = 10))
+η_array = collect(range(0.8,1,length = 5))
 tvd_η_array = zeros((length(lost_photons), length(η_array)))
-niter = 10
+var_η_array = copy(tvd_η_array)
+niter = 1000
 
 @showprogress for (j,η) in enumerate(η_array)
 
@@ -314,15 +314,36 @@ niter = 10
 
     for (k,lost) in enumerate(lost_photons)
         tvd_η_array[k,j] = mean(tvd_array[k,:])
+        var_η_array[k,j] = var(tvd_array[k,:])
     end
 
 end
 
+function lost_photon_color(k, lost_photons)
+
+    lost = k-1
+    x = lost / length(lost_photons)
+    get(color_map, x)
+
+end
+
+minimum(η_array)
 
 plt = plot()
-for (k,lost) in enumerate(lost_photons)
+for (k,lost) in Iterators.reverse(enumerate(lost_photons))
 
-    plot!(η_array,tvd_η_array[k,:], label = "up to $lost lost")
+    x_data = η_array
+    y_data = tvd_η_array[k,:]
+
+    x_spl = range(minimum(x_data),maximum(x_data), length = 1000)
+    spl = Spline1D(x_data,y_data)
+    y_spl = spl(x_spl)
+
+    scatter!(x_data , y_data, yerr = sqrt.(var_η_array[k,:]), c = lost_photon_color(k,lost_photons), label = "", m = :cross)
+    plot!(x_spl , y_spl, c = lost_photon_color(k,lost_photons), label = "up to $lost lost")
+    #
+    #
+    # plot!(η_array,tvd_η_array[k,:], label = "up to $lost lost", c = lost_photon_color(k,lost_photons))
 
 end
 
