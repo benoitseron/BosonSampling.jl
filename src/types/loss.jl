@@ -207,3 +207,26 @@ function sort_by_lost_photons(pb::MultipleCounts)
     sorted_array
 
 end
+
+
+"""
+    tvd_k_lost_photons(k, pb_sorted, pd_sorted)
+
+Gives the tvd between `pb_sorted` and `pd_sorted`, which should be an output of `sort_by_lost_photons(pb::MultipleCounts)`, for exactly `k` lost photons. Note that if you want the info regarding data considering up to `k` lost photons, you need to use [`tvd_less_than_k_lost_photons(k, pb_sorted, pd_sorted)`](@ref).
+"""
+function tvd_k_lost_photons(k, pb_sorted, pd_sorted)
+
+    tvd(pb_sorted[k].proba,pd_sorted[k].proba)
+
+end
+
+"""
+    tvd_less_than_k_lost_photons(k, pb_sorted, pd_sorted)
+
+Gives the TVD obtained by considering 0,...,k photons lost. The tvd for each number of photons lost is summed using [`tvd_k_lost_photons(k, pb_sorted, pd_sorted)`](@ref).
+"""
+function tvd_less_than_k_lost_photons(k, pb_sorted, pd_sorted)
+
+    sum(tvd(pb_sorted[j].proba,pd_sorted[j].proba) for j in 1:k)
+
+end

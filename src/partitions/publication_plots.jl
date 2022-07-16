@@ -267,35 +267,74 @@ end
 
 ###### TVD with how many photons were lost ######
 
-n = 3
+
+
+n = 6
 m = n
 
-ib = Input{Bosonic}(first_modes(n,2m))
-id = Input{Distinguishable}(first_modes(n,2m))
+lost_photons = collect(0:n)
+n_subsets = 2
 
-interf = UniformLossInterferometer(η,m)
+η_array = collect(range(0.8,1,length = 10))
+tvd_η_array = zeros((length(lost_photons), length(η_array)))
+niter = 10
 
-part = to_lossy(equilibrated_partition(m,n_subsets))
+@showprogress for (j,η) in enumerate(η_array)
 
-o = PartitionCountsAll(part)
+    tvd_array = zeros((length(lost_photons),niter))
 
-evb = Event(ib,o,interf)
-evd = Event(id,o,interf)
+    ib = Input{Bosonic}(first_modes(n,2m))
+    id = Input{Distinguishable}(first_modes(n,2m))
 
-pb = compute_probability!(evb)
-pd = compute_probability!(evd)
+    part = to_lossy(equilibrated_partition(m,n_subsets))
 
-pdf_dist = pd.proba
-pdf_bos = pb.proba
+    o = PartitionCountsAll(part)
 
-pb_sorted = sort_by_lost_photons(pb)
-pd_sorted = sort_by_lost_photons(pd)
 
-function tvd_k_lost_photons(k, pb_sorted, pb_sorted)
+    for i in 1:niter
 
-    tvd(pb_sorted[k].proba,pd_sorted[k].proba)
+        interf = UniformLossInterferometer(η,m)
+
+        evb = Event(ib,o,interf)
+        evd = Event(id,o,interf)
+
+        pb = compute_probability!(evb)
+        pd = compute_probability!(evd)
+
+        pb_sorted = sort_by_lost_photons(pb)
+        pd_sorted = sort_by_lost_photons(pd)
+
+        for (k,lost) in enumerate(lost_photons)
+
+            tvd_array[k,i] = tvd_less_than_k_lost_photons(k, pb_sorted, pd_sorted)
+
+        end
+
+    end
+
+    for (k,lost) in enumerate(lost_photons)
+        tvd_η_array[k,j] = mean(tvd_array[k,:])
+    end
 
 end
+
+
+plt = plot()
+for (k,lost) in enumerate(lost_photons)
+
+    plot!(η_array,tvd_η_array[k,:], label = "up to $lost lost")
+
+end
+
+plt = plot!(legend=:bottomright)
+
+xlabel!("η")
+ylabel!("TVD(B,D)")
+
+plt
+
+
+
 
 ###### relative independance of the choice of partition size ######
 
