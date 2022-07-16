@@ -205,14 +205,14 @@ end
 
 begin
 
-    n = 3
+    n = 6
     m = n
 
     partition_sizes = 2:2
 
-    η_array = collect(range(0,1,length = 10))
+    η_array = collect(range(0,1,length = 5))
     tvd_η_array = zeros((length(partition_sizes), length(η_array)))
-    niter = 10
+    niter = 100
 
 
     for (k,n_subsets) in enumerate(partition_sizes)
@@ -284,7 +284,7 @@ evd = Event(id,o,interf)
 
 pb = compute_probability!(evb)
 
-ComplexF64 <: Complex{Float}
+
 
 ###### relative independance of the choice of partition size ######
 
