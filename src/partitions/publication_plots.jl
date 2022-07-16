@@ -14,6 +14,7 @@ using Dierckx
 using LinearAlgebra
 using PrettyTables
 using LaTeXStrings
+using JLD
 
 cd("src/partitions/")
 
@@ -155,7 +156,7 @@ invert_densities = [max_density * (max_density/min_density)^((i-1)/(steps-1)) fo
 
 n = 10
 m_array = Int.(floor.(n * invert_densities))
-partition_sizes = 2:4
+partition_sizes = 2:2
 
 tvd_array = zeros((length(partition_sizes), length(m_array)))
 var_array = copy(tvd_array)
@@ -174,6 +175,8 @@ for (k,n_subsets) in enumerate(partition_sizes)
 
 end
 
+save("data/boson_density.jld", "tvd_array", tvd_array, "var_array" ,var_array)
+
 partition_color(k, partition_sizes) = get(color_map, k / length(partition_sizes))
 
     plt = plot()
@@ -187,7 +190,7 @@ partition_color(k, partition_sizes) = get(color_map, k / length(partition_sizes)
         y_spl = spl(x_spl)
         #
         # scatter!(x_data , y_data, yerr = sqrt.(var_array[k,:]), c = lost_photon_color(k,lost_photons), label = "", m = :cross, xaxis=:log10)
-
+        #
         # scatter!(x_data , y_data, yerr = sqrt.(var_array[k,:]), c = partition_color(k,partition_sizes), label = "", m = :cross, xaxis=:log10, yaxis = :log10)
 
         scatter!(x_data , y_data, c = partition_color(k,partition_sizes), label = "", m = :cross, xaxis=:log10)
@@ -196,7 +199,7 @@ partition_color(k, partition_sizes) = get(color_map, k / length(partition_sizes)
 
         plot!(x_spl, y_spl, c = partition_color(k,partition_sizes), label = "K = $K", xaxis=:log10)
         #
-        # plot!(x_spl, y_spl, c = partition_color(k,partition_sizes), label = "K = $K", xaxis=:log10)
+        # plot!(x_spl, y_spl, c = partition_color(k,partition_sizes), label = "K = $K", xaxis=:log10, yaxis =:log10)
 
 
 
@@ -216,162 +219,165 @@ partition_color(k, partition_sizes) = get(color_map, k / length(partition_sizes)
 
 ###### TVD with x-model ######
 
-begin
-
-    n = 10
-    m = 10
-    partition_sizes = 2:3
 
 
-    x_array = collect(range(0,1,length = 10))
-    tvd_x_array = zeros((length(partition_sizes), length(x_array)))
-    niter = 10
+n = 10
+m = 10
+partition_sizes = 2:4
 
-    for (k,n_subsets) in enumerate(partition_sizes)
-        for (j,x) in enumerate(x_array)
 
-            tvd_array = zeros(niter)
+x_array = collect(range(0,1,length = 10))
+tvd_x_array = zeros((length(partition_sizes), length(x_array)))
+niter = 10
 
-            for i in 1:niter
+for (k,n_subsets) in enumerate(partition_sizes)
+    for (j,x) in enumerate(x_array)
 
-                ib = Input{Bosonic}(first_modes(n,m))
-                ix = Input{OneParameterInterpolation}(first_modes(n,m),x)
+        tvd_array = zeros(niter)
 
-                interf = RandHaar(m)
-                part = equilibrated_partition(m,n_subsets)
-                o = PartitionCountsAll(part)
-                evb = Event(ib,o,interf)
-                evx = Event(ix,o,interf)
+        for i in 1:niter
 
-                pb = compute_probability!(evb)
-                px = compute_probability!(evx)
+            ib = Input{Bosonic}(first_modes(n,m))
+            ix = Input{OneParameterInterpolation}(first_modes(n,m),x)
 
-                pdf_x = px.proba
-                pdf_bos = pb.proba
+            interf = RandHaar(m)
+            part = equilibrated_partition(m,n_subsets)
+            o = PartitionCountsAll(part)
+            evb = Event(ib,o,interf)
+            evx = Event(ix,o,interf)
 
-                tvd_array[i] = tvd(pdf_bos,pdf_x)
-            end
+            pb = compute_probability!(evb)
+            px = compute_probability!(evx)
 
-            tvd_x_array[k,j] = mean(tvd_array)
+            pdf_x = px.proba
+            pdf_bos = pb.proba
 
+            tvd_array[i] = tvd(pdf_bos,pdf_x)
         end
 
-    end
-
-    plt = plot()
-    for (k,n_subsets) in enumerate(partition_sizes)
-
-        plot!(x_array,tvd_x_array[k,:], label = "K = $k")
+        tvd_x_array[k,j] = mean(tvd_array)
 
     end
-
-    xlabel!("x")
-    ylabel!("TVD(x,B)")
-
-    plt
 
 end
+
+save("data/tvd_with_x.jld", "tvd_x_array", tvd_x_array, "x_array" ,x_array)
+
+partition_color(k, partition_sizes) = get(color_map, (k-1) / (length(partition_sizes)-1))
+
+plt = plot()
+for (k,n_subsets) in enumerate(partition_sizes)
+
+    plot!(x_array,tvd_x_array[k,:], label = "K = $n_subsets", c = partition_color(k, partition_sizes))
+
+end
+
+xlabel!("x")
+ylabel!("TVD(x,B)")
+
+plt
+
+
 
 ###### TVD with loss ######
 
-begin
 
-    n = 8
-    m = n
+n = 8
+m = n
 
-    partition_sizes = 2:4
+partition_sizes = 2:4
 
-    η_array = collect(range(0.8,1,length = 10))
-    tvd_η_array = zeros((length(partition_sizes), length(η_array)))
-    var_η_array = copy(tvd_η_array)
-    niter = 10
+η_array = collect(range(0.8,1,length = 10))
+tvd_η_array = zeros((length(partition_sizes), length(η_array)))
+var_η_array = copy(tvd_η_array)
+niter = 10
 
 
-    for (k,n_subsets) in enumerate(partition_sizes)
+for (k,n_subsets) in enumerate(partition_sizes)
 
-        @show k
+    @show k
 
-        @showprogress for (j,η) in enumerate(η_array)
+    @showprogress for (j,η) in enumerate(η_array)
 
-            tvd_array = zeros(niter)
+        tvd_array = zeros(niter)
 
-            ib = Input{Bosonic}(first_modes(n,2m))
-            id = Input{Distinguishable}(first_modes(n,2m))
+        ib = Input{Bosonic}(first_modes(n,2m))
+        id = Input{Distinguishable}(first_modes(n,2m))
 
-            part = to_lossy(equilibrated_partition(m,n_subsets))
+        part = to_lossy(equilibrated_partition(m,n_subsets))
 
-            o = PartitionCountsAll(part)
+        o = PartitionCountsAll(part)
 
-            for i in 1:niter
+        for i in 1:niter
 
-                interf = UniformLossInterferometer(η,m)
+            interf = UniformLossInterferometer(η,m)
 
-                evb = Event(ib,o,interf)
-                evd = Event(id,o,interf)
+            evb = Event(ib,o,interf)
+            evd = Event(id,o,interf)
 
-                pb = compute_probability!(evb)
-                pd = compute_probability!(evd)
+            pb = compute_probability!(evb)
+            pd = compute_probability!(evd)
 
-                pdf_dist = pd.proba
-                pdf_bos = pb.proba
+            pdf_dist = pd.proba
+            pdf_bos = pb.proba
 
-                tvd_array[i] = tvd(pdf_bos,pdf_dist)
-
-            end
-
-            tvd_η_array[k,j] = mean(tvd_array)
-            var_η_array[k,j] = var(tvd_array)
+            tvd_array[i] = tvd(pdf_bos,pdf_dist)
 
         end
 
-    end
-
-    # plt = plot()
-    # for (k,n_subsets) in enumerate(partition_sizes)
-    #
-    #     plot!(η_array,tvd_η_array[k,:], label = "K = $k")
-    #
-    # end
-    #
-    # xlabel!("η")
-    # ylabel!("TVD(B,D)")
-    #
-    # plt
-
-    partition_color(k, partition_sizes) = get(color_map, k / length(partition_sizes))
-
-    plt = plot()
-    for (k,lost) in enumerate(partition_sizes)
-
-        x_data = η_array
-        y_data = tvd_η_array[k,:]
-
-        x_spl = range(minimum(x_data),maximum(x_data), length = 1000)
-        spl = Spline1D(x_data,y_data)
-        y_spl = spl(x_spl)
-
-        scatter!(x_data , y_data, yerr = sqrt.(var_η_array[k,:]), c = lost_photon_color(k,lost_photons), label = "", m = :cross)
-
-        scatter!(x_data , y_data, c = lost_photon_color(k,lost_photons), label = "", m = :cross)
-
-        plot!(x_spl, y_spl, c = lost_photon_color(k,lost_photons), label = "K = $k")
-
-
-
-        # plot!(η_array,tvd_η_array[k,:], label = "up to $lost lost", c = lost_photon_color(k,lost_photons))
+        tvd_η_array[k,j] = mean(tvd_array)
+        var_η_array[k,j] = var(tvd_array)
 
     end
-
-    plt = plot!(legend=:bottomright)
-    plot!(legend = false)
-
-    xlabel!("η")
-    ylabel!("TVD(B,D)")
-
-    display(plt)
-    savefig(plt, "images/publication/partition_with_loss.png")
 
 end
+
+# plt = plot()
+# for (k,n_subsets) in enumerate(partition_sizes)
+#
+#     plot!(η_array,tvd_η_array[k,:], label = "K = $k")
+#
+# end
+#
+# xlabel!("η")
+# ylabel!("TVD(B,D)")
+#
+# plt
+
+save("data/tvd_with_loss.jld", "η_array", η_array, "tvd_η_array" ,tvd_η_array, "var_η_array", var_η_array)
+
+partition_color(k, partition_sizes) = get(color_map, k / length(partition_sizes))
+
+plt = plot()
+for (k,lost) in enumerate(partition_sizes)
+
+    x_data = η_array
+    y_data = tvd_η_array[k,:]
+
+    x_spl = range(minimum(x_data),maximum(x_data), length = 1000)
+    spl = Spline1D(x_data,y_data)
+    y_spl = spl(x_spl)
+
+    scatter!(x_data , y_data, yerr = sqrt.(var_η_array[k,:]), c = lost_photon_color(k,lost_photons), label = "", m = :cross)
+
+    scatter!(x_data , y_data, c = lost_photon_color(k,lost_photons), label = "", m = :cross)
+
+    plot!(x_spl, y_spl, c = lost_photon_color(k,lost_photons), label = "K = $k")
+
+
+
+    # plot!(η_array,tvd_η_array[k,:], label = "up to $lost lost", c = lost_photon_color(k,lost_photons))
+
+end
+
+plt = plot!(legend=:bottomright)
+plot!(legend = false)
+
+xlabel!("η")
+ylabel!("TVD(B,D)")
+
+display(plt)
+savefig(plt, "images/publication/partition_with_loss.png")
 
 
 ###### TVD with how many photons were lost ######
@@ -427,6 +433,8 @@ niter = 10
     end
 
 end
+
+save("data/tvd_with_lost_photons.jld", "η_array", η_array, "tvd_η_array" ,tvd_η_array, "var_η_array", var_η_array)
 
 # setting the number of lost photons to plot
 lost_photons = collect(0:10)
