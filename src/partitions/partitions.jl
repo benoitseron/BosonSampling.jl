@@ -160,8 +160,10 @@ function compute_probabilities_partition(physical_interferometer::Interferometer
 
                 # for each fourier index, we recompute the virtual interferometer
                 virtual_interferometer_matrix  = physical_interferometer.U
-                diag = [one(eltype(virtual_interferometer_matrix)) for i in 1:m]
 
+                diag = [1.0 + 0im for i in 1:m]
+                # this is not type stable
+                # but need it to be a complex float at least
                 for (i,fourier_element) in enumerate(fourier_index)
 
                         this_phase = exp(2*pi*1im/(n+1) * fourier_element)
@@ -169,6 +171,7 @@ function compute_probabilities_partition(physical_interferometer::Interferometer
                         for j in 1:length(diag)
 
                                 if part.subsets[i].subset[j] == 1
+
                                         diag[j] *= this_phase
 
                                 end

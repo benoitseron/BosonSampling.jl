@@ -225,7 +225,7 @@ begin
                 ib = Input{Bosonic}(first_modes(n,2m))
                 id = Input{Distinguishable}(first_modes(n,2m))
 
-                interf = UniformLossInterferometer(m, η)
+                interf = UniformLossInterferometer(η,m)
 
                 part = to_lossy(equilibrated_partition(m,n_subsets))
 
@@ -264,21 +264,27 @@ begin
 
 end
 
-Real <: Complex
-
-UniformLossInterferometer(0.5, 1im*matrix_test(5))
-
-RandHaar(m).U
-
 n = 3
 m = n
 
-part = Partition(Subset(first_modes(n,m)))
-part.subsets[1].n
+η = 0.5
+n_subsets = 2
 
-UniformLossInterferometer(3, 0.1)
+ib = Input{Bosonic}(first_modes(n,2m))
+id = Input{Distinguishable}(first_modes(n,2m))
 
-UniformLossInterferometer(m::Int, η::Real) = UniformLossInterferometer(η, RandHaar(m))
+interf = UniformLossInterferometer(η,m)
+
+part = to_lossy(equilibrated_partition(m,n_subsets))
+
+o = PartitionCountsAll(part)
+
+evb = Event(ib,o,interf)
+evd = Event(id,o,interf)
+
+pb = compute_probability!(evb)
+
+ComplexF64 <: Complex{Float}
 
 ###### relative independance of the choice of partition size ######
 
