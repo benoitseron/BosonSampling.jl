@@ -264,11 +264,11 @@ begin
 
 end
 
+
+###### TVD with how many photons were lost ######
+
 n = 3
 m = n
-
-η = 0.5
-n_subsets = 2
 
 ib = Input{Bosonic}(first_modes(n,2m))
 id = Input{Distinguishable}(first_modes(n,2m))
@@ -283,15 +283,17 @@ evb = Event(ib,o,interf)
 evd = Event(id,o,interf)
 
 pb = compute_probability!(evb)
+pd = compute_probability!(evd)
 
+pdf_dist = pd.proba
+pdf_bos = pb.proba
 
-############# clearly the last partition is bad !
+# number of lost photons is the number of photons in the last subset
 
+sort_by_lost_photons(pb)
 
-
-
-
-
+########### but this is not what we want... we want a container to hold
+#events with a given number of lost photons
 
 ###### relative independance of the choice of partition size ######
 

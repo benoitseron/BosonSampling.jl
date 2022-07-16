@@ -20,14 +20,25 @@ mutable struct MultipleCounts
 
 end
 
+function initialise_to_empty_vectors!(mc::MultipleCounts, type_proba, type_counts)
+
+	mc.proba = Vector{type_proba}()
+	mc.counts = Vector{type_counts}()
+
+end
+
 Base.show(io::IO, pb::MultipleCounts) = begin
 
-	for i in 1:length(pb.proba)
-		
-		println(io, "output: \n")
-		println(io, pb.counts[i])
-		println(io, "p = $(pb.proba[i])")
-		println(io, "--------------------------------------")
+	if pb.proba == nothing
+		println(io, "Empty MultipleCounts")
+	else
+		for i in 1:length(pb.proba)
+
+			println(io, "output: \n")
+			println(io, pb.counts[i])
+			println(io, "p = $(pb.proba[i])")
+			println(io, "--------------------------------------")
+		end
 	end
 end
 

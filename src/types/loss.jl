@@ -181,3 +181,27 @@ struct GeneralLossInterferometer <: LossyInterferometer
     end
 
 end
+
+
+"""
+    sort_by_lost_photons(pb::MultipleCounts)
+
+Outputs a (n+1) sized array of MultipleCounts containing 0,...,n lost photons.
+"""
+function sort_by_lost_photons(pb::MultipleCounts)
+
+    n = pb.counts[1].n
+    sorted_array = [MultipleCounts() for i in 0:n]
+    initialise_to_empty_vectors!.(sorted_array, Real, PartitionOccupancy)
+
+    for (p, count) in zip(pb.proba, pb.counts)
+
+        n_lost = count.counts.state[end]
+        push!(sorted_array[n_lost+1].proba, p)
+        push!(sorted_array[n_lost+1].counts, count)
+
+    end
+
+    sorted_array
+
+end
