@@ -145,57 +145,84 @@ function compute_probabilities_partition(physical_interferometer::Interferometer
 
         @argcheck at_most_one_photon_per_bin(input_state.r) "more than one input per mode is not implemented"
 
-        # occupies_all_modes(part) ? (@warn "inefficient if no loss: partition occupies all modes thus extra calculations made that are unnecessary") : nothing
-
         n = input_state.n
         m = input_state.m
         mode_occupation_list = fill_arrangement(input_state)
         S = input_state.G.S
 
-        fourier_indexes = all_mode_configurations(n,part.n_subset, only_photon_number_conserving = false)
-        probas_fourier = Array{ComplexF64}(undef, length(fourier_indexes))
-        virtual_interferometer_matrix = similar(physical_interferometer.U)
+        physical_indexes = []
+        pdf = []
 
-        for (index_fourier_array, fourier_index) in enumerate(fourier_indexes)
+        if occupies_all_modes(part)
+                # in this case we use a the trick of removing the last subset
+                # and computing all as if in the partition without the last
+                # subset and then to infer the photon number in the last one
+                # form photon conservation
 
-                # for each fourier index, we recompute the virtual interferometer
-                virtual_interferometer_matrix  = physical_interferometer.U
+                (small_indexes, small_pdf) = compute_probabilities_partition(physical_interferometer, remove_last_subset(part), input_state)
 
-                diag = [1.0 + 0im for i in 1:m]
-                # this is not type stable
-                # but need it to be a complex float at least
-                for (i,fourier_element) in enumerate(fourier_index)
+                for (this_count, p) in zip(small_indexes, small_pdf)
 
-                        this_phase = exp(2*pi*1im/(n+1) * fourier_element)
+                    new_count = copy(this_count)
 
-                        for j in 1:length(diag)
+                    if n-sum(this_count) >=0 # photon number conserving case
 
-                                if part.subsets[i].subset[j] == 1
+                            append!(new_count, n-sum(this_count))
 
-                                        diag[j] *= this_phase
+                            push!(physical_indexes, new_count)
+                            push!(pdf, p)
+                    end
+
+                end
+
+        else
+
+                fourier_indexes = all_mode_configurations(n,part.n_subset, only_photon_number_conserving = false)
+                probas_fourier = Array{ComplexF64}(undef, length(fourier_indexes))
+                virtual_interferometer_matrix = similar(physical_interferometer.U)
+
+                for (index_fourier_array, fourier_index) in enumerate(fourier_indexes)
+
+                        # for each fourier index, we recompute the virtual interferometer
+                        virtual_interferometer_matrix  = physical_interferometer.U
+
+                        diag = [1.0 + 0im for i in 1:m]
+                        # this is not type stable
+                        # but need it to be a complex float at least
+                        for (i,fourier_element) in enumerate(fourier_index)
+
+                                this_phase = exp(2*pi*1im/(n+1) * fourier_element)
+
+                                for j in 1:length(diag)
+
+                                        if part.subsets[i].subset[j] == 1
+
+                                                diag[j] *= this_phase
+
+                                        end
 
                                 end
 
                         end
 
+                        virtual_interferometer_matrix *= Diagonal(diag)
+                        virtual_interferometer_matrix *= physical_interferometer.U'
+
+
+                        # beware, only the modes corresponding to the
+                        # virtual_interferometer_matrix[input_config,input_config]
+                        # must be taken into account !
+                        probas_fourier[index_fourier_array] = permanent(virtual_interferometer_matrix[mode_occupation_list,mode_occupation_list] .* S)
                 end
 
-                virtual_interferometer_matrix *= Diagonal(diag)
-                virtual_interferometer_matrix *= physical_interferometer.U'
+                physical_indexes = copy(fourier_indexes)
+
+                probas_physical(physical_index) = 1/(n+1)^(part.n_subset) * sum(probas_fourier[i] * exp(-2pi*1im/(n+1) * dot(physical_index, fourier_index)) for (i,fourier_index) in enumerate(fourier_indexes))
 
 
-                # beware, only the modes corresponding to the
-                # virtual_interferometer_matrix[input_config,input_config]
-                # must be taken into account !
-                probas_fourier[index_fourier_array] = permanent(virtual_interferometer_matrix[mode_occupation_list,mode_occupation_list] .* S)
+                pdf = [probas_physical(physical_index) for physical_index in physical_indexes]
+
         end
-
-        physical_indexes = copy(fourier_indexes)
-
-        probas_physical(physical_index) = 1/(n+1)^(part.n_subset) * sum(probas_fourier[i] * exp(-2pi*1im/(n+1) * dot(physical_index, fourier_index)) for (i,fourier_index) in enumerate(fourier_indexes))
-
-
-        pdf = [probas_physical(physical_index) for physical_index in physical_indexes]
 
         pdf = clean_pdf(pdf)
 

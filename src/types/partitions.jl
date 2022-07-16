@@ -266,3 +266,5 @@ function partition_occupancy_to_partition_size_vector_and_counts(part_occ::Parti
     partition_size_vector, partition_counts
 
 end
+
+remove_last_subset(part::Partition) = Partition(part.subsets[1:end-1])

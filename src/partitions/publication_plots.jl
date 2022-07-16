@@ -268,16 +268,16 @@ end
 ###### TVD with how many photons were lost ######
 
 
-n = 4
+n = 20
 m = n
 
-lost_photons = collect(0:4)
+lost_photons = collect(0:n)
 n_subsets = 2
 
-η_array = collect(range(0.8,1,length = 5))
+η_array = collect(range(0.8,1,length = 10))
 tvd_η_array = zeros((length(lost_photons), length(η_array)))
 var_η_array = copy(tvd_η_array)
-niter = 1000
+niter = 1
 
 @showprogress for (j,η) in enumerate(η_array)
 
@@ -319,42 +319,47 @@ niter = 1000
 
 end
 
-function lost_photon_color(k, lost_photons)
+# setting the number of lost photons to plot
+lost_photons = collect(0:4)
 
-    lost = k-1
-    x = lost / length(lost_photons)
-    get(color_map, x)
+begin
+
+    function lost_photon_color(k, lost_photons)
+
+        lost = k-1
+        x = lost / length(lost_photons)
+        get(color_map, x)
+
+    end
+
+    minimum(η_array)
+
+    plt = plot()
+    for (k,lost) in Iterators.reverse(enumerate(lost_photons))
+
+        x_data = η_array
+        y_data = tvd_η_array[k,:]
+
+        x_spl = range(minimum(x_data),maximum(x_data), length = 1000)
+        spl = Spline1D(x_data,y_data)
+        y_spl = spl(x_spl)
+
+        # scatter!(x_data , y_data, yerr = sqrt.(var_η_array[k,:]), c = lost_photon_color(k,lost_photons), label = "", m = :cross)
+        plot!(x_spl , y_spl, c = lost_photon_color(k,lost_photons), label = "up to $lost lost")
+
+
+        # plot!(η_array,tvd_η_array[k,:], label = "up to $lost lost", c = lost_photon_color(k,lost_photons))
+
+    end
+
+    plt = plot!(legend=:bottomright)
+
+    xlabel!("η")
+    ylabel!("TVD(B,D)")
+
+    plt
 
 end
-
-minimum(η_array)
-
-plt = plot()
-for (k,lost) in Iterators.reverse(enumerate(lost_photons))
-
-    x_data = η_array
-    y_data = tvd_η_array[k,:]
-
-    x_spl = range(minimum(x_data),maximum(x_data), length = 1000)
-    spl = Spline1D(x_data,y_data)
-    y_spl = spl(x_spl)
-
-    scatter!(x_data , y_data, yerr = sqrt.(var_η_array[k,:]), c = lost_photon_color(k,lost_photons), label = "", m = :cross)
-    plot!(x_spl , y_spl, c = lost_photon_color(k,lost_photons), label = "up to $lost lost")
-    #
-    #
-    # plot!(η_array,tvd_η_array[k,:], label = "up to $lost lost", c = lost_photon_color(k,lost_photons))
-
-end
-
-plt = plot!(legend=:bottomright)
-
-xlabel!("η")
-ylabel!("TVD(B,D)")
-
-plt
-
-
 
 
 ###### relative independance of the choice of partition size ######
