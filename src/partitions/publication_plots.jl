@@ -14,6 +14,8 @@ using Dierckx
 using LinearAlgebra
 using PrettyTables
 
+cd("src/partitions/")
+
 color_map = ColorSchemes.rainbow
 
 ### bosonic to distinguishable single subset ###
@@ -261,6 +263,12 @@ begin
     plt
 
 end
+
+Real <: Complex
+
+UniformLossInterferometer(0.5, 1im*matrix_test(5))
+
+RandHaar(m).U
 
 n = 3
 m = n

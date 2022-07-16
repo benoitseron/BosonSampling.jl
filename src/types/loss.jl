@@ -87,6 +87,9 @@ Transforms a partition of size `m` into a `2m` one with the last `m` modes being
 """
 function to_lossy(part::Partition)
 
+    n = part.subsets[1].n
+    m = part.subsets[1].m
+
     environment = Subset(last_modes(n,2m))
 
     new_subsets =  Vector{Subset}()
@@ -127,10 +130,10 @@ The last form, `UniformLossInterferometer(m::Int, η::Real)` samples from a Haar
 """
 struct UniformLossInterferometer <: LossyInterferometer
     m_real::Int
-    m_virtual::Int
+    m::Int
     η::Real #transmissivity of the upfront beamsplitters
     U_physical::Matrix{Complex} # physical matrix
-    U_virtual::Matrix{Complex} # virtual 2m*2m interferometer
+    U::Matrix{Complex} # virtual 2m*2m interferometer
 
     function UniformLossInterferometer(η::Real, U_physical::Matrix)
         if isa_transmissitivity(η)
@@ -143,9 +146,13 @@ struct UniformLossInterferometer <: LossyInterferometer
 
     UniformLossInterferometer(η::Real, U_physical::Interferometer) = UniformLossInterferometer(η, U_physical.U)
 
-    UniformLossInterferometer(m::Int, η::Real) = UniformLossInterferometer(η, RandHaar(m))
+    UniformLossInterferometer(η::Real, m::Int) = UniformLossInterferometer(η, RandHaar(m))
 
 end
+
+
+
+
 
 """
     GeneralLossInterferometer <: LossyInterferometer
@@ -157,12 +164,12 @@ to the transmissivity of each layer) : `U_total` = `V*Diag(η)*W`
 """
 struct GeneralLossInterferometer <: LossyInterferometer
     m_real::Int
-    m_virtual::Int
+    m::Int
     η::Vector{Real} #transmissivity of the upfront beamsplitters
     U_physical::Matrix{Complex} # physical matrix
     V::Matrix{Complex}
     W::Matrix{Complex}
-    U_virtual::Matrix{Complex} # virtual 2m*2m interferometer
+    U::Matrix{Complex} # virtual 2m*2m interferometer
 
     function GeneralLossInterferometer(η::Vector{Real}, V::Matrix, W::Matrix)
         if isa_transmissitivity(η)
