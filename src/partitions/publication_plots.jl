@@ -288,12 +288,14 @@ pd = compute_probability!(evd)
 pdf_dist = pd.proba
 pdf_bos = pb.proba
 
-# number of lost photons is the number of photons in the last subset
+pb_sorted = sort_by_lost_photons(pb)
+pd_sorted = sort_by_lost_photons(pd)
 
-sort_by_lost_photons(pb)
+function tvd_k_lost_photons(k, pb_sorted, pb_sorted)
 
-########### but this is not what we want... we want a container to hold
-#events with a given number of lost photons
+    tvd(pb_sorted[k].proba,pd_sorted[k].proba)
+
+end
 
 ###### relative independance of the choice of partition size ######
 

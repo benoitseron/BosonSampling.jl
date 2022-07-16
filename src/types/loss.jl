@@ -190,6 +190,8 @@ Outputs a (n+1) sized array of MultipleCounts containing 0,...,n lost photons.
 """
 function sort_by_lost_photons(pb::MultipleCounts)
 
+    # number of lost photons is the number of photons in the last subset
+
     n = pb.counts[1].n
     sorted_array = [MultipleCounts() for i in 0:n]
     initialise_to_empty_vectors!.(sorted_array, Real, PartitionOccupancy)
