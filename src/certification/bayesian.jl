@@ -11,14 +11,6 @@ function update_confidence(event, p_q, p_a, χ)
 
 end
 
-function compute_χ(events, p_q, p_a)
-    χ = 1.
-    for event in events
-        χ = update_confidence(event, p_q, p_a, χ)
-    end
-    χ
-end
-
 
 """
     compute_confidence(events,p_q, p_a)
@@ -49,41 +41,32 @@ function compute_confidence_array(events, p_q, p_a)
 
 end
 
-### tests with standard boson sampling ###
+function compute_χ(events, p_q, p_a)
+    χ = 1.
+    for event in events
+        χ = update_confidence(event, p_q, p_a, χ)
+    end
+    χ
+end
 
-# we will test that we are indeed in the bosonic case
-# compared to the distinguishable one
+"""
+    compute_probability!(b::Bayesian)
 
-# first we generate a series of bosonic events
+Updates all probabilities associated with a `Bayesian` `Certifier`.
+"""
+function compute_probability!(b::Bayesian)
 
-n_events = 20
-n = 3
-m = 8
-interf = RandHaar(m)
-input_state = Input{Bosonic}(first_modes(n,m))
-
-events = []
-
-for i in 1:n_events
-
-    # generate a random output pattern
-    output_state = FockDetection(random_mode_occupation(n,m))
-
-    # compute the event probability
-    this_event = Event(input_state, output_state, interf)
-    compute_probability!(this_event)
-    push!(events, this_event)
+    b.probabilities = compute_confidence_array(b.events, b.null_hypothesis.f, b.alternative_hypothesis.f)
+    b.confidence = b.probabilities[end]
 
 end
 
-# now we have the vector of observed events with probabilities
+"""
+    p_B(event::Event{TIn, TOut}) where {TIn<:InputType, TOut <: FockDetection}
 
-events
-
-# next, from events, recover the probabilities under both
-# hypothesis
-
-function p_B(event::Event)
+Outputs the probability that a given `FockDetection` would have if the `InputType` was `Bosonic` for this event.
+"""
+function p_B(event::Event{TIn, TOut}) where {TIn<:InputType, TOut <: FockDetection}
 
     interf = event.interferometer
     r = event.input_state.r
@@ -97,7 +80,12 @@ function p_B(event::Event)
 
 end
 
-function p_D(event::Event)
+"""
+    p_D(event::Event{TIn, TOut}) where {TIn<:InputType, TOut <: FockDetection}
+
+Outputs the probability that a given `FockDetection` would have if the `InputType` was `Distinguishable` for this event.
+"""
+function p_D(event::Event{TIn, TOut}) where {TIn<:InputType, TOut <: FockDetection}
 
     interf = event.interferometer
     r = event.input_state.r
@@ -110,27 +98,3 @@ function p_D(event::Event)
     event_A.proba_params.probability
 
 end
-
-# hypothesis : the events were from a bosonic distribution
-
-p_q = p_B
-p_a = p_D
-
-confidence(compute_χ(events, p_q, p_a))
-
-# hypothesis : the events were from a distinguishable distribution
-
-p_q = p_D
-p_a = p_B
-
-confidence(compute_χ(events, p_q, p_a))
-
-@test confidence(compute_χ(events, p_q, p_a)) + confidence(compute_χ(events, p_a, p_q)) ≈ 1 atol = 1e-6
-
-
-p_q = p_B
-p_a = p_D
-
-array = compute_confidence_array(events, p_q, p_a)
-
-scatter(array)

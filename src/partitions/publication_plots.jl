@@ -499,3 +499,7 @@ plt
 ###### bayesian certification examples ######
 
 ###### number of samples needed from bayesian ######
+
+
+cd("..")
+cd("..")
