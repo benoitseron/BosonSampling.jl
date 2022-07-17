@@ -333,6 +333,31 @@ function compute_probability!(ev::Event{TIn,TOut}) where {TIn<:InputType, TOut<:
 end
 
 
+"""
+    to_partition_count(event::Event{TIn, TOut}, part::Partition) where {TIn<:InputType, TOut <: FockDetection}
+
+Converts an `Event` with `FockDetection` to a `PartitionCount` one.
+"""
+function to_partition_count(ev::Event{TIn, TOut}, part::Partition) where {TIn<:InputType, TOut <: FockDetection}
+
+    n_subsets = part.n_subset
+
+    counts_array = zeros(Int,n_subsets)
+
+    for i in 1:n_subsets
+        counts_array[i] = sum(ev.output_measurement.s.state .* part.subsets[i].subset)
+    end
+
+    @argcheck sum(counts_array) == ev.input_state.n
+
+    o = PartitionCount(PartitionOccupancy(ModeOccupation(counts_array), ev.input_state.n, part))
+
+    new_ev = Event(ev.input_state, o, ev.interferometer)
+
+    new_ev
+
+end
+
 #
 # check_probability_empty(ev)
 #

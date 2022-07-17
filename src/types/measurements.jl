@@ -23,6 +23,7 @@ Measuring the probability of getting a specific count for a given partition `par
     Fields:
         - part_occupancy::PartitionOccupancy
 """
+
 struct PartitionCount <: OutputMeasurementType
     part_occupancy::PartitionOccupancy
     PartitionCount(part_occupancy::PartitionOccupancy) = new(part_occupancy)

@@ -48,3 +48,57 @@ compute_probability!(certif)
 certif.confidence
 
 scatter(certif.probabilities)
+
+###### Bayesian tests for partitions ######
+
+# need to provide the interferometer as well as some data to compute the probabilities
+# this can be extracted from experiemental if given it but here we have to generate it
+
+n_events = 20
+n = 3
+m = 8
+interf = RandHaar(m)
+
+# we generate the experimental data
+
+input_state = Input{Bosonic}(first_modes(n,m))
+
+events = []
+
+for i in 1:n_events
+
+    # generate a random output pattern
+    output_state = FockDetection(random_mode_occupation(n,m))
+
+    # note that we don't compute the event probability
+    # as we would just have experimental observations
+    # of counts
+
+    this_event = Event(input_state, output_state, interf)
+    push!(events, this_event)
+
+end
+
+# we now compute the partition probabilities for the hypothesis of Bosonic and Distinguishable inputs
+
+ib = Input{Bosonic}(first_modes(n,m))
+id = Input{Distinguishable}(first_modes(n,m))
+n_subsets = 2
+
+part = equilibrated_partition(m,n_subsets)
+o = PartitionCountsAll(part)
+
+evb = Event(ib,o,interf)
+evd = Event(id,o,interf)
+
+pb = compute_probability!(evb)
+pd = compute_probability!(evd)
+
+# we define the necessary functions for bayesian treatment
+
+ev = events[1]
+
+new_ev = to_partition_count(ev, part)
+
+
+### now need to match the probabilities
