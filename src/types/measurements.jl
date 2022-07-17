@@ -12,7 +12,7 @@ Measuring the probability of getting the [`ModeOccupation`](@ref) `s` at the out
 """
 struct FockDetection <: OutputMeasurementType
     s::ModeOccupation
-    FockDetection(s::ModeOccupation) = at_most_one_photon_per_bin(s) ? new(s) : error("more than one detector per more")
+    FockDetection(s::ModeOccupation) = new(s) #at_most_one_photon_per_bin(s) ? new(s) : error("more than one detector per more")
 end
 
 """

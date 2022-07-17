@@ -58,7 +58,7 @@ end
 
 n_events = 10
 n = 3
-m = 4
+m = 8
 interf = RandHaar(m)
 input_state = Input{Bosonic}(first_modes(n,m))
 
@@ -67,7 +67,7 @@ events = []
 for i in 1:n_events
 
     # generate a random output pattern
-    output_state = FockDetection(random_mode_occupation_collisionless(n,m))
+    output_state = FockDetection(random_mode_occupation(n,m))
 
     # compute the event probability
     this_event = Event(input_state, output_state, interf)
@@ -128,3 +128,22 @@ confidence(compute_χ(events, p_q, p_a))
 @test confidence(compute_χ(events, p_q, p_a)) + confidence(compute_χ(events, p_a, p_q)) ≈ 1 atol = 1e-6
 
 ##### the only thing I see is a problem in the probabilities themselves?
+
+
+n = 6
+m = 8
+interf = RandHaar(m)
+ib = Input{Bosonic}(first_modes(n,m))
+id = Input{Distinguishable}(first_modes(n,m))
+os = zeros(Int, m)
+os[1] = n
+output_state = FockDetection(random_mode_occupation(n,m))
+
+pb = Event(ib, output_state, interf)
+pd = Event(id, output_state, interf)
+compute_probability!(pb)
+compute_probability!(pd)
+
+pb.proba_params.probability/pd.proba_params.probability
+
+random_occupancy(n,m)
