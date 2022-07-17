@@ -358,14 +358,47 @@ function to_partition_count(ev::Event{TIn, TOut}, part::Partition) where {TIn<:I
 
 end
 
-#
-# check_probability_empty(ev)
-#
-# interf = ev.interferometer
-# part = ev.output_measurement.part_occupancy
-# input_state = ev.input_state
-#
-# ev.proba_params.precision = eps()
-# ev.proba_params.failure_probability = 0
-#
-# ev.proba_params.probability = nothing ####################33compute_probabilities_partition(ev.interferometer, ev.part::Partition, input_state::Input)
+"""
+    p_partition(ev::Event{TIn1, TOut1}, ev_theory::Event{TIn2, TOut2}) where {TIn1<:InputType, TOut1 <: PartitionCount, TIn2 <:InputType, TOut2 <:PartitionCountsAll}
+
+Outputs the probability that an observed count in `ev` happens under the conditions set by `ev_theory`.
+For instance, if we take the conditions
+
+    ib = Input{Bosonic}(first_modes(n,m))
+    part = equilibrated_partition(m,n_subsets)
+    o = PartitionCountsAll(part)
+
+    evb = Event(ib,o,interf)
+
+then
+
+    p_partition(ev, evb)
+
+gives the probability that this `ev` is observed under the hypotheses of `ev_theory`.
+"""
+function p_partition(ev::Event{TIn1, TOut1}, ev_theory::Event{TIn2, TOut2}) where {TIn1<:InputType, TOut1 <: PartitionCount, TIn2 <:InputType, TOut2 <:PartitionCountsAll}
+
+        @warn "not checking that they have the same partitions, to be implemented"
+    ################## need to add a check that they have the same partition!
+
+    # compute the probabilities if they are not already known
+    ev_theory.proba_params.probability == nothing ? compute_probability!(ev_theory) : nothing
+
+    p = ev_theory.proba_params.probability
+
+    observed_count = ev.output_measurement.part_occupancy.counts.state
+
+    # look up the probability of this count
+
+    proba_this_count = nothing
+
+    for (proba, theoretical_count) in zip(p.proba, p.counts)
+        if observed_count == theoretical_count.counts.state
+            proba_this_count = proba
+            break
+        end
+    end
+
+    proba_this_count
+
+end

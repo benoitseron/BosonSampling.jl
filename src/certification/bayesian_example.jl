@@ -94,11 +94,12 @@ evd = Event(id,o,interf)
 pb = compute_probability!(evb)
 pd = compute_probability!(evd)
 
-# we define the necessary functions for bayesian treatment
+
+### now need to match the probabilities
 
 ev = events[1]
 
-new_ev = to_partition_count(ev, part)
+ev = to_partition_count(ev, part)
 
-
-### now need to match the probabilities
+p_partition(ev, evb)
+p_partition(ev, evd)
