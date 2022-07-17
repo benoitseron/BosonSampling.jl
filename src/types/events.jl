@@ -116,8 +116,12 @@ struct Event{TIn<:InputType, TOut<:OutputMeasurementType}
 
 end
 
-function check_probability_empty(ev::Event)
+function check_probability_empty(ev::Event; resetting_message = true)
     if ev.proba_params.probability != nothing
-		@warn "probability was already set in, rewriting"
+		if resetting_message
+			@warn "probability was already set in, rewriting"
+		else
+			@warn "unexpected probabilities found in Event"
+		end
 	end
 end
