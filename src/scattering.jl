@@ -147,6 +147,22 @@ function occupancy_vector_to_mode_occupancy(occupancy_vector)
 end
 
 """
+	mode_occupancy_to_occupancy_vector(mo::Vector{Int}, m::Int)
+
+Goes from [2,2,5] to [0,2,0,0,1,0] (if m=6).
+"""
+function mode_occupancy_to_occupancy_vector(mo::Vector{Int}, m::Int)
+
+	ov = zeros(Int,m)
+	for mode in mo
+		ov[mode] += 1
+	end
+
+	ov
+end
+
+
+"""
 	scattering_matrix(U::Matrix, input_state::Vector{Int}, output_state::Vector{Int})
 	scattering_matrix(U::Interferometer, r::ModeOccupation, s::ModeOccupation)
 	scattering_matrix(U::Interferometer, i::Input, o::FockDetection)

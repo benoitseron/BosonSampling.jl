@@ -26,7 +26,7 @@ using AutoHashEquals
 
 # first we generate a series of bosonic events
 
-n_events = 20
+n_events = 200
 n = 3
 m = 8
 interf = RandHaar(m)

@@ -76,5 +76,6 @@ Container holding a sample from typical boson sampler.
 mutable struct FockSample <: OutputMeasurementType
     s::Union{ModeOccupation, Nothing}
     FockSample() = new(nothing)
+    FockSample(s::Vector) = FockSample(ModeOccupation(s))
     FockSample(s::ModeOccupation) = new(s)
 end
