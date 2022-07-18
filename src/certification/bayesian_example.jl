@@ -75,14 +75,14 @@ scatter(certif.probabilities)
 # need to provide the interferometer as well as some data to compute the probabilities
 # this can be extracted from experiemental if given it but here we have to generate it
 
-n_events = 20
+n_events = 40
 n = 3
-m = 8
+m = 14
 interf = RandHaar(m)
 
 # we generate the experimental data
 
-input_state = Input{Bosonic}(first_modes(n,m))
+input_state = Input{Distinguishable}(first_modes(n,m))
 
 events = []
 
@@ -104,7 +104,7 @@ end
 
 ib = Input{Bosonic}(first_modes(n,m))
 id = Input{Distinguishable}(first_modes(n,m))
-n_subsets = 2
+n_subsets = 3
 
 part = equilibrated_partition(m,n_subsets)
 o = PartitionCountsAll(part)
