@@ -1,3 +1,24 @@
+using Revise
+
+using BosonSampling
+using Plots
+using ProgressMeter
+using Distributions
+using Random
+using Test
+using ArgCheck
+using StatsBase
+using ColorSchemes
+using Interpolations
+using Dierckx
+using LinearAlgebra
+using PrettyTables
+using LaTeXStrings
+using JLD
+using AutoHashEquals
+
+
+
 ### tests with standard boson sampling ###
 
 # we will test that we are indeed in the bosonic case
@@ -94,11 +115,14 @@ evd = Event(id,o,interf)
 pb = compute_probability!(evb)
 pd = compute_probability!(evd)
 
-### now need to match the probabilities
+p_partition_B(ev) = p_partition(to_partition_count(ev, part), evb)
+p_partition_D(ev) = p_partition(to_partition_count(ev, part), evd)
 
-ev = events[1]
+p_q = HypothesisFunction(p_partition_B)
+p_a = HypothesisFunction(p_partition_D)
 
-ev = to_partition_count(ev, part)
+certif = Bayesian(events, p_q, p_a)
+compute_probability!(certif)
+certif.confidence
 
-p_partition(ev, evb)
-p_partition(ev, evd)
+scatter(certif.probabilities)
