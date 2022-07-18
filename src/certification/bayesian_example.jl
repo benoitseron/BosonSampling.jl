@@ -75,14 +75,14 @@ scatter(certif.probabilities)
 # need to provide the interferometer as well as some data to compute the probabilities
 # this can be extracted from experiemental if given it but here we have to generate it
 
-n_events = 40
-n = 3
+n_events = 1000
+n = 5
 m = 14
 interf = RandHaar(m)
 
 # we generate the experimental data
 
-input_state = Input{Distinguishable}(first_modes(n,m))
+input_state = Input{Bosonic}(first_modes(n,m))
 
 events = []
 
@@ -99,6 +99,7 @@ for i in 1:n_events
     push!(events, this_event)
 
 end
+
 
 # we now compute the partition probabilities for the hypothesis of Bosonic and Distinguishable inputs
 

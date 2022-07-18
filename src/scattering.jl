@@ -74,7 +74,7 @@ function random_occupancy(n::Int, m::Int)
 	occupancy_vector = zeros(Int, m)
 
 	for i in 1:n
-	    occupancy_vector[rand(1:n)] += 1
+	    occupancy_vector[rand(1:m)] += 1
 	end
 
 	occupancy_vector
