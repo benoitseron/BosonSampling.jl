@@ -94,7 +94,6 @@ evd = Event(id,o,interf)
 pb = compute_probability!(evb)
 pd = compute_probability!(evd)
 
-
 ### now need to match the probabilities
 
 ev = events[1]

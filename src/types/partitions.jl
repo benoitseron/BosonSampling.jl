@@ -6,7 +6,7 @@
          - m::Int
          - state::Vector{Int}
 """
-struct ModeOccupation
+@auto_hash_equals struct ModeOccupation
     n::Int
     m::Int
     state::Vector{Int}
@@ -64,7 +64,7 @@ Create a mode occupation list with at most one count per mode.
          - m::Int
          - subset::Vector{Int}
 """
-struct Subset
+@auto_hash_equals struct Subset
         # basically a mode occupation list with at most one count per mode
         n::Int
         m::Int
@@ -113,7 +113,7 @@ end
 
 Create a partition from multiple [`Subset`](@ref).
 """
-struct Partition
+@auto_hash_equals struct Partition
         subsets::Vector{Subset}
         n_subset::Int
         m::Int
@@ -228,7 +228,7 @@ end
         - n::Int
         - m::Int
 """
-struct PartitionOccupancy
+@auto_hash_equals struct PartitionOccupancy
         counts::ModeOccupation
         partition::Partition
         n::Int

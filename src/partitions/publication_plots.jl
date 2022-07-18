@@ -15,6 +15,8 @@ using LinearAlgebra
 using PrettyTables
 using LaTeXStrings
 using JLD
+using AutoHashEquals
+
 
 cd("src/partitions/")
 

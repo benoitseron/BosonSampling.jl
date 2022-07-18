@@ -24,6 +24,7 @@ using Parameters
 using ArgCheck
 using Distributions
 using Luxor
+using AutoHashEquals
 # using Distributed
 # using SharedArrays
 

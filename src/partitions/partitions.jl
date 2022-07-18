@@ -378,8 +378,10 @@ gives the probability that this `ev` is observed under the hypotheses of `ev_the
 """
 function p_partition(ev::Event{TIn1, TOut1}, ev_theory::Event{TIn2, TOut2}) where {TIn1<:InputType, TOut1 <: PartitionCount, TIn2 <:InputType, TOut2 <:PartitionCountsAll}
 
-        @warn "not checking that they have the same partitions, to be implemented"
-    ################## need to add a check that they have the same partition!
+        #check identitcal partitions, interferometer, input configuration
+    @argcheck ev.output_measurement.part_occupancy.partition == ev_theory.output_measurement.part
+    @argcheck ev.interferometer == ev_theory.interferometer
+    @argcheck ev.input_state.r == ev_theory.input_state.r
 
     # compute the probabilities if they are not already known
     ev_theory.proba_params.probability == nothing ? compute_probability!(ev_theory) : nothing
