@@ -67,3 +67,14 @@ struct OutputMeasurement{T<:OutputMeasurementType}
     OutputMeasurement(s::ModeOccupation) = OutputMeasurement{FockDetection}(s::ModeOccupation)
 
 end
+
+"""
+    FockSample <: OutputMeasurementType
+
+Container holding a sample from typical boson sampler.
+"""
+mutable struct FockSample <: OutputMeasurementType
+    s::Union{ModeOccupation, Nothing}
+    FockSample() = new(nothing)
+    FockSample(s::ModeOccupation) = new(s)
+end
