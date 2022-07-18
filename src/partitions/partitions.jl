@@ -338,7 +338,7 @@ end
 
 Converts an `Event` with `FockDetection` to a `PartitionCount` one.
 """
-function to_partition_count(ev::Event{TIn, TOut}, part::Partition) where {TIn<:InputType, TOut <: FockDetection}
+function to_partition_count(ev::Event{TIn, TOut}, part::Partition) where {TIn<:InputType, TOut <: Union{FockDetection, FockSample}}
 
     n_subsets = part.n_subset
 
