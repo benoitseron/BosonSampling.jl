@@ -79,3 +79,15 @@ mutable struct FockSample <: OutputMeasurementType
     FockSample(s::Vector) = FockSample(ModeOccupation(s))
     FockSample(s::ModeOccupation) = new(s)
 end
+
+"""
+    PartitionSample <: OutputMeasurementType
+
+Container holding a sample from `Partition` photon count.
+"""
+mutable struct PartitionSample <: OutputMeasurementType
+    part_occ::Union{PartitionOccupancy, Nothing}
+
+    PartitionSample() = new(nothing)
+    PartitionSample(p::PartitionOccupancy) = new(p)
+end

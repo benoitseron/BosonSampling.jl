@@ -500,6 +500,103 @@ plt
 
 ###### bayesian certification examples ######
 
+n = 10
+m = 30
+n_trials = 100
+n_samples = 500
+n_subsets = 2
+sample_array = zeros((n_trials, n_samples+1))
+
+@showprogress for i in 1:n_trials
+
+    interf = RandHaar(m)
+
+    ib = Input{Bosonic}(first_modes(n,m))
+    id = Input{Distinguishable}(first_modes(n,m))
+
+    part = equilibrated_partition(m,n_subsets)
+    o = PartitionCountsAll(part)
+
+    evb = Event(ib,o,interf)
+    evd = Event(id,o,interf)
+
+    for ev_theory in [evb,evd]
+        ev_theory.proba_params.probability == nothing ? compute_probability!(ev_theory) : nothing
+    end
+
+    pb = evb.proba_params.probability
+    ib = evb.input_state
+    interf = evb.interferometer
+
+    p_partition_B(ev) = p_partition(ev, evb)
+    p_partition_D(ev) = p_partition(ev, evd)
+
+    p_q = HypothesisFunction(p_partition_B)
+    p_a = HypothesisFunction(p_partition_D)
+
+    events = []
+    for j in 1:n_samples
+        ev = Event(ib,PartitionCount(wsample(pb.counts, pb.proba)), interf)
+        push!(events, ev)
+    end
+
+    certif = Bayesian(events, p_q, p_a)
+    compute_probability!(certif)
+
+    sample_array[i, :] = certif.probabilities
+
+
+end
+
+sample_array = sample_array[:,1:end-1]
+
+
+    plt = plot()
+    for i in 1:size(sample_array,1)
+        scatter!(sample_array[i,:], c = :black, m = :cross)
+    end
+    plot!(legend = false)
+    xlabel!("n_samples")
+    ylabel!("confidence")
+    plt
+
+x_pixels = Int(n_samples/10) + 1
+x_grid = collect(range(0,n_samples, length = x_pixels))
+
+y_pixels = 50 + 1
+y_grid = collect(range(0,1, length = y_pixels))
+
+    pixels = zeros(Int, (x_pixels, y_pixels))
+
+    for xi in 1:(length(x_grid)-1)
+        for yi in 1:(length(y_grid)-1)
+
+            for x in 1:size(sample_array, 1)
+                for y in sample_array[x,:]
+
+                    if x >= x_grid[xi] && x < x_grid[xi+1]
+                        if y >= y_grid[yi] && y < y_grid[yi+1]
+
+                            pixels[xi,yi] += 1
+
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+
+heatmap(1:size(pixels,1), 1:size(pixels,2), pixels, c=cgrad([:blue, :white,:red, :yellow]), xlabel="x values", ylabel="y values",title="My title")
+
+pixels
+
+
+sample_array[:,10]
+
+
+#scatter(sample_array[1,:])
+
 ###### number of samples needed from bayesian ######
 
 n = 10
