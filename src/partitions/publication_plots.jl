@@ -503,12 +503,12 @@ plt
 ###### number of samples needed from bayesian ######
 
 n = 10
-partition_sizes = 2:4
+partition_sizes = 2:3
 max_density = 1
-min_density = 0.03
+min_density = 0.07
 steps = 20
 n_trials = 1000
-maxiter = 10000
+maxiter = 100000
 
 invert_densities = [max_density * (max_density/min_density)^((i-1)/(steps-1)) for i in 1:steps]
 
@@ -550,6 +550,7 @@ for (k,n_subsets) in enumerate(partition_sizes)
 
 end
 
+
 save("data/number_samples.jld", "n_samples_array", n_samples_array, "n_samples_array_var_array" , n_samples_array_var_array)
 
 partition_color(k, partition_sizes) = get(color_map, k / length(partition_sizes))
@@ -568,11 +569,11 @@ partition_color(k, partition_sizes) = get(color_map, k / length(partition_sizes)
         #
         # scatter!(x_data , y_data, yerr = sqrt.(var_array[k,:]), c = partition_color(k,partition_sizes), label = "", m = :cross, xaxis=:log10, yaxis = :log10)
 
-        scatter!(x_data , y_data, c = partition_color(k,partition_sizes), label = "", m = :cross, xaxis=:log10)
+        scatter!(x_data , y_data, c = partition_color(k,partition_sizes), label = "", m = :cross, xaxis=:log10,yaxis =:log10)
 
         # scatter!(x_data , y_data, yerr = sqrt.(var_array[k,:]), c = partition_color(k,partition_sizes), label = "", m = :cross, xaxis=:log10)
 
-        plot!(x_data, y_data, c = partition_color(k,partition_sizes), label = "K = $K", xaxis=:log10, xminorticks = 10; xminorgrid = true)
+        plot!(x_data, y_data, c = partition_color(k,partition_sizes), label = "K = $K", xaxis=:log10, yaxis =:log10, xminorticks = 10, xminorgrid = true, yminorticks = 10; yminorgrid = true)
         #
         # plot!(x_spl, y_spl, c = partition_color(k,partition_sizes), label = "K = $K", xaxis=:log10, yaxis =:log10)
 
@@ -583,6 +584,7 @@ partition_color(k, partition_sizes) = get(color_map, k / length(partition_sizes)
     end
 
     plt = plot!(legend=:topright)
+    #ylims!(0, maxiter)
 
     xlabel!("ρ")
     ylabel!("samples")
