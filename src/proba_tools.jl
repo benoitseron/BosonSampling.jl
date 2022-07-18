@@ -82,3 +82,21 @@ function sqr(a,b)
 	"""euclidian distance"""
 	sqrt(sum((a-b).^2))
 end
+
+function remove_nothing(trials)
+
+    new_trials = []
+
+    for trial in trials
+
+        if isa(trial, Number)
+
+            push!(new_trials, trial)
+
+        end
+
+    end
+
+    trials = new_trials
+
+end

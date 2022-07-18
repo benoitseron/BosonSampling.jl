@@ -126,3 +126,5 @@ compute_probability!(certif)
 certif.confidence
 
 scatter(certif.probabilities)
+
+###### numbers of samples needed ######
