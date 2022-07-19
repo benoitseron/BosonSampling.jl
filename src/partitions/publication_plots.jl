@@ -179,6 +179,11 @@ end
 
 save("data/boson_density.jld", "tvd_array", tvd_array, "var_array" ,var_array)
 
+pwd()
+
+a = load("data/save/boson_density.jld")
+tvd_array = a["tvd_array"]
+
 partition_color(k, partition_sizes) = get(color_map, k / length(partition_sizes))
 
     plt = plot()
@@ -195,11 +200,13 @@ partition_color(k, partition_sizes) = get(color_map, k / length(partition_sizes)
         #
         # scatter!(x_data , y_data, yerr = sqrt.(var_array[k,:]), c = partition_color(k,partition_sizes), label = "", m = :cross, xaxis=:log10, yaxis = :log10)
 
-        scatter!(x_data , y_data, c = partition_color(k,partition_sizes), label = "", m = :cross, xaxis=:log10)
+        scatter!(x_data , y_data, c = partition_color(k,partition_sizes), label = "", m = :cross, xaxis=:log10, yaxis=:log10)
 
         # scatter!(x_data , y_data, yerr = sqrt.(var_array[k,:]), c = partition_color(k,partition_sizes), label = "", m = :cross, xaxis=:log10)
 
-        plot!(x_spl, y_spl, c = partition_color(k,partition_sizes), label = "K = $K", xaxis=:log10, xminorticks = 10; xminorgrid = true)
+        ylims!((0.01,1))
+
+        plot!(x_spl, y_spl, c = partition_color(k,partition_sizes), label = "K = $K", xaxis=:log10, xminorticks = 10, xminorgrid = true, yminorticks = 10, yminorgrid = true)
         #
         # plot!(x_spl, y_spl, c = partition_color(k,partition_sizes), label = "K = $K", xaxis=:log10, yaxis =:log10)
 
@@ -211,8 +218,8 @@ partition_color(k, partition_sizes) = get(color_map, k / length(partition_sizes)
 
     plt = plot!(legend=:bottomright)
 
-    xlabel!("ρ")
-    ylabel!("TVD(B,D)")
+    xlabel!(L"ρ")
+    ylabel!(L"TVD(B,D)")
 
     display(plt)
     savefig(plt, "images/publication/density.png")
@@ -691,6 +698,146 @@ partition_color(k, partition_sizes) = get(color_map, k / length(partition_sizes)
 
 
 
+
+###### number of samples needed x-model ######
+
+# how many trials to reject the hypothesis that the input is
+# Bosonic while it is actually the x-model
+
+n = 10
+m = n
+partition_sizes = 2:3
+steps = 10
+n_trials = 1000
+maxiter = 100000
+p_null = 0.05
+
+x_array = collect(range(0.8,0.99,length = steps))
+
+n_samples_array = zeros((length(partition_sizes), length(x_array)))
+n_samples_array_var_array = copy(n_samples_array)
+
+tr = []
+
+for (k,n_subsets) in enumerate(partition_sizes)
+
+    @show n_subsets
+
+    @showprogress for (j,x) in enumerate(x_array)
+
+        trials = Vector{Float64}()
+
+        for i in 1:n_trials
+
+            interf = RandHaar(m)
+
+            ib = Input{OneParameterInterpolation}(first_modes(n,m),x)
+            id = Input{Bosonic}(first_modes(n,m))
+
+            part = equilibrated_partition(m,n_subsets)
+            o = PartitionCountsAll(part)
+
+            evb = Event(ib,o,interf)
+            evd = Event(id,o,interf)
+
+            #@show number_of_samples(evb,evd, maxiter = maxiter)
+
+
+            for ev_theory in [evb,evd]
+                ev_theory.proba_params.probability == nothing ? compute_probability!(ev_theory) : nothing
+            end
+
+            pb = evb.proba_params.probability
+            ib = evb.input_state
+            pd = evd.proba_params.probability
+            id = evd.input_state
+            interf = evb.interferometer
+
+            p_partition_B(ev) = p_partition(ev, evb)
+            p_partition_D(ev) = p_partition(ev, evd)
+
+            p_a = HypothesisFunction(p_partition_B)
+            p_q = HypothesisFunction(p_partition_D)
+
+            χ = 1
+
+            for n_samples in 1:maxiter
+
+                ev = Event(ib,PartitionCount(wsample(pb.counts, pb.proba)), interf)
+
+                χ = update_confidence(ev, p_q.f, p_a.f, χ)
+
+                if confidence(χ) <= p_null
+                    #@show n_samples
+                    push!(trials , n_samples)
+                    break
+                end
+            end
+
+        end
+        #@show trials
+
+        clean_trials = Vector{Float64}()
+
+        for trial in trials
+            if trial != Inf && trial > 0
+                push!(clean_trials,trial)
+            end
+        end
+
+        if !isempty(clean_trials)
+            n_samples_array[k,j] = mean(clean_trials)
+        else
+            @warn "trials empty"
+        end
+        #(n_subsets <= m_array[i] ? mean(trials) : missing)
+        #n_samples_array_var_array[k,i] = (n_subsets <= m_array[i] ? var(trials) : missing)
+    end
+
+end
+
+save("data/number_samples_x.jld", "n_samples_array", n_samples_array, "n_samples_array_var_array" , n_samples_array_var_array)
+
+partition_color(k, partition_sizes) = get(color_map, k / length(partition_sizes))
+
+    plt = plot()
+    for (k,K) in enumerate(partition_sizes)
+
+        x_data = log10.(x_array)
+        y_data = log10.(n_samples_array[k,:])
+
+        x_spl = range(minimum(x_data),maximum(x_data), length = 1000)
+        spl = Spline1D(x_data,y_data)
+        y_spl = spl(x_spl)
+        #
+        # scatter!(x_data , y_data, yerr = sqrt.(var_array[k,:]), c = lost_photon_color(k,lost_photons), label = "", m = :cross, xaxis=:log10)
+        #
+        # scatter!(x_data , y_data, yerr = sqrt.(var_array[k,:]), c = partition_color(k,partition_sizes), label = "", m = :cross, xaxis=:log10, yaxis = :log10)
+
+        scatter!(10 .^ x_data , 10 .^ y_data, c = partition_color(k,partition_sizes), label = "", m = :cross)
+
+        # scatter!(x_data , y_data, yerr = sqrt.(var_array[k,:]), c = partition_color(k,partition_sizes), label = "", m = :cross, xaxis=:log10)
+
+        plot!(10 .^ x_spl, 10 .^ y_spl, c = partition_color(k,partition_sizes), label = "K = $K", yaxis = :log10, yminorticks = 10, yminorgrid = true)
+        #
+        # plot!(x_spl, y_spl, c = partition_color(k,partition_sizes), label = "K = $K", xaxis=:log10, yaxis =:log10)
+
+
+
+        # plot!(η_array,tvd_η_array[k,:], label = "up to $lost lost", c = lost_photon_color(k,lost_photons))
+
+    end
+
+    xlims!(0.79,1)
+    ylims!(100,10^5)
+    plt = plot!(legend=:topleft)
+    #ylims!(0, maxiter)
+
+    xlabel!(L"x")
+    ylabel!(L"n_s")
+
+    display(plt)
+    savefig(plt, "images/publication/number_samples_x.png")
 
 
 ############## end ###############
