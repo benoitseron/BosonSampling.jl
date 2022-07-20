@@ -16,6 +16,7 @@ using PrettyTables
 using LaTeXStrings
 using JLD
 using AutoHashEquals
+using LinearRegression
 
 
 cd("src/partitions/")
@@ -80,74 +81,75 @@ begin
 end
 
 ### evolution of the TVD numbers of subsets ###
+begin
 
-function tvd_equilibrated_partition_real_average(m, n_subsets, n; niter = 100)
+    function tvd_equilibrated_partition_real_average(m, n_subsets, n; niter = 100)
 
-    tvd_array = zeros(niter)
+        tvd_array = zeros(niter)
 
-    for i in 1:niter
+        for i in 1:niter
 
-        ib = Input{Bosonic}(first_modes(n,m))
-        id = Input{Distinguishable}(first_modes(n,m))
+            ib = Input{Bosonic}(first_modes(n,m))
+            id = Input{Distinguishable}(first_modes(n,m))
 
-        interf = RandHaar(m)
-        part = equilibrated_partition(m,n_subsets)
-        o = PartitionCountsAll(part)
-        evb = Event(ib,o,interf)
-        evd = Event(id,o,interf)
+            interf = RandHaar(m)
+            part = equilibrated_partition(m,n_subsets)
+            o = PartitionCountsAll(part)
+            evb = Event(ib,o,interf)
+            evd = Event(id,o,interf)
 
-        pb = compute_probability!(evb)
-        pd = compute_probability!(evd)
+            pb = compute_probability!(evb)
+            pd = compute_probability!(evd)
 
-        pdf_dist = pd.proba
-        pdf_bos = pb.proba
+            pdf_dist = pd.proba
+            pdf_bos = pb.proba
 
-        tvd_array[i] = tvd(pdf_bos,pdf_dist)
+            tvd_array[i] = tvd(pdf_bos,pdf_dist)
+        end
+
+        mean(tvd_array), var(tvd_array)
+
     end
-
-    mean(tvd_array), var(tvd_array)
+    #
+    # partition_sizes = 2:3
+    #
+    # n_array = collect(2:14)
+    # m_array_const_density = 1 .* n_array
+    # m_array_no_coll = n_array .^2
+    #
+    # plt = plot()
+    #
+    #
+    # @showprogress for n_subsets in partition_sizes
+    #
+    #     m_array = m_array_const_density
+    #
+    #     const_density = [n_subsets <= m_array[i] ? tvd_equilibrated_partition_real_average(m_array[i], n_subsets, n_array[i]) : missing for i in 1:length(n_array)]
+    #     scatter!(n_array, const_density, label = "m = n, K = $n_subsets")
+    #
+    #     m_array = m_array_no_coll
+    #     no_collision = [n_subsets <= m_array[i] ? tvd_equilibrated_partition_real_average(m_array[i],n_subsets, n_array[i]) : missing for i in 1:length(n_array)]
+    #     scatter!(n_array, no_collision, label = "m = n^2, K = $n_subsets", markershape=:+)
+    #
+    # end
+    #
+    # ylabel!("TVD bos-dist")
+    # xlabel!("n")
+    # ylims!(-0.05,0.8)
+    #
+    # title!("equilibrated partition TVD")
+    #
+    # savefig(plt, "images/publication/equilibrated partition TVD_legend")
+    #
+    # plot!(legend = false)
+    #
+    # savefig(plt, "images/publication/equilibrated partition TVD")
+    #
+    # plt
 
 end
-#
-# partition_sizes = 2:3
-#
-# n_array = collect(2:14)
-# m_array_const_density = 1 .* n_array
-# m_array_no_coll = n_array .^2
-#
-# plt = plot()
-#
-#
-# @showprogress for n_subsets in partition_sizes
-#
-#     m_array = m_array_const_density
-#
-#     const_density = [n_subsets <= m_array[i] ? tvd_equilibrated_partition_real_average(m_array[i], n_subsets, n_array[i]) : missing for i in 1:length(n_array)]
-#     scatter!(n_array, const_density, label = "m = n, K = $n_subsets")
-#
-#     m_array = m_array_no_coll
-#     no_collision = [n_subsets <= m_array[i] ? tvd_equilibrated_partition_real_average(m_array[i],n_subsets, n_array[i]) : missing for i in 1:length(n_array)]
-#     scatter!(n_array, no_collision, label = "m = n^2, K = $n_subsets", markershape=:+)
-#
-# end
-#
-# ylabel!("TVD bos-dist")
-# xlabel!("n")
-# ylims!(-0.05,0.8)
-#
-# title!("equilibrated partition TVD")
-#
-# savefig(plt, "images/publication/equilibrated partition TVD_legend")
-#
-# plot!(legend = false)
-#
-# savefig(plt, "images/publication/equilibrated partition TVD")
-#
-# plt
 
 ###### TVD with boson density ######
-
-
 
 max_density = 1
 min_density = 0.03
@@ -206,7 +208,9 @@ partition_color(k, partition_sizes) = get(color_map, k / length(partition_sizes)
 
         ylims!((0.01,1))
 
-        plot!(x_spl, y_spl, c = partition_color(k,partition_sizes), label = "K = $K", xaxis=:log10, xminorticks = 10, xminorgrid = true, yminorticks = 10, yminorgrid = true)
+        legend_string = "K = $K"
+
+        plot!(x_spl, y_spl, c = partition_color(k,partition_sizes), label = LaTeXString(legend_string), xaxis=:log10, xminorticks = 10, xminorgrid = true, yminorticks = 10, yminorgrid = true)
         #
         # plot!(x_spl, y_spl, c = partition_color(k,partition_sizes), label = "K = $K", xaxis=:log10, yaxis =:log10)
 
@@ -224,7 +228,10 @@ partition_color(k, partition_sizes) = get(color_map, k / length(partition_sizes)
     display(plt)
     savefig(plt, "images/publication/density.png")
 
+x_data = reverse(1 ./ invert_densities)
+y_data = reverse(tvd_array[1,:])
 
+get_power_law_log_log(x_data,y_data)
 
 ###### TVD with x-model ######
 
@@ -657,6 +664,10 @@ end
 
 save("data/number_samples.jld", "n_samples_array", n_samples_array, "n_samples_array_var_array" , n_samples_array_var_array)
 
+l = load("data/save/number_samples.jld")
+
+n_samples_array = l["n_samples_array"]
+
 partition_color(k, partition_sizes) = get(color_map, k / length(partition_sizes))
 
     plt = plot()
@@ -697,7 +708,11 @@ partition_color(k, partition_sizes) = get(color_map, k / length(partition_sizes)
     savefig(plt, "images/publication/number_samples.png")
 
 
+k = 1
+x_data = reverse(1 ./ invert_densities)
+y_data = reverse(n_samples_array[k,:])
 
+get_power_law_log_log(x_data, y_data)
 
 ###### number of samples needed x-model ######
 

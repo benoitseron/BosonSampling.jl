@@ -100,3 +100,28 @@ function remove_nothing(trials)
     trials = new_trials
 
 end
+
+"""
+    get_power_law_log_log(x_data,y_data)
+
+Gets a power law of type y = exp(c) * x^m from data that looks like a line in a loglog plot.
+"""
+function get_power_law_log_log(x_data,y_data)
+
+	@argcheck all(x_data .> 0)
+	@argcheck all(y_data .> 0)
+
+    x_data = log.(x_data)
+    y_data = log.(y_data)
+
+    lr = linregress(x_data,y_data)
+
+    m,c = lr.coeffs
+
+    println("power law: y = $(exp(c)) * x^$m")
+
+    power_law(x,m,c) = exp(c)x^(m)
+
+    (power_law, m, c)
+
+end
