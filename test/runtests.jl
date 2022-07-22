@@ -80,7 +80,7 @@ using LinearAlgebra
 	@testset "theoretical_distribution" begin
 
 		n = 3
-		occupation = ModeOccupation(random_occupancy(n,n))
+		occupation = random_mode_occupation_collisionless(n,n)
 		i = Input{Bosonic}(occupation)
 		interf = Fourier(i.r.m)
 		p_theo = theoretical_distribution(input=i, interf=interf)
@@ -100,7 +100,7 @@ using LinearAlgebra
 	@testset "noisy statistics" begin
 
 		n = 3
-		occupation = ModeOccupation(random_occupancy(n,n))
+		occupation = random_mode_occupation_collisionless(n,n)
     	i = Input{OneParameterInterpolation}(occupation, 0.5)
 	    interf = Fourier(i.r.m)
 	    res = noisy_distribution(input=i, reflectivity=0.5, interf=interf)
@@ -116,7 +116,7 @@ using LinearAlgebra
 		@test all(p->p>=0, p_approx)
 		@test all(p->p>=0, p_samp)
 
-		i = Input{Bosonic}(ModeOccupation(random_occupancy(n,n)))
+		i = Input{Bosonic}(occupation)
 		res = noisy_distribution(input=i, reflectivity=0.999, interf=interf, approx=false, samp=false)
 		p_exact = res[1]
 		output_events = output_mode_occupation(n,n)
