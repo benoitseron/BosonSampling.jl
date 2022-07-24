@@ -855,6 +855,47 @@ partition_color(k, partition_sizes) = get(color_map, k / length(partition_sizes)
     savefig(plt, "images/publication/number_samples_x.png")
 
 
+####### Fourier partition ######
+
+n = 2*10
+m = n
+
+labels(x) = x == 1 ? "Bosonic" : "Distinguishable"
+alp(x) = x == 1 ? 1 : 1
+
+function add_this_x(x)
+
+    i = Input{OneParameterInterpolation}(first_modes(n,m),x)
+
+    subset = Subset(Int.([isodd(i) for i in 1:m]))
+    interf = Fourier(m)
+    part = Partition(subset)
+    o = PartitionCountsAll(part)
+    ev = Event(i,o,interf)
+
+    compute_probability!(ev)
+
+    p = bar([0:n] , ev.proba_params.probability.proba, c = get(color_map, x/2),  label = labels(x), alpha=alp(x))
+    # scatter!([0:n] , ev.proba_params.probability.proba, c = get(color_map, x/2),  label = "", m = :xcross)
+    #plot!(x_spl , y_spl, c = get(color_map, x), label = labels(x))
+    xlabel!(L"n")
+    ylabel!(L"p")
+    ylims!((0,0.25))
+    p
+
+end
+
+
+p1 = add_this_x(1)
+p2 = add_this_x(0)
+
+plt = plot(p1,p2, layout = (2,1))
+
+
+display(plt)
+savefig(plt,"./images/publication/fourier.png")
+
+
 ############## end ###############
 
 # cd("..")
