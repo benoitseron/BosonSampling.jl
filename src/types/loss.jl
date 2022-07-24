@@ -87,7 +87,10 @@ Transforms a partition of size `m` into a `2m` one with the last `m` modes being
 """
 function to_lossy(part::Partition)
 
-    environment = Subset(last_modes(n,2m))
+    n = part.subsets[1].n
+    m = part.subsets[1].m
+
+    environment = Subset(last_modes(m,2m))
 
     new_subsets =  Vector{Subset}()
 
@@ -127,10 +130,10 @@ The last form, `UniformLossInterferometer(m::Int, η::Real)` samples from a Haar
 """
 struct UniformLossInterferometer <: LossyInterferometer
     m_real::Int
-    m_virtual::Int
+    m::Int
     η::Real #transmissivity of the upfront beamsplitters
     U_physical::Matrix{Complex} # physical matrix
-    U_virtual::Matrix{Complex} # virtual 2m*2m interferometer
+    U::Matrix{Complex} # virtual 2m*2m interferometer
 
     function UniformLossInterferometer(η::Real, U_physical::Matrix)
         if isa_transmissitivity(η)
@@ -143,9 +146,13 @@ struct UniformLossInterferometer <: LossyInterferometer
 
     UniformLossInterferometer(η::Real, U_physical::Interferometer) = UniformLossInterferometer(η, U_physical.U)
 
-    UniformLossInterferometer(m::Int, η::Real) = UniformLossInterferometer(η, RandHaar(m))
+    UniformLossInterferometer(η::Real, m::Int) = UniformLossInterferometer(η, RandHaar(m))
 
 end
+
+
+
+
 
 """
     GeneralLossInterferometer <: LossyInterferometer
@@ -157,12 +164,12 @@ to the transmissivity of each layer) : `U_total` = `V*Diag(η)*W`
 """
 struct GeneralLossInterferometer <: LossyInterferometer
     m_real::Int
-    m_virtual::Int
+    m::Int
     η::Vector{Real} #transmissivity of the upfront beamsplitters
     U_physical::Matrix{Complex} # physical matrix
     V::Matrix{Complex}
     W::Matrix{Complex}
-    U_virtual::Matrix{Complex} # virtual 2m*2m interferometer
+    U::Matrix{Complex} # virtual 2m*2m interferometer
 
     function GeneralLossInterferometer(η::Vector{Real}, V::Matrix, W::Matrix)
         if isa_transmissitivity(η)
@@ -172,5 +179,54 @@ struct GeneralLossInterferometer <: LossyInterferometer
             error("invalid η")
         end
     end
+
+end
+
+
+"""
+    sort_by_lost_photons(pb::MultipleCounts)
+
+Outputs a (n+1) sized array of MultipleCounts containing 0,...,n lost photons.
+"""
+function sort_by_lost_photons(pb::MultipleCounts)
+
+    # number of lost photons is the number of photons in the last subset
+
+    n = pb.counts[1].n
+    sorted_array = [MultipleCounts() for i in 0:n]
+    initialise_to_empty_vectors!.(sorted_array, Real, PartitionOccupancy)
+
+    for (p, count) in zip(pb.proba, pb.counts)
+
+        n_lost = count.counts.state[end]
+        push!(sorted_array[n_lost+1].proba, p)
+        push!(sorted_array[n_lost+1].counts, count)
+
+    end
+
+    sorted_array
+
+end
+
+
+"""
+    tvd_k_lost_photons(k, pb_sorted, pd_sorted)
+
+Gives the tvd between `pb_sorted` and `pd_sorted`, which should be an output of `sort_by_lost_photons(pb::MultipleCounts)`, for exactly `k` lost photons. Note that if you want the info regarding data considering up to `k` lost photons, you need to use [`tvd_less_than_k_lost_photons(k, pb_sorted, pd_sorted)`](@ref).
+"""
+function tvd_k_lost_photons(k, pb_sorted, pd_sorted)
+
+    tvd(pb_sorted[k].proba,pd_sorted[k].proba)
+
+end
+
+"""
+    tvd_less_than_k_lost_photons(k, pb_sorted, pd_sorted)
+
+Gives the TVD obtained by considering 0,...,k photons lost. The tvd for each number of photons lost is summed using [`tvd_k_lost_photons(k, pb_sorted, pd_sorted)`](@ref).
+"""
+function tvd_less_than_k_lost_photons(k, pb_sorted, pd_sorted)
+
+    sum(tvd(pb_sorted[j].proba,pd_sorted[j].proba) for j in 1:k)
 
 end

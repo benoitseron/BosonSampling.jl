@@ -17,13 +17,14 @@ of those possible arrangements can be retrieved by using [`output_mode_occupatio
 giving a vector of the possible mode assignement lists. We propose here some functions
 that generate all the associated probabilities to end up in one of such configuration
 from an [`Input`](@ref) and an [`Interferometer`](@ref). In the following, each
-generating probability distribution is indexed as [`output_mode_occupation`](@ref),
+generated probability distribution is indexed as [`output_mode_occupation`](@ref),
 that is, `p[i]` gives the probability to obtain the outcome `output_mode_occupation[i]`.
 
 ## Theoretical distribution
 
-We propose here to see the effect of partial distinguishability when two photons
-interfere through a 1:1 [`BeamSplitter`](@ref)
+We propose here to see the effect of partial distinguishability through the so-called Hong-Ou-Mandel effect. It is common in the literature to use the time delay ``\Delta \tau`` between the two beams as a source of partial distinguishability in this in this context. While the distinguishability parameter itself is ``\Delta \omega  \Delta \tau`` with ``\Delta \omega`` the uncertainty of the frequency distribution. In order to make the parallel with our [`OneParameterInterpolation`](@ref) model, we substitute the linear parameter ``x`` by ``1-x^2``. In this way, a [`Distinguishable`](@ref) is recovered for ``\Delta \omega \Delta \tau \rightarrow 0 ``. Notice that contrary to the time delay, the interpolation parameter ``x`` is bounded because of the normalisation constraint.
+
+As in the original HOM effect, we consider here two particles initially placed on two different modes interfering through a balanced [`BeamSplitter`](@ref). From several partially distinguishable inputs created from the [`OneParameterInterpolation`](@ref) model, finally, we compute the coincidence probability (that is the probability to observe `[1,2]` and `[2,1]` at the output) thanks to [`theoretical_distribution`](@ref).  
 
     julia> n = 2; # photon number
 
@@ -31,16 +32,18 @@ interfere through a 1:1 [`BeamSplitter`](@ref)
 
     julia> B = BeamSplitter(1/sqrt(2));
 
-    julia> proba_bunching = Vector{Float64}(undef, 0);
+    julia> p_coinc = Vector{Float64}(undef, 0);
 
-    julia> for distinguishability_param in 0.0:0.01:1.0
-           input = Input{OneParameterInterpolation}(first_modes(n,m), distinguishability_param)
-           p_theo = theoretical_distribution(input=input, interf=B)
-           push!(proba_bunching, p_theo[2])
+    julia> x_ = Vector{Float64}(undef, 0);
+
+    julia> for x = -1:0.01:1
+               local input = Input{OneParameterInterpolation}(first_modes(n,m), 1-x^2)
+               p_theo = theoretical_distribution(input=input, interf=B)
+               push!(p_coinc, p_theo[2] + p_theo[3])
+               push!(x_, x)
            end
 
-where we have stored in `proba_bunching` the probabilities to get one photon in each
-output port of the beam splitter (see above).
+Where we have stored the coincidence probablities in `p_coinc`. By plotting the latter we recover the dip translating the well known two-particle interference effect when considering a [`Bosonic`](@ref) input: 
 
 ![distr](proba_bunching.png)
 

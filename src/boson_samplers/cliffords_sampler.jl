@@ -29,3 +29,14 @@ function cliffords_sampler(;input::Input, interf::Interferometer)
     return sort(sample_array)
 
 end
+
+"""
+    cliffords_sampler(ev::Event{TIn, TOut}; occupancy_vector = true) where {TIn<:InputType, TOut <: FockSample}
+
+Sampler for an `Event`. Note the difference of behaviour if `occupancy_vector = true`.
+"""
+function cliffords_sampler(ev::Event{TIn, TOut}; occupancy_vector = true) where {TIn<:InputType, TOut <: FockSample}
+    s = cliffords_sampler(input = ev.input_state, interf = ev.interferometer)
+
+    occupancy_vector ? mode_occupancy_to_occupancy_vector(s, ev.input_state.m) : s
+end

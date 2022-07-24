@@ -33,7 +33,7 @@ function theoretical_distribution(;input::Input, interf::Interferometer, i=nothi
         M = U[input_event, event]
         output_modes = fill_arrangement(event)
 
-        if distinguishability == 1 ||distinguishability == 0
+        if distinguishability == 1
             return abs(ryser(M)).^2
         else
             W = Array{eltype(S)}(undef, (number_photons, number_photons, number_photons))

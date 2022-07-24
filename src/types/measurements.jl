@@ -12,7 +12,7 @@ Measuring the probability of getting the [`ModeOccupation`](@ref) `s` at the out
 """
 struct FockDetection <: OutputMeasurementType
     s::ModeOccupation
-    FockDetection(s::ModeOccupation) = at_most_one_photon_per_bin(s) ? new(s) : error("more than one detector per more")
+    FockDetection(s::ModeOccupation) = new(s) #at_most_one_photon_per_bin(s) ? new(s) : error("more than one detector per more")
 end
 
 """
@@ -23,6 +23,7 @@ Measuring the probability of getting a specific count for a given partition `par
     Fields:
         - part_occupancy::PartitionOccupancy
 """
+
 struct PartitionCount <: OutputMeasurementType
     part_occupancy::PartitionOccupancy
     PartitionCount(part_occupancy::PartitionOccupancy) = new(part_occupancy)
@@ -65,4 +66,28 @@ struct OutputMeasurement{T<:OutputMeasurementType}
     end
     OutputMeasurement(s::ModeOccupation) = OutputMeasurement{FockDetection}(s::ModeOccupation)
 
+end
+
+"""
+    FockSample <: OutputMeasurementType
+
+Container holding a sample from typical boson sampler.
+"""
+mutable struct FockSample <: OutputMeasurementType
+    s::Union{ModeOccupation, Nothing}
+    FockSample() = new(nothing)
+    FockSample(s::Vector) = FockSample(ModeOccupation(s))
+    FockSample(s::ModeOccupation) = new(s)
+end
+
+"""
+    PartitionSample <: OutputMeasurementType
+
+Container holding a sample from `Partition` photon count.
+"""
+mutable struct PartitionSample <: OutputMeasurementType
+    part_occ::Union{PartitionOccupancy, Nothing}
+
+    PartitionSample() = new(nothing)
+    PartitionSample(p::PartitionOccupancy) = new(p)
 end
