@@ -1,6 +1,7 @@
 using BosonSampling
 using Test
 using JLD
+# using Plots
 
 ### scattering ###
 
@@ -113,13 +114,18 @@ B = BeamSplitter(1/sqrt(2))
 n = 2 # photon number
 m = 2 # mode number
 proba_bunching = Vector{Float64}(undef, 0)
+x_ = Vector{Float64}(undef, 0)
 
-for x = 0.0:0.01:1.0
-    local input = Input{OneParameterInterpolation}(first_modes(n,m), x)
+# Compute the probability of coincidence measurement
+for x = -1:0.01:1
+    local input = Input{OneParameterInterpolation}(first_modes(n,m), 1-x^2)
     p_theo = theoretical_distribution(input=input, interf=B)
-
-    push!(proba_bunching, p_theo[2]) # store the probabilty to observe one photon in each mode
+    push!(x_, x)
+    push!(proba_bunching, p_theo[2] + p_theo[3]) # store the probabilty to observe one photon in each mode
 end
+
+# plot(x_, proba_bunching, xlabel="distinguishability parameter", ylabel="coincidence probability", label=nothing, dpi=300)
+# savefig("docs/src/tutorial/proba_bunching.png")
 
 ### subsets ###
 
@@ -248,8 +254,6 @@ add_element!(circuit=my_circuit, interf=BeamSplitter(0.2), target_modes=[1,3])
 add_element!(circuit=my_circuit, interf=Fourier(3), target_modes=[2,4,5])
 is_unitary(my_circuit.U)
 
-ans = true
-
 ### partition tutorial ###
 
 s1 = Subset([1,1,0,0,0])
@@ -293,3 +297,5 @@ o = PartitionCountsAll(part)
 ev = Event(i,o,interf)
 
 compute_probability!(ev)
+
+ans = true
