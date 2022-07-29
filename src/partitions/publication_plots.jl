@@ -896,6 +896,80 @@ display(plt)
 savefig(plt,"./images/publication/fourier.png")
 
 
+###### plot of evolution with n,m ######
+
+n_max = 10
+n_array = collect(2:n_max)
+m_no_coll(n) = n^2
+m_sparse(n) = 5n
+n_iter = 100
+
+m_law = m_sparse
+
+m_array = m_law.(n_array)
+partition_sizes = 2:4
+
+tvd_array = zeros((length(partition_sizes), length(m_array)))
+var_array = copy(tvd_array)
+
+for (k,n_subsets) in enumerate(partition_sizes)
+
+    for (i,(n,m)) in enumerate(zip(n_array, m_array))
+
+        this_tvd = tvd_equilibrated_partition_real_average(m, n_subsets, n, niter = n_iter)
+
+        tvd_array[k,i] = (n_subsets <= m ? this_tvd[1] : missing)
+        var_array[k,i] = (n_subsets <= m ? this_tvd[2] : missing)
+    end
+
+end
+
+save("data/evolution_n_m.jld", "tvd_array", tvd_array, "var_array" ,var_array)
+
+partition_color(k, partition_sizes) = get(color_map, k / length(partition_sizes))
+
+plt = plot()
+for (k,K) in enumerate(partition_sizes)
+
+    x_data = n_array
+    y_data = tvd_array[k,:]
+
+    x_spl = range(minimum(x_data),maximum(x_data), length = 1000)
+    spl = Spline1D(x_data,y_data)
+    y_spl = spl(x_spl)
+    #
+    # scatter!(x_data , y_data, yerr = sqrt.(var_array[k,:]), c = lost_photon_color(k,lost_photons), label = "", m = :cross, xaxis=:log10)
+    #
+    # scatter!(x_data , y_data, yerr = sqrt.(var_array[k,:]), c = partition_color(k,partition_sizes), label = "", m = :cross, xaxis=:log10, yaxis = :log10)
+
+    scatter!(x_data , y_data, yerr = sqrt.(var_array[k,:]), c = partition_color(k,partition_sizes), label = "", m = :cross)
+
+    # scatter!(x_data , y_data, yerr = sqrt.(var_array[k,:]), c = partition_color(k,partition_sizes), label = "", m = :cross, xaxis=:log10)
+
+    #ylims!((0.01,1))
+
+    legend_string = "K = $K"
+
+    #plot!(x_spl, y_spl, c = partition_color(k,partition_sizes), label = LaTeXString(legend_string))
+    #
+    # plot!(x_spl, y_spl, c = partition_color(k,partition_sizes), label = "K = $K", xaxis=:log10, yaxis =:log10)
+
+
+
+    # plot!(η_array,tvd_η_array[k,:], label = "up to $lost lost", c = lost_photon_color(k,lost_photons))
+
+end
+
+plt = plot!(legend=:bottomright)
+
+xlabel!(L"n")
+ylabel!(L"TVD(B,D)")
+
+display(plt)
+savefig(plt, "images/publication/size.png")
+
+
+
 ############## end ###############
 
 # cd("..")
