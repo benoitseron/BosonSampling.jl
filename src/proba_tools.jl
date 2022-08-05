@@ -122,6 +122,6 @@ function get_power_law_log_log(x_data,y_data)
 
     power_law(x) = exp(c)x^(m)
 
-    (power_law, m, c)
+    (power_law, m, (exp(c)))
 
 end
