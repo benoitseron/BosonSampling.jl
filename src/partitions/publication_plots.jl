@@ -935,6 +935,8 @@ for m_law in laws
 
     save("data/evolution_n_m_$(String(Symbol(m_law))).jld", "tvd_array", tvd_array, "var_array" ,var_array)
 
+    tvd_array
+
     partition_color(k, partition_sizes) = get(color_map, k / length(partition_sizes))
 
     for (k,K) in enumerate(partition_sizes)
