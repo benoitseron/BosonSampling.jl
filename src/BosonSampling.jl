@@ -25,6 +25,7 @@ using ArgCheck
 using Distributions
 using Luxor
 using AutoHashEquals
+using LinearRegression
 # using Distributed
 # using SharedArrays
 

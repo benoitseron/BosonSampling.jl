@@ -120,7 +120,7 @@ function get_power_law_log_log(x_data,y_data)
 
     println("power law: y = $(exp(c)) * x^$m")
 
-    power_law(x,m,c) = exp(c)x^(m)
+    power_law(x) = exp(c)x^(m)
 
     (power_law, m, c)
 
