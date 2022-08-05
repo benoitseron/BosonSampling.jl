@@ -902,12 +902,12 @@ savefig(plt,"./images/publication/fourier.png")
 
 ###### plot of evolution with n,m ######
 
-n_max = 12
+n_max = 16
 n_array = collect(4:n_max)
 m_no_coll(n) = n^2
 m_sparse(n) = 5n
 n_iter = 100
-partition_sizes = 2:3
+partition_sizes = 2:4
 
 laws = [m_sparse, m_no_coll]
 
@@ -923,7 +923,7 @@ for m_law in laws
 
     for (k,n_subsets) in enumerate(partition_sizes)
 
-        for (i,(n,m)) in enumerate(zip(n_array, m_array))
+        @showprogress for (i,(n,m)) in enumerate(zip(n_array, m_array))
 
             this_tvd = tvd_equilibrated_partition_real_average(m, n_subsets, n, niter = n_iter)
 
@@ -997,7 +997,6 @@ for m_law in laws
 
 end
 
-plots[1]
 
 plt = plot(plots[1],plots[2], layout = (2,1))
 
