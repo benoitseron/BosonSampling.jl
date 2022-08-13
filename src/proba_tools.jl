@@ -64,6 +64,22 @@ function isa_pdf(pdf)
 end
 
 """
+	isa_probability(p)
+
+Asserts if `p`is a valid probability.
+"""
+function isa_probability(probability::Number, atol=ATOL)
+
+	try
+		clean_proba(probability, atol)
+		return true
+	catch
+		return false
+	end
+
+end
+
+"""
 	tvd(a,b)
 
 Computes the total variation distance between two probability distributions.
