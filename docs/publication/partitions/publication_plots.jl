@@ -19,7 +19,7 @@ using AutoHashEquals
 using LinearRegression
 
 
-cd("src/partitions/")
+cd("docs/publication/partitions/")
 
 color_map = ColorSchemes.rainbow
 
