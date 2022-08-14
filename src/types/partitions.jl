@@ -18,16 +18,31 @@ Base.show(io::IO, i::ModeOccupation) = print(io, "state = ", i.state)
 """
 
     :+(s1::ModeOccupation, s2::ModeOccupation)
+    :+(s1::ModeOccupation, s2::Vector{Int})
+    :+(s2::Vector{Int}, s1::ModeOccupation)
 
 Adds two mode occupations, for instance
 s1 = ModeOccupation([0,1])
 s2 = ModeOccupation([1,0])
 
 (s1+s2).state == [1,1]
+
+Also works with just a vector and a mode occupation.
 """
 Base.:+(s1::ModeOccupation, s2::ModeOccupation) = begin
     return ModeOccupation(s1.state + s2.state)
 end
+
+Base.:+(s1::ModeOccupation, s2::Vector{Int}) = begin
+
+        @argcheck size(s1.state) == size(s2) "incompatible sizes"
+    return ModeOccupation(s1.state + s2)
+end
+
+Base.:+(s2::Vector{Int}, s1::ModeOccupation) = begin
+    return s1 + s2
+end
+
 
 at_most_one_photon_per_bin(state) = all(state[:] .<= 1)
 at_most_one_photon_per_bin(r::ModeOccupation) = at_most_one_photon_per_bin(r.state)

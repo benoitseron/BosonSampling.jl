@@ -15,14 +15,14 @@ end
 
 
 
-
-
-n = 3
-m = 8
-interf = RandHaar(m)
-input_state = Input{Bosonic}(first_modes(n,m))
-o = FockSample()
-
-ev = Event(input_state, o, interf)
-
-sample!(ev)
+#
+#
+# n = 3
+# m = 8
+# interf = RandHaar(m)
+# input_state = Input{Bosonic}(first_modes(n,m))
+# o = FockSample()
+#
+# ev = Event(input_state, o, interf)
+#
+# sample!(ev)

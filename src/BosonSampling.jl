@@ -51,6 +51,7 @@ include("boson_samplers/cliffords_sampler.jl")
 include("boson_samplers/methods.jl")
 include("boson_samplers/metropolis_sampler.jl")
 include("boson_samplers/noisy_sampler.jl")
+include("boson_samplers/sample.jl")
 
 include("distributions/noisy_distribution.jl")
 include("distributions/theoretical_distribution.jl")
