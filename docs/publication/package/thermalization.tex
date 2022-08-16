@@ -1,0 +1,20 @@
+\begin{Shaded}
+\begin{Highlighting}[]
+\ImportTok{using} \BuiltInTok{BosonSampling}
+\ImportTok{using} \BuiltInTok{Plots; }\FunctionTok{pyplot}\NormalTok{()}
+
+\NormalTok{n }\OperatorTok{=} \FloatTok{20}
+\NormalTok{trunc }\OperatorTok{=} \FloatTok{10}
+\NormalTok{T }\OperatorTok{=}\NormalTok{ OneParameterInterpolation}
+\ControlFlowTok{for}\NormalTok{ x }\KeywordTok{in} \FloatTok{0}\OperatorTok{:}\FloatTok{0.01}\OperatorTok{:}\FloatTok{1}
+\NormalTok{    i }\OperatorTok{=}
+    \FunctionTok{Input}\DataTypeTok{\{T\}}\NormalTok{(}\FunctionTok{first\_modes}\NormalTok{(n,n),x)}
+\NormalTok{    set1 }\OperatorTok{=}\NormalTok{ [}\FloatTok{0}\NormalTok{ for i }\KeywordTok{in} \FloatTok{1}\OperatorTok{:}\NormalTok{n]}
+\NormalTok{    set1[}\FloatTok{1}\NormalTok{] }\OperatorTok{=} \FloatTok{1}
+\NormalTok{    part }\OperatorTok{=} \FunctionTok{Partition}\NormalTok{([}\FunctionTok{Subset}\NormalTok{(set1)])}
+\NormalTok{    F }\OperatorTok{=} \FunctionTok{Fourier}\NormalTok{(n)}
+\NormalTok{    (idx,pdf) }\OperatorTok{=}
+    \FunctionTok{compute\_probabilities\_partition}\NormalTok{(F,part,i)}
+\ControlFlowTok{end}
+\end{Highlighting}
+\end{Shaded}
