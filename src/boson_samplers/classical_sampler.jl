@@ -20,3 +20,14 @@ function classical_sampler(U, n, m)
 end
 
 classical_sampler(;input::Input, interf::Interferometer) = classical_sampler(interf.U, input.n, input.m)
+
+"""
+    classical_sampler(ev::Event{TIn, TOut}; occupancy_vector = true) where {TIn<:InputType, TOut <: FockSample}
+
+Sampler for an `Event`. Note the difference of behaviour if `occupancy_vector = true`.
+"""
+function classical_sampler(ev::Event{TIn, TOut}; occupancy_vector = true) where {TIn<:InputType, TOut <: FockSample}
+    classical_sampler(input = ev.input_state, interf = ev.interferometer)
+
+    
+end

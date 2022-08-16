@@ -6,14 +6,6 @@ function metropolis_sampler(;target_pdf, known_pdf, known_sampler, starting_stat
         min(1, target_pdf(new_state) * known_pdf(previous_state)/(target_pdf(previous_state) * known_pdf(new_state)))
     end
 
-    function do_with_probability(p)
-
-        """returns true with probability p, false with (1-p)"""
-
-        rand() < p ? true : false
-
-    end
-
     function update_state_parameters(target_pdf, known_pdf, new_state, previous_state)
 
         if do_with_probability(transition_probability(target_pdf, known_pdf, new_state, previous_state))

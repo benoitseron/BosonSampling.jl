@@ -64,6 +64,22 @@ function isa_pdf(pdf)
 end
 
 """
+	isa_probability(p)
+
+Asserts if `p`is a valid probability.
+"""
+function isa_probability(probability::Number, atol=ATOL)
+
+	try
+		clean_proba(probability, atol)
+		return true
+	catch
+		return false
+	end
+
+end
+
+"""
 	tvd(a,b)
 
 Computes the total variation distance between two probability distributions.
@@ -81,4 +97,55 @@ Computes the euclidian distance between two probability distributions.
 function sqr(a,b)
 	"""euclidian distance"""
 	sqrt(sum((a-b).^2))
+end
+
+function remove_nothing(trials)
+
+    new_trials = []
+
+    for trial in trials
+
+        if isa(trial, Number)
+
+            push!(new_trials, trial)
+
+        end
+
+    end
+
+    trials = new_trials
+
+end
+
+"""
+    get_power_law_log_log(x_data,y_data)
+
+Gets a power law of type y = exp(c) * x^m from data that looks like a line in a loglog plot.
+"""
+function get_power_law_log_log(x_data,y_data)
+
+	@argcheck all(x_data .> 0)
+	@argcheck all(y_data .> 0)
+
+    x_data = log.(x_data)
+    y_data = log.(y_data)
+
+    lr = linregress(x_data,y_data)
+
+    m,c = lr.coeffs
+
+    println("power law: y = $(exp(c)) * x^$m")
+
+    power_law(x) = exp(c)x^(m)
+
+    (x-> power_law(x), m, (exp(c)))
+
+end
+
+function do_with_probability(p)
+
+	"""returns true with probability p, false with (1-p)"""
+
+	rand() < p ? true : false
+
 end

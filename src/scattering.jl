@@ -62,14 +62,23 @@ Return a vector of size `m`	with `n` randomly placed ones.
 function random_occupancy(n::Int, m::Int)
 
 	""" returns a vector of size m with n randomly placed ones """
-	if n > m
-		throw(ArgumentError("Implemented at most one photon per mode"))
-	else
-		occupancy_vector = shuffle(append!(ones(n), zeros(m-n)))
-		occupancy_vector = Int.(occupancy_vector)
+	# if n > m
+	# 	throw(ArgumentError("Implemented at most one photon per mode"))
+	# else
+	# 	occupancy_vector = shuffle(append!(ones(n), zeros(m-n)))
+	# 	occupancy_vector = Int.(occupancy_vector)
+	# end
+	#
+	# return occupancy_vector
+
+	occupancy_vector = zeros(Int, m)
+
+	for i in 1:n
+	    occupancy_vector[rand(1:m)] += 1
 	end
 
-	return occupancy_vector
+	occupancy_vector
+
 end
 
 """
@@ -136,6 +145,22 @@ Return a partition of occupied modes from an `occupancy_vector`.
 function occupancy_vector_to_mode_occupancy(occupancy_vector)
 	occupancy_vector_to_partition(occupancy_vector)
 end
+
+"""
+	mode_occupancy_to_occupancy_vector(mo::Vector{Int}, m::Int)
+
+Goes from [2,2,5] to [0,2,0,0,1,0] (if m=6).
+"""
+function mode_occupancy_to_occupancy_vector(mo::Vector{Int}, m::Int)
+
+	ov = zeros(Int,m)
+	for mode in mo
+		ov[mode] += 1
+	end
+
+	ov
+end
+
 
 """
 	scattering_matrix(U::Matrix, input_state::Vector{Int}, output_state::Vector{Int})
@@ -249,7 +274,7 @@ function distinguishable_probability(U, input_state, output_state, permanent = r
 
 	"""distinguishable (or classical) process_probability"""
 
-	permanent(abs.(scattering_matrix(U, input_state, output_state)).^2)/sqrt(vector_factorial(input_state) * vector_factorial(output_state))
+	permanent(abs.(scattering_matrix(U, input_state, output_state)).^2)/(vector_factorial(input_state) * vector_factorial(output_state))
 
 end
 

@@ -24,6 +24,8 @@ using Parameters
 using ArgCheck
 using Distributions
 using Luxor
+using AutoHashEquals
+using LinearRegression
 # using Distributed
 # using SharedArrays
 
@@ -49,6 +51,7 @@ include("boson_samplers/cliffords_sampler.jl")
 include("boson_samplers/methods.jl")
 include("boson_samplers/metropolis_sampler.jl")
 include("boson_samplers/noisy_sampler.jl")
+include("boson_samplers/sample.jl")
 
 include("distributions/noisy_distribution.jl")
 include("distributions/theoretical_distribution.jl")
@@ -57,6 +60,9 @@ include("permanent_conjectures/bapat_sunder.jl")
 include("permanent_conjectures/counter_example_functions.jl")
 include("permanent_conjectures/counter_example_numerical_search.jl")
 include("permanent_conjectures/permanent_on_top.jl")
+
+include("certification/bayesian.jl")
+
 
 include("visual.jl")
 

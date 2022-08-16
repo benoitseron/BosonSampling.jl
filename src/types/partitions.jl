@@ -6,7 +6,7 @@
          - m::Int
          - state::Vector{Int}
 """
-struct ModeOccupation
+@auto_hash_equals struct ModeOccupation
     n::Int
     m::Int
     state::Vector{Int}
@@ -18,16 +18,31 @@ Base.show(io::IO, i::ModeOccupation) = print(io, "state = ", i.state)
 """
 
     :+(s1::ModeOccupation, s2::ModeOccupation)
+    :+(s1::ModeOccupation, s2::Vector{Int})
+    :+(s2::Vector{Int}, s1::ModeOccupation)
 
 Adds two mode occupations, for instance
 s1 = ModeOccupation([0,1])
 s2 = ModeOccupation([1,0])
 
 (s1+s2).state == [1,1]
+
+Also works with just a vector and a mode occupation.
 """
 Base.:+(s1::ModeOccupation, s2::ModeOccupation) = begin
     return ModeOccupation(s1.state + s2.state)
 end
+
+Base.:+(s1::ModeOccupation, s2::Vector{Int}) = begin
+
+        @argcheck size(s1.state) == size(s2) "incompatible sizes"
+    return ModeOccupation(s1.state + s2)
+end
+
+Base.:+(s2::Vector{Int}, s1::ModeOccupation) = begin
+    return s1 + s2
+end
+
 
 at_most_one_photon_per_bin(state) = all(state[:] .<= 1)
 at_most_one_photon_per_bin(r::ModeOccupation) = at_most_one_photon_per_bin(r.state)
@@ -64,7 +79,7 @@ Create a mode occupation list with at most one count per mode.
          - m::Int
          - subset::Vector{Int}
 """
-struct Subset
+@auto_hash_equals struct Subset
         # basically a mode occupation list with at most one count per mode
         n::Int
         m::Int
@@ -113,7 +128,7 @@ end
 
 Create a partition from multiple [`Subset`](@ref).
 """
-struct Partition
+@auto_hash_equals struct Partition
         subsets::Vector{Subset}
         n_subset::Int
         m::Int
@@ -228,7 +243,7 @@ end
         - n::Int
         - m::Int
 """
-struct PartitionOccupancy
+@auto_hash_equals struct PartitionOccupancy
         counts::ModeOccupation
         partition::Partition
         n::Int
@@ -266,3 +281,5 @@ function partition_occupancy_to_partition_size_vector_and_counts(part_occ::Parti
     partition_size_vector, partition_counts
 
 end
+
+remove_last_subset(part::Partition) = Partition(part.subsets[1:end-1])
