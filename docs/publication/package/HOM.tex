@@ -1,0 +1,27 @@
+\begin{Shaded}
+\begin{Highlighting}[]
+\ImportTok{using} \BuiltInTok{BosonSampling}
+
+\CommentTok{\# Set the model of partial distinguishability}
+\NormalTok{T }\OperatorTok{=}\NormalTok{ OneParameterInterpolation}
+\CommentTok{\# Define the unbalanced beams{-}plitter}
+\NormalTok{B }\OperatorTok{=} \FunctionTok{BeamSplitter}\NormalTok{(}\FloatTok{1}\OperatorTok{/}\FunctionTok{sqrt}\NormalTok{(}\FloatTok{2}\NormalTok{))}
+\CommentTok{\# Set each particle in a different mode}
+\NormalTok{r }\OperatorTok{=} \FunctionTok{ModeOccupation}\NormalTok{([}\FloatTok{1}\NormalTok{,}\FloatTok{1}\NormalTok{])}
+
+\CommentTok{\# Will store the coincidence probability}
+\NormalTok{P\_coinc }\OperatorTok{=} \FunctionTok{Vector}\DataTypeTok{\{Float64\}}\NormalTok{(}\ConstantTok{undef}\NormalTok{,}\FloatTok{0}\NormalTok{)}
+
+\ControlFlowTok{for}\NormalTok{ t }\KeywordTok{in} \OperatorTok{{-}}\FloatTok{4}\OperatorTok{:}\FloatTok{0.01}\OperatorTok{:}\FloatTok{4}
+    \CommentTok{\# distinguishability}
+\NormalTok{    dist }\OperatorTok{=} \FunctionTok{exp}\NormalTok{(}\OperatorTok{{-}}\NormalTok{t}\OperatorTok{\^{}}\FloatTok{2}\NormalTok{)}
+\NormalTok{    i }\OperatorTok{=} \FunctionTok{Input}\DataTypeTok{\{T\}}\NormalTok{(r,dist)}
+    \CommentTok{\# Compute the full output mode occupation}
+    \CommentTok{\# statistics}
+\NormalTok{    p\_ }\OperatorTok{=}
+    \FunctionTok{theoretical\_distribution}\NormalTok{(input}\OperatorTok{=}\NormalTok{i,interf}\OperatorTok{=}\NormalTok{B)}
+    \CommentTok{\# Store the probabiltiy to observe [1,1]}
+    \FunctionTok{push!}\NormalTok{(proba\_bunching, p\_[}\FloatTok{2}\NormalTok{]}\OperatorTok{+}\NormalTok{p\_[}\FloatTok{3}\NormalTok{])}
+\ControlFlowTok{end}
+\end{Highlighting}
+\end{Shaded}

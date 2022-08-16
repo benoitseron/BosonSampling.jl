@@ -1,0 +1,13 @@
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{i }\OperatorTok{=} \FunctionTok{Input}\DataTypeTok{\{Bosonic\}}\NormalTok{(}\FunctionTok{first\_modes}\NormalTok{(}\FloatTok{2}\NormalTok{,}\FloatTok{2}\NormalTok{))}
+
+\NormalTok{set1 }\OperatorTok{=} \FunctionTok{Subset}\NormalTok{([}\FloatTok{1}\NormalTok{,}\FloatTok{0}\NormalTok{])}
+\NormalTok{set2 }\OperatorTok{=} \FunctionTok{Subset}\NormalTok{([}\FloatTok{0}\NormalTok{,}\FloatTok{1}\NormalTok{])}
+\NormalTok{interf }\OperatorTok{=} \FunctionTok{Fourier}\NormalTok{(}\FloatTok{2}\NormalTok{)}
+\NormalTok{part }\OperatorTok{=} \FunctionTok{Partition}\NormalTok{([set1,set2])}
+
+\NormalTok{(idx,pdf) }\OperatorTok{=}
+\FunctionTok{compute\_probabilities\_partition}\NormalTok{(interf,part,i)}
+\end{Highlighting}
+\end{Shaded}

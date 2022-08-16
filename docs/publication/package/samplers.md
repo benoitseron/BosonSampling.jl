@@ -1,3 +1,4 @@
+```julia
 # Define an input of 2 photons among 4 modes
 i = Input{Bosonic}(first_modes(2,4))
 
@@ -15,3 +16,4 @@ sample!(ev)
 
 # Scattershot boson sampling
 scattershot_sampling(2,4)
+```

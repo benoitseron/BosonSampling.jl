@@ -1,0 +1,24 @@
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{n }\OperatorTok{=} \FloatTok{10}
+\NormalTok{m }\OperatorTok{=} \FloatTok{20}
+
+\CommentTok{\# experiment parameters}
+\NormalTok{input\_state }\OperatorTok{=} \FunctionTok{first\_modes}\NormalTok{(n,m)}
+\NormalTok{interf }\OperatorTok{=} \FunctionTok{RandHaar}\NormalTok{(m)}
+\NormalTok{i }\OperatorTok{=} \FunctionTok{Input}\DataTypeTok{\{Bosonic\}}\NormalTok{(input\_state)}
+
+\CommentTok{\# subset selection}
+\NormalTok{s }\OperatorTok{=} \FunctionTok{Subset}\NormalTok{(}\FunctionTok{first\_modes}\NormalTok{(}\FunctionTok{Int}\NormalTok{(m}\OperatorTok{/}\FloatTok{2}\NormalTok{),m))}
+\NormalTok{part }\OperatorTok{=} \FunctionTok{Partition}\NormalTok{(s)}
+
+\CommentTok{\# want to find all photon counting probabilities}
+\NormalTok{o }\OperatorTok{=} \FunctionTok{PartitionCountsAll}\NormalTok{(part)}
+
+\CommentTok{\# define the event and compute probabilities}
+\NormalTok{ev }\OperatorTok{=} \FunctionTok{Event}\NormalTok{(i,o,interf)}
+\FunctionTok{compute\_probability!}\NormalTok{(ev)}
+
+\CommentTok{\# ... add some output}
+\end{Highlighting}
+\end{Shaded}

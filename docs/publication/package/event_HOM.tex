@@ -1,0 +1,20 @@
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Define the input with one particle in}
+\CommentTok{\# each input mode}
+\NormalTok{r\_i }\OperatorTok{=} \FunctionTok{ModeOccupation}\NormalTok{([}\FloatTok{1}\NormalTok{,}\FloatTok{1}\NormalTok{])}
+\NormalTok{i }\OperatorTok{=} \FunctionTok{Input}\DataTypeTok{\{Bosonic\}}\NormalTok{(r\_i)}
+
+\CommentTok{\# Define the unbalanced interferometer}
+\NormalTok{B }\OperatorTok{=} \FunctionTok{BeamSplitter}\NormalTok{(}\FloatTok{1}\OperatorTok{/}\FunctionTok{sqrt}\NormalTok{(}\FloatTok{2}\NormalTok{))}
+
+\CommentTok{\# Define the output}
+\NormalTok{r\_f }\OperatorTok{=} \FunctionTok{ModeOccupation}\NormalTok{([}\FloatTok{1}\NormalTok{,}\FloatTok{1}\NormalTok{])}
+\NormalTok{o }\OperatorTok{=} \FunctionTok{FockDetection}\NormalTok{(r\_f)}
+
+\CommentTok{\# Create the event}
+\NormalTok{ev }\OperatorTok{=} \FunctionTok{Event}\NormalTok{(i,o,B)}
+\CommentTok{\# Compute its probability to occur}
+\FunctionTok{compute\_probability!}\NormalTok{(ev)}
+\end{Highlighting}
+\end{Shaded}

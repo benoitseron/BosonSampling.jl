@@ -1,0 +1,21 @@
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Define an input of 2 photons among 4 modes}
+\NormalTok{i }\OperatorTok{=} \FunctionTok{Input}\DataTypeTok{\{Bosonic\}}\NormalTok{(}\FunctionTok{first\_modes}\NormalTok{(}\FloatTok{2}\NormalTok{,}\FloatTok{4}\NormalTok{))}
+
+\CommentTok{\# Define the interferometer}
+\NormalTok{interf }\OperatorTok{=} \FunctionTok{RandHaar}\NormalTok{(}\FloatTok{4}\NormalTok{)}
+
+\CommentTok{\# Set the output measurement}
+\NormalTok{o }\OperatorTok{=} \FunctionTok{FockSample}\NormalTok{()}
+
+\CommentTok{\# Create the event}
+\NormalTok{ev }\OperatorTok{=} \FunctionTok{Event}\NormalTok{(i, o, interf)}
+
+\CommentTok{\# Simulate}
+\FunctionTok{sample!}\NormalTok{(ev)}
+
+\CommentTok{\# Scattershot boson sampling}
+\FunctionTok{scattershot\_sampling}\NormalTok{(}\FloatTok{2}\NormalTok{,}\FloatTok{4}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
