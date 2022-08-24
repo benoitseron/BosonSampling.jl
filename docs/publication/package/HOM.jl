@@ -1,4 +1,5 @@
 using BosonSampling
+using Plots
 
 # Set experimental parameters
 Δω = 1
@@ -29,3 +30,5 @@ for Δt in -4:0.01:4
     # Store the event and its probability
     push!(events, ev)
 end
+
+plot!(P_coinc)

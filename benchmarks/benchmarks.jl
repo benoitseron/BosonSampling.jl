@@ -1,31 +1,9 @@
-using BosonSampling
-using BenchmarkTools
-using BenchmarkPlots, StatsPlots
-using Permanents
 using LaTeXStrings
 using JLD
 
-push!(LOAD_PATH, "./benchmarks")
-run(`python ./benchmarks/thewalrus_data.py`)
-run(`python ./benchmarks/pcvl_data.py`)
+d = load("benchmarks/data/permanents_bench.jld")
 
-BenchmarkTools.DEFAULT_PARAMETERS.samples = 1000
-BenchmarkTools.DEFAULT_PARAMETERS.seconds = 1
-BenchmarkTools.DEFAULT_PARAMETERS.evals = 5
-
-suite_permanent = BenchmarkGroup(["string"])
-suite_permanent["ryser-jl"] = BenchmarkGroup(["string"])
-suite_permanent["glynn-jl"] = BenchmarkGroup(["string"])
-for n in 1:30
-    A = RandHaar(n)
-    suite_permanent["ryser-jl"]["n=$n"] = @benchmarkable ryser($A.U)
-    suite_permanent["glynn-jl"]["n=$n"] = @benchmarkable fast_glynn_perm($A.U)
-end
-
-res = run(suite_permanent, verbose=true, seconds=1)
-save("benchmarks/permanents_bench.jld", "permanents_benchmarkGroup",res)
-
-d = load("benchmarks/permanents_bench.jld")
+# Julia vs Matlab vs Python
 ryser_jl = [mean(d["permanents_benchmarkGroup"]["ryser-jl"]["n=$n"]).time * 10^(-9) for n in 1:30]
 glynn_jl = [mean(d["permanents_benchmarkGroup"]["glynn-jl"]["n=$n"]).time * 10^(-9) for n in 1:30]
 

@@ -40,3 +40,13 @@ function noisy_sampler(;input::Input, reflectivity::Real, interf::Interferometer
     return sort(append!(classical_output, bosonic_output))
 
 end
+
+"""
+    noisy_sampler(ev::Event{TIn,TOut}, loss::Real; occupancy_vector=true) where {TIn<:InputType, TOut<:FockSample}
+
+Noisy sampler for en [`Event`](@ref).
+"""
+function noisy_sampler(ev::Event{TIn,TOut}, loss::Real; occupancy_vector=true) where {TIn<:InputType, TOut<:FockSample}
+    s = noisy_sampler(input=ev.input_state, reflectivity=loss, interf=ev.interferometer)
+    occupancy_vector ? mode_occupancy_to_occupancy_vector(Vector{Int64}(s), ev.input_state.m) : s
+end

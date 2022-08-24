@@ -55,7 +55,7 @@ for ind, reps in enumerate(nreps):
     times_walrus[ind] = (end_walrus - start_walrus)/reps
     print(ind+1, times_walrus[ind])
 
-f = open("benchmarks/thewalrus_data.txt", "w")
+f = open("benchmarks/data/thewalrus_data.txt", "w")
 for row in times_walrus:
     np.savetxt(f, row)
 f.close()

@@ -1,0 +1,19 @@
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Set the model of partial distinguishability}
+\NormalTok{T }\OperatorTok{=}\NormalTok{ OneParameterInterpolation}
+
+\CommentTok{\# Define an input of 3 photons placed}
+\CommentTok{\# among 5 modes}
+\NormalTok{x }\OperatorTok{=} \FloatTok{0.74}
+\KeywordTok{in} \OperatorTok{=} \FunctionTok{Input}\DataTypeTok{\{T\}}\NormalTok{(}\FunctionTok{first\_modes}\NormalTok{(}\FloatTok{3}\NormalTok{,}\FloatTok{5}\NormalTok{), x)}
+
+\CommentTok{\# Interferometer}
+\NormalTok{l }\OperatorTok{=} \FloatTok{0.63}
+\NormalTok{U }\OperatorTok{=} \FunctionTok{RandHaar}\NormalTok{(}\KeywordTok{in}\NormalTok{.m)}
+
+\CommentTok{\# Compute the full output statistics}
+\NormalTok{p\_theo, p\_approx, p\_samp}
+\OperatorTok{=} \FunctionTok{noisy\_distribution}\NormalTok{(input}\OperatorTok{=}\KeywordTok{in}\NormalTok{,loss}\OperatorTok{=}\NormalTok{l,interf}\OperatorTok{=}\NormalTok{U)}
+\end{Highlighting}
+\end{Shaded}

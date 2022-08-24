@@ -37,6 +37,8 @@ for n in tqdm(range(15,25+1), ncols=70):
     res = timeit.timeit('ryser(U)', globals=globals(), number=1)
     res_python.append(res)
 
-with open("data_python.txt", 'w') as f:
-    for res in res_python:
-        f.write("%s " %res)
+res_python = np.array(res_python)
+with open("benchmarks/data/data_python.txt", 'w') as f:
+    for row in res_python:
+        np.savetxt(f, row)
+f.close()        
