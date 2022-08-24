@@ -1,8 +1,11 @@
+n = 20
+m = 400
+
 # Define an input of 2 photons among 4 modes
-i = Input{Bosonic}(first_modes(2,4))
+i = Input{Bosonic}(first_modes(n,m))
 
 # Define the interferometer
-interf = RandHaar(4)
+interf = RandHaar(m)
 
 # Set the output measurement
 o = FockSample()
@@ -12,6 +15,5 @@ ev = Event(i, o, interf)
 
 # Simulate
 sample!(ev)
-
-# Scattershot boson sampling
-scattershot_sampling(2,4)
+# output:
+# state = [0,1,0,...]
