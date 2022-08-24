@@ -1,3 +1,5 @@
+using LinearAlgebra
+
 """
 	fourier_matrix(n::Int; normalized=true)
 
@@ -416,7 +418,7 @@ Returns a ``n``-by-``n`` Gram matrix parametrized by the real ``0 ≤ x ≦ 1``.
 """
 function gram_matrix_one_param(n::Int, x::Real)
 
-	@argcheck x>=0 && x<= 1
+	# @argcheck x>=0 && x<= 1
 
 	S = 1.0 * Matrix(I, n, n)
 	for i in 1:n
@@ -483,4 +485,34 @@ function perturbed_unitary(U, epsilon)
 
     U
 
+end
+
+
+"""
+	direct_sum(A::Matrix, B::Matrix)
+
+Performs the direct sum between `A` and `B`.
+"""
+direct_sum(A::Matrix, B::Matrix) = [A zeros(size(A)[1], size(B)[2]);
+									zeros(size(B)[1], size(A)[1]) B]
+
+"""
+	symplectic_mat(n::Int)
+
+Returns the symplectic matrix of dimension `n`.
+"""
+function symplectic_mat(n::Int)
+	id = Matrix{Float64}(I,n,n)
+	Z = zeros(Float64,n,n)
+	return [Z id; -id Z]
+end
+
+function x_mat(n::Int)
+	id = Matrix{Float64}(I,n,n)
+	Z = zeros(Float64,n,n)
+	return [Z id; id Z]
+end
+
+function husimiQ_matrix(V::Matrix)
+	body
 end

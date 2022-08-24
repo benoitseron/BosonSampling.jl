@@ -12,6 +12,3 @@ ev = Event(i, o, interf)
 
 # Simulate
 sample!(ev)
-
-# Scattershot boson sampling
-scattershot_sampling(2,4)

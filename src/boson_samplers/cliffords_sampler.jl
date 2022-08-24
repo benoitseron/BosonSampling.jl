@@ -1,27 +1,26 @@
 """
-    cliffords_sampler(;input::Input, interf::Interferometer)
+    cliffords_sampler(;input::Input, interf::Interferometer, nthreads=1)
 
 Sample photons according to the [`Bosonic`](@ref) case following
 [Clifford & Clifford](https://arxiv.org/pdf/2005.04214.pdf) algorithm performed
 (at most) in ``O(n2^m + Poly(n,m))`` time and ``O(m)`` space.
+The optional parameter `nthreads` is used to deploy the algorithm on several threads.
 """
 function cliffords_sampler(;input::Input, interf::Interferometer)
 
     m = input.m
     n = input.n
-    perm_n_ = permutations(1:n)
 
-    U = interf.U
-    A = U[:, 1:n]
-    A = A[:, nthperm(1:n, rand(1:factorial(big(n))))]
+    A = interf.U[:,1:n]
+    A = A[:, shuffle(1:end)]
 
-    weight_array = [abs(A[i,1])^2 for i in 1:m]
+    weight_array = map(a -> abs(a).^2, A[:,1])
     sample_array = [wsample(1:m, Weights(weight_array))]
 
     for k in 2:n
-        k_ = collect(1:k)
-        permanent_matrix = reshape(A[sample_array, k_], length(sample_array), k)
-        unormalized_pmf = LaplaceExpansion(permanent_matrix, A[:,k_])
+        subA = A[:,1:k]
+        @inbounds permanent_matrix = reshape(subA[sample_array, :], k-1, k)
+        unormalized_pmf = LaplaceExpansion(permanent_matrix, subA)
         weight_array = unormalized_pmf/sum(unormalized_pmf)
         push!(sample_array, wsample(1:m, Weights(weight_array)))
     end
@@ -30,10 +29,11 @@ function cliffords_sampler(;input::Input, interf::Interferometer)
 
 end
 
+
 """
     cliffords_sampler(ev::Event{TIn, TOut}; occupancy_vector = true) where {TIn<:InputType, TOut <: FockSample}
 
-Sampler for an `Event`. Note the difference of behaviour if `occupancy_vector = true`.
+Sampler for an [`Event`](@ref). Note the difference of behaviour if `occupancy_vector = true`.
 """
 function cliffords_sampler(ev::Event{TIn, TOut}; occupancy_vector = true) where {TIn<:InputType, TOut <: FockSample}
     s = cliffords_sampler(input = ev.input_state, interf = ev.interferometer)

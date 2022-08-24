@@ -55,105 +55,106 @@ struct Undef <: InputType
 end
 
 """
-Type used to notify that the input is made of Gaussian states.
+Supertype to any concrete input type of Gaussian state.
 """
 abstract type Gaussian end
 
 """
+    VacuumState()
+
 Type used to notify that the input is made of the vacuum state.
+
+    Fields:
+        displacement::Vector{Complex}
+        covariance_matrix::Matrix{Complex}
 """
 struct VacuumState <: Gaussian
 
-    displacement::Vector{Complex}
-    covariance_matrix::Matrix{Complex}
+    displacement::Vector{Float64}
+    covariance_matrix::Matrix{Float64}
 
     function VacuumState()
-        new([0;0], [1/2 0; 0 1/2])
+        new(zeros(2), [1.0 0.0; 0.0 1.0])
     end
 
 end
 
 """
-Type used to notify that the input is made of coherent state.
+    CoherentState(displacement_parameter::Complex)
+
+Type used to notify that the input is made of a coherent state.
+
+    Fields:
+        - displacement_parameter::Complex
+        - displacement::Vector{Complex}
+        - covariance_matrix::Matrix{Complex}
 """
 struct CoherentState <: Gaussian
 
-    trunc::Int
     displacement_parameter::Complex
-    displacement::Vector{Complex}
-    covariance_matrix::Matrix{Complex}
-    spectrum::Vector{Real}
+    displacement::Vector{Float64}
+    covariance_matrix::Matrix{Float64}
 
-    function CoherentState(trunc::Int, displacement::Complex)
-        new(trunc,
-            displacement_parameter,
+    function CoherentState(displacement_parameter::Complex)
+        new(displacement_parameter,
             sqrt(2) * [displacement_parameter; conj(displacement_parameter)],
-            [1/2 0; 0 1/2],
-            [exp(-1/2*abs(displacement_parameter)^2) * displacement_parameter^j / sqrt(factorial(j)) for j in 0:trunc])
+            [1/2 0; 0 1/2])
     end
 
 end
 
 """
-Type used to notify that the input is made of thermal state.
+    ThermalState(mean_photon_number::Real)
+
+Type used to notify that the input is made of a thermal state.
+
+    Fields:
+        mean_photon_number::Real
+        displacement::Vector{Complex}
+        covariance_matrix::Matrix{Complex}
 """
 struct ThermalState <: Gaussian
 
-    trunc::Int
     mean_photon_number::Real
-    displacement::Vector{Complex}
-    covariance_matrix::Matrix{Complex}
-    spectrum::Vector{Real}
+    displacement::Vector{Float64}
+    covariance_matrix::Matrix{Float64}
 
-    function ThermalState(trunc::Int, mean_photon_number::Real)
-        new(trunc,
-            0,
-            mean_photon_number,
+    function ThermalState(mean_photon_number::Real)
+        new(mean_photon_number,
             zeros(2),
-            [mean_photon_number+1/2 0; 0 mean_photon_number+1/2],
-            [mean_photon_number^j / (1+mean_photon_number)^(j+1) for j in 0:trunc])
+            [mean_photon_number+1/2 0; 0 mean_photon_number+1/2])
     end
 
 end
 
 """
+    SingleModeSqueezedVacuum(squeezing_parameter::Real, source_transmission::Real)
+
 Type used to notify that the input is made of single mode squeezed state.
+
+    Fields:
+        - squeezing_parameter::Real
+        - source_transmission::Real
+        - displacement::Vector{Complex}
+        - covariance_matrix::Matrix{Complex}
 """
 struct SingleModeSqueezedVacuum <: Gaussian
 
-    trunc::Int
-    squeezing_parameter::Vector{Real}
-    displacement::Vector{Complex}
-    covariance_matrix::Matrix{Complex}
-    spectrum::Vector{Real}
+    squeezing_parameter::Real
+    source_transmission::Real
+    displacement::Vector{Float64}
+    covariance_matrix::Matrix{Float64}
 
-    function SingleModeSqueezedVacuum(trunc::Int, squeezing_parameter::Vector{Real})
+    function SingleModeSqueezedVacuum(squeezing_parameter::Real, source_transmission::Real)
 
-        r = squeezing_parameter[1]
-        θ = squeezing_parameter[2]
-        spectrum = zeros(trunc+1)'
-        for j in 1:length(spectrum)
-            iseven(j) ? spectrum[j] = sqrt(sech(r)) * sqrt(factorial(2j))/factorial(j) * (-1/2*exp(θ*im)*tanh(r))^j : nothing
-        end
-
-        new(trunc,
-            squeezing_parameter,
+        new(squeezing_parameter,
+            source_transmission,
             zeros(2),
-            1/2 * cosh(2r) * Matrix(I,2,2) - 1/2 * sinh(2r) * [cos(θ) sin(θ); sin(θ) -cos(θ)],
-            spectrum)
+            [source_transmission*exp(2*squeezing_parameter)+1-source_transmission 0;
+            0 source_transmission*exp(-2*squeezing_parameter)+1-source_transmission])
     end
 
 end
-
-# struct TwoModeSqueezedVacuum <: Gaussian
-#
-#     trunc::Int
-#     squeezing_parameter::Vector{Real}
-#     displacement::Vector{Complex}
-#     covariance_matrix::Matrix{Complex}
-#     spectrum::Vector{Real}
-#
-#     function TwoModeSqueezedVacuum(trunc, squeezing_parameter)
 
 """
     OrthonormalBasis(vector_matrix::Union{Matrix, Nothing})
@@ -282,3 +283,156 @@ struct Input{T<:InputType}
 end
 
 at_most_one_photon_per_bin(input::Input) = at_most_one_photon_per_bin(input.r)
+
+"""
+    GaussianInput{T<:Gaussian}
+    GaussianInput{T}(r::ModeOccupation, squeezing_parameters::Vector, source_transmission::Union{Vector, Nothing})
+
+Input state made off Gaussian states at the entrance of the interferometer.
+Models of partial distinguishability for Gausian states being of different nature than those for Fock states,
+we distinct input of [`Bosonic`](@ref) Fock states with indistinguishable Gaussian states.
+
+!!! note
+    The notion of [`ModeOccupation`](@ref) here is also different. Even though
+    the object is the same, the mode occuputation here as to be understood as a "boolean"
+    where the value `0` tells us that the mode is fed with the vacuum while `1`
+    states that the mode contains a Gaussian state of type `T`.
+"""
+struct GaussianInput{T<:Gaussian}
+
+    r::ModeOccupation
+    n::Int
+    m::Int
+    displacement::Vector{Float64}
+    covariance_matrix::Matrix{Float64}
+
+    displacement_parameters::Union{Vector, Nothing}
+
+    mean_photon_numbers::Union{Vector, Nothing}
+
+    squeezing_parameters::Union{Vector, Nothing}
+    source_transmission::Union{Real, Nothing}
+
+    function GaussianInput{T}() where {T<:Gaussian}
+        if T == VacuumState
+            return Input{Bosonic}(first_modes(0,r.m))
+        else
+            error("type ", T, " not implemented")
+        end
+    end
+
+    function GaussianInput{T}(r::ModeOccupation, displacement_parameters::Vector) where {T<:Gaussian}
+
+        if T == Coherent
+            r.state[1] == 1 ? sq = CoherentState(displacement_parameters[1]) : sq = VacuumState()
+            cov = sq.covariance_matrix
+            R = sq.displacement
+
+            for i in 2:r.m
+                if r.state[i] == 1
+                    sq = CoherentState(displacement_parameters[i])
+                    R = [R;sq.displacement]
+                    sigma = sq.covariance_matrix
+                else
+                    vacc = VacuumState()
+                    R = [R;vacc.displacement]
+                    sigma = vacc.covariance_matrix
+                end
+                cov = direct_sum(cov, sigma)
+            end
+            return new{T}(r, r.n, r.m, R, cov, displacement_parameters, nothing, nothing, nothing)
+        else
+            error("type ", T, " not implemented")
+        end
+
+    end
+
+    function GaussianInput{T}(r::ModeOccupation, mean_photon_numbers::Vector) where {T<:Gaussian}
+
+        if T == ThermalState
+            r.state[1] == 1 ? sq = ThermalState(mean_photon_numbers[1]) : sq = VacuumState()
+            cov = sq.covariance_matrix
+            R = sq.displacement
+
+            for i in 2:r.m
+                if r.state[i] == 1
+                    sq = ThermalState[mean_photon_numbers[i]]
+                    R = [R;sq.displacement]
+                    sigma = sq.covariance_matrix
+                else
+                    vacc = VacuumState()
+                    R = [R;vacc.displacement]
+                    sigma = vacc.covariance_matrix
+                end
+                cov = direct_sum(cov, sigma)
+            end
+            return new{T}(r, r.n, r.m, R, cov, nothing, displacement_parameters, nothing, nothing)
+        else
+            error("type ", T, " not implemented")
+        end
+
+    end
+
+    function GaussianInput{T}(r::ModeOccupation, squeezing_parameters::Vector, source_transmission::Union{Real, Nothing}) where {T<:Gaussian}
+
+        source_transmission == nothing ? source_transmission = 1 : nothing
+
+        if T == SingleModeSqueezedVacuum
+            r.state[1] == 1 ? sq = SingleModeSqueezedVacuum(squeezing_parameters[1], source_transmission) : sq = VacuumState()
+            cov = sq.covariance_matrix
+            R = sq.displacement
+
+            for i in 2:r.m
+                if r.state[i] == 1
+                    sq = SingleModeSqueezedVacuum(squeezing_parameters[i], source_transmission)
+                    R = [R;sq.displacement]
+                    sigma = sq.covariance_matrix
+                else
+                    vacc = VacuumState()
+                    R = [R;vacc.displacement]
+                    sigma = vacc.covariance_matrix
+                end
+                cov = direct_sum(cov, sigma)
+            end
+            return new{T}(r, r.n, r.m, R, cov, nothing, nothing, squeezing_parameters, source_transmission)
+        else
+            error("type ", T, " not implemented yet")
+        end
+
+    end
+
+end
+
+
+"""
+    get_spectrum(state::Gaussian, k::Int)
+
+Get the spectrum in the Fock basis of a `state` up to `k` photons.
+"""
+function get_spectrum(state::Gaussian, k::Int)
+
+    if typeof(state) == VacuumState
+        return 1
+
+    elseif typeof(state) == CoherentState
+        α = state.displacement_parameter
+        return [exp(-0.5*abs(α)^2) * (α^n)/sqrt(factorial(n)) for n in 0:k]
+
+    elseif typeof(state) == ThermalState
+        μ = state.mean_photon_number
+        return [μ^j / (1+μ)^(j+1) for j in 0:k]
+
+    elseif typeof(state) == SingleModeSqueezedVacuum
+        r = state.squeezing_parameter
+        res = Vector{Float64}(undef, k)
+        for i in 0:k
+            if iseven(i)
+                res[i] = sqrt(sech(r)) * sqrt(factorial(2n))/factorial(n) * (-0.5*tanh(r))^n
+            else
+                res[i] = 0
+            end
+        end
+        return res
+    end
+
+end

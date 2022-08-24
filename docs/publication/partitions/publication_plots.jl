@@ -18,6 +18,8 @@ using JLD
 using AutoHashEquals
 using LinearRegression
 
+using DataStructures
+
 
 cd("docs/publication/partitions/")
 
@@ -520,7 +522,7 @@ plt
 
 n = 10
 m = 30
-n_trials = 100
+n_trials = 500
 n_samples = 500
 n_subsets = 2
 sample_array = zeros((n_trials, n_samples+1))
@@ -566,17 +568,56 @@ sample_array = zeros((n_trials, n_samples+1))
 
 end
 
-sample_array = sample_array[:,1:end-1]
+sample_array = sample_array[:,1:end]
+plt = plot()
+for i in 1:size(sample_array,1)
+    scatter!(sample_array[i,:], c = :black, marker=1)
+end
+plot!(legend = false)
+xlabel!("n_samples")
+ylabel!("confidence")
 
-
-    plt = plot()
-    for i in 1:size(sample_array,1)
-        scatter!(sample_array[i,:], c = :black, m = :cross)
+x_ = collect(range(0,n_samples+1, length=div(n_samples,5)))
+y_ = collect(range(0,1.1, length=1000))
+D = Dict()
+for i in 1:length(x_)-1
+    for j in 1:length(y_)-1
+        D["[$(x_[i]),$(x_[i+1]),$(y_[j]),$(y_[j+1])]"] = 0
     end
-    plot!(legend = false)
-    xlabel!("n_samples")
-    ylabel!("confidence")
-    plt
+end
+
+D = sort(D)
+
+@showprogress for x in 1:n_trials
+    for y in 1:n_samples
+        val = sample_array[x,y]
+        for x1 in 1:length(x_)-1
+            for y1 in 1:length(y_)-1
+                if val >= y_[y1] && val <= y_[y1+1]
+                    if y >= x_[x1] && y <= x_[x1+1]
+                        D["[$(x_[x1]),$(x_[x1+1]),$(y_[y1]),$(y_[y1+1])]"] += 1
+                    end
+                end
+            end
+        end
+    end
+end
+
+D = sort(D)
+M = zeros(Float32, length(x_)-1, length(y_)-1)
+for x1 in 1:length(x_)-1
+    for y1 in 1:length(y_)-1
+        M[x1,y1] = log(D["[$(x_[x1]),$(x_[x1+1]),$(y_[y1]),$(y_[y1+1])]"]/sum(sample_array[:]))
+    end
+end
+
+using PlotThemes
+theme(:dracula)
+x_ = x_[1:end-1]
+y_ = y_[1:end-1]
+heatmap(x_,y_,M',dpi=800)
+savefig("/Users/antoinerestivo/BosonSampling.jl/docs/publication/partitions/density_3_normalized.png")
+
 
 x_pixels = Int(n_samples/10) + 1
 x_grid = collect(range(0,n_samples, length = x_pixels))
@@ -584,25 +625,25 @@ x_grid = collect(range(0,n_samples, length = x_pixels))
 y_pixels = 50 + 1
 y_grid = collect(range(0,1, length = y_pixels))
 
-    pixels = zeros(Int, (x_pixels, y_pixels))
+pixels = zeros(Int, (x_pixels, y_pixels))
 
-    for xi in 1:(length(x_grid)-1)
-        for yi in 1:(length(y_grid)-1)
+for xi in 1:(length(x_grid)-1)
+    for yi in 1:(length(y_grid)-1)
 
-            for x in 1:size(sample_array, 1)
-                for y in sample_array[x,:]
+        for x in 1:size(sample_array, 1)
+            for y in sample_array[x,:]
 
-                    if x >= x_grid[xi] && x < x_grid[xi+1]
-                        if y >= y_grid[yi] && y < y_grid[yi+1]
+                if x >= x_grid[xi] && x < x_grid[xi+1]
+                    if y >= y_grid[yi] && y < y_grid[yi+1]
 
-                            pixels[xi,yi] += 1
+                        pixels[xi,yi] += 1
 
-                        end
                     end
                 end
             end
         end
     end
+end
 
 
 heatmap(1:size(pixels,1), 1:size(pixels,2), pixels, c=cgrad([:blue, :white,:red, :yellow]), xlabel="x values", ylabel="y values",title="My title")

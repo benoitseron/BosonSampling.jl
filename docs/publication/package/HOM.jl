@@ -1,16 +1,18 @@
 using BosonSampling
+using Plots
 
 # Set the model of partial distinguishability
 T = OneParameterInterpolation
 # Define the unbalanced beams-plitter
 B = BeamSplitter(1/sqrt(2))
 # Set each particle in a different mode
-r = ModeOccupation([1,1])
+r = ModeOccupation([4,4])
 
 # Will store the coincidence probability
-P_coinc = Vector{Float64}(undef,0)
+P_coinc = []
+p_ = []
 
-for t in -4:0.01:4
+for t in -3:0.01:3
     # distinguishability
     dist = exp(-t^2)
     i = Input{T}(r,dist)
@@ -19,5 +21,7 @@ for t in -4:0.01:4
     p_ =
     theoretical_distribution(input=i,interf=B)
     # Store the probabiltiy to observe [1,1]
-    push!(proba_bunching, p_[2]+p_[3])
+    push!(P_coinc, p_[2]+p_[3])
 end
+
+plot!(P_coinc)
