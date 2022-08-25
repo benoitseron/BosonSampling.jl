@@ -30,23 +30,26 @@ n_events = 200
 n = 3
 m = 8
 interf = RandHaar(m)
-input_state = Input{Bosonic}(first_modes(n,m))
+TIn = Bosonic
+input_state = Input{TIn}(first_modes(n,m))
 
 events = []
 
 for i in 1:n_events
 
-    # generate a random output pattern
-    output_state = FockDetection(random_mode_occupation(n,m))
-
     # note that we don't compute the event probability
     # as we would just have experimental observations
     # of counts
 
-    this_event = Event(input_state, output_state, interf)
-    push!(events, this_event)
+    ev = Event(input_state, FockSample(), interf)
+    BosonSampling.sample!(ev)
+
+    ev = convert(Event{TIn, FockDetection}, ev)
+
+    push!(events, ev)
 
 end
+
 
 # now we have the vector of observed events with probabilities
 
@@ -65,7 +68,7 @@ p_q = HypothesisFunction(p_B)
 p_a = HypothesisFunction(p_D)
 
 certif = Bayesian(events, p_q, p_a)
-compute_probability!(certif)
+BosonSampling.certify!(certif)
 certif.confidence
 
 scatter(certif.probabilities)
@@ -73,9 +76,9 @@ scatter(certif.probabilities)
 ###### Bayesian tests for partitions ######
 
 # need to provide the interferometer as well as some data to compute the probabilities
-# this can be extracted from experiemental if given it but here we have to generate it
+# this can be extracted from experimental if given it but here we have to generate it
 
-n_events = 100
+n_events = 1000
 n = 5
 m = 14
 interf = RandHaar(m)
@@ -93,7 +96,7 @@ for i in 1:n_events
     # of counts
 
     ev = Event(input_state, FockSample(), interf)
-    sample!(ev)
+    BosonSampling.sample!(ev)
 
     push!(events, ev)
 

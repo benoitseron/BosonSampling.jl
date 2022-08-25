@@ -80,6 +80,9 @@ mutable struct FockSample <: OutputMeasurementType
     FockSample(s::ModeOccupation) = new(s)
 end
 
+Base.convert(::Type{FockDetection}, fs::FockSample) = FockDetection(fs.s)
+
+
 """
     PartitionSample <: OutputMeasurementType
 

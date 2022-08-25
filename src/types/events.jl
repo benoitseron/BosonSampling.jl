@@ -125,3 +125,8 @@ function check_probability_empty(ev::Event; resetting_message = true)
 		end
 	end
 end
+
+Base.convert(::Type{Event{TIn, FockDetection}}, ev::Event{TIn, FockSample}) where {TIn <: InputType} = Event(ev.input_state, convert(FockDetection, ev.output_measurement), ev.interferometer, ev.proba_params)
+
+fs = FockSample([1,2,3])
+convert(FockDetection, fs)

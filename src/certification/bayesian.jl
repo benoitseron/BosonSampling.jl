@@ -50,11 +50,11 @@ function compute_χ(events, p_q, p_a)
 end
 
 """
-    compute_probability!(b::Bayesian)
+    certify!(b::Bayesian)
 
 Updates all probabilities associated with a `Bayesian` `Certifier`.
 """
-function compute_probability!(b::Bayesian)
+function certify!(b::Bayesian)
 
     b.probabilities = compute_confidence_array(b.events, b.null_hypothesis.f, b.alternative_hypothesis.f)
     b.confidence = b.probabilities[end]
