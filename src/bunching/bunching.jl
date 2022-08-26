@@ -42,6 +42,8 @@ H_matrix(interf::Interferometer, i::Input, o::FockDetection) = H_matrix(interf.U
 
 H_matrix(interf::Interferometer, i::Input, subset_modes::ModeOccupation) = isa_subset(subset_modes) ? H_matrix(interf.U, i.r.state, subset_modes.state) : error("invalid subset")
 
+H_matrix(interf::Interferometer, i::Input, subset::Subset) = H_matrix(interf::Interferometer, i::Input, ModeOccupation(subset.subset))
+
 """
 
 	full_bunching_probability(interf::Interferometer, i::Input, subset_modes::Subset)

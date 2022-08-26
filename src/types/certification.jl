@@ -137,10 +137,12 @@ mutable struct FullBunching <: Certifier
 
         ev = events[1]
         input_modes = ev.input_state.r
+        m = ev.input_state.m
+        n = ev.input_state.n
 
         @argcheck (subset_size > 0 && subset_size < m) "invalid subset"
 
-        @argcheck n*(m-subset_size) > SAFETY_FACTOR_FULL_BUNCHING * m "invalid subset size for high bunching probability"
+        n*(m-subset_size) < SAFETY_FACTOR_FULL_BUNCHING * m ? (@warn "invalid subset size for high bunching probability") : nothing
 
         subset = Subset(first_modes(subset_size, input_modes.m))
 

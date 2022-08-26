@@ -26,6 +26,7 @@ using Distributions
 using Luxor
 using AutoHashEquals
 using LinearRegression
+using HypothesisTests
 # using Distributed
 # using SharedArrays
 

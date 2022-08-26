@@ -17,7 +17,7 @@ using PrettyTables
 using LaTeXStrings
 using JLD
 using AutoHashEquals
-
+using HypothesisTests
 
 
 ### tests with standard boson sampling ###
@@ -96,13 +96,11 @@ plot(certif.probabilities)
 
 part
 
+# full bunching
 
 subset_size = m-n
 subset = Subset(first_modes(subset_size, m))
 
-ev = events[1]
+fb = FullBunching(events, Bosonic(), Distinguishable(), subset_size)
 
-for ev in events
-    @show is_fully_bunched(ev, subset)
-
-end
+certify!(fb)

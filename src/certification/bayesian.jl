@@ -63,6 +63,7 @@ end
 
 function certify!(fb::FullBunching)
 
+    events = fb.events
     ev = fb.events[1]
     input_modes = ev.input_state.r
     interf = ev.interferometer
@@ -73,11 +74,12 @@ function certify!(fb::FullBunching)
     p_full_bos = full_bunching_probability(interf, ib, fb.subset)
     p_full_dist = full_bunching_probability(interf, id, fb.subset)
 
-    p_full_observed = n_bunched_events(events, subset)/length(events)
+    p_full_observed = n_bunched_events(events, fb.subset)/length(events)
 
-    @warn "not finished implementation"
-    #use statistical test to give confidence, comparing means
+    p_value_bosonic =  pvalue(OneSampleTTest([Int(is_fully_bunched(ev, fb.subset)) for ev in events], p_full_bos))
+    p_value_dist =  pvalue(OneSampleTTest([Int(is_fully_bunched(ev, fb.subset)) for ev in events], p_full_dist))
 
+    (p_value_bosonic, p_value_dist)
 end
 
 """
