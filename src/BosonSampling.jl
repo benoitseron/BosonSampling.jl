@@ -30,6 +30,7 @@ using LinearRegression
 # using SharedArrays
 
 const ATOL = 1e-10
+const SAFETY_FACTOR_FULL_BUNCHING = 10
 
 include("special_matrices.jl")
 include("matrix_tests.jl")

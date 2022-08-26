@@ -111,3 +111,40 @@ mutable struct BayesianPartition <: Certifier
 
     end
 end
+
+
+mutable struct FullBunching <: Certifier
+    events::Vector{Event} # input data as events - note that they shouldn't have probabilities associated, just observations
+    confidence::Union{Real, Nothing} # gives the confidence that the null_hypothesis is true
+    null_hypothesis::Union{HypothesisFunction, InputType}
+    alternative_hypothesis::Union{HypothesisFunction, InputType}
+    # an input type such as Bosonic can be specified and the correct HypothesisFunction will be created
+    subset::Subset
+    subset_size::Int
+
+    function FullBunching(events, null_hypothesis::TIn1, alternative_hypothesis::TIn2, subset_size::Int) where {TIn1 <: Union{Bosonic, Distinguishable}} where {TIn2 <: Union{Bosonic, Distinguishable}}
+
+        if !isa(events, Vector{Event})
+            events = convert(Vector{Event}, events)
+        end
+
+        for event in events
+            check_probability_empty(event, resetting_message = false)
+            ########### need to add a check that always same interferometer, input
+        end
+
+        @argcheck TIn1 != TIn2 "no alternative_hypothesis"
+
+        ev = events[1]
+        input_modes = ev.input_state.r
+
+        @argcheck (subset_size > 0 && subset_size < m) "invalid subset"
+
+        @argcheck n*(m-subset_size) > SAFETY_FACTOR_FULL_BUNCHING * m "invalid subset size for high bunching probability"
+
+        subset = Subset(first_modes(subset_size, input_modes.m))
+
+        new(events, nothing, null_hypothesis, alternative_hypothesis,subset, subset_size)
+
+    end
+end

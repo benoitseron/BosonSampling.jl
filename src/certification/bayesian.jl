@@ -61,6 +61,17 @@ function certify!(b::Union{Bayesian, BayesianPartition})
 
 end
 
+function certify!(fb::FullBunching)
+
+    p_full_bos =
+    p_full_dist =
+
+    bunched_events =
+    p_full_observed =
+
+    #use statistical test to give confidence, comparing means
+
+end
 
 """
     p_B(event::Event{TIn, TOut}) where {TIn<:InputType, TOut <: FockDetection}
