@@ -1,14 +1,18 @@
 # generate what would be experimental data
-events = generate_experimental_data(n_events = 400, n = 3,m = 10, interf = RandHaar(10), TIn = Bosonic)
+m = 14
+n = 5
+events = generate_experimental_data(n_events = 1000, n = n,m = m, interf = RandHaar(m), TIn = Bosonic)
 
-# hypothesis : the events were from a bosonic distribution
+# define a certification protocol
+# using binning into a 3-partition
+# with null hypothesis a bosonic input
+# and alternative a distinguishable input
+n_subsets = 3
+part = equilibrated_partition(m,n_subsets)
+certif = BayesianPartition(events, Bosonic(), Distinguishable(), part)
 
-p_q = HypothesisFunction(p_B)
-p_a = HypothesisFunction(p_D)
+# compute the level of confidence
+certify!(certif)
 
-# use Bayesian certification
-certif = Bayesian(events, p_q, p_a)
-BosonSampling.certify!(certif)
-certif.confidence
-
-scatter(certif.probabilities)
+# plot the bayesian confidence over sample number
+plot(certif.probabilities)

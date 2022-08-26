@@ -54,12 +54,13 @@ end
 
 Updates all probabilities associated with a `Bayesian` `Certifier`.
 """
-function certify!(b::Bayesian)
+function certify!(b::Union{Bayesian, BayesianPartition})
 
     b.probabilities = compute_confidence_array(b.events, b.null_hypothesis.f, b.alternative_hypothesis.f)
     b.confidence = b.probabilities[end]
 
 end
+
 
 """
     p_B(event::Event{TIn, TOut}) where {TIn<:InputType, TOut <: FockDetection}
