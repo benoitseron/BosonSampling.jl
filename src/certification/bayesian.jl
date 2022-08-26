@@ -84,8 +84,8 @@ function certify!(fb::FullBunching)
     p_value_bosonic =  pvalue(OneSampleTTest([Int(is_fully_bunched(ev, fb.subset)) for ev in events], p_full_bos))
     p_value_dist =  pvalue(OneSampleTTest([Int(is_fully_bunched(ev, fb.subset)) for ev in events], p_full_dist))
 
-    TNull = Type(fb.null_hypothesis)
-    TAlternative = Type(fb.alternative_hypothesis)
+    TNull = typeof(fb.null_hypothesis)
+    TAlternative = typeof(fb.alternative_hypothesis)
 
     if TNull == Bosonic && TAlternative == Distinguishable
         fb.p_value_null = p_value_bosonic
