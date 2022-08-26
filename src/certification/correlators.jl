@@ -1,8 +1,8 @@
-n = 8
-m = 8
-interf = RandHaar(m)
-TIn = Bosonic
-input_state = Input{TIn}(first_modes(n,m))
+# n = 8
+# m = 8
+# interf = RandHaar(m)
+# TIn = Bosonic
+# input_state = Input{TIn}(first_modes(n,m))
 
 function C(i,j, interf::Interferometer, input_state::Input{T}) where {T <: Union{Bosonic, Distinguishable}}
 
@@ -34,15 +34,24 @@ function C_dataset(interf::Interferometer, input_state::Input{T}) where {T <: Un
 
 end
 
-C_data = C_dataset(interf, input_state)
+function correlators_nm_cv_s(interf::Interferometer, input_state::Input{T}) where {T <: Union{Bosonic, Distinguishable}}
 
-moment(k) = mean(C_data.^k)
+    C_data = C_dataset(interf, input_state)
 
-moments = [moment(k) for k in 1:3]
+    moment(k) = mean(C_data.^k)
 
-m = interf.m
-n = input_state.n
+    moments = [moment(k) for k in 1:3]
 
-nm = moments[1] * m^2 /n
-cv = sqrt( moments[2] -  moments[1]^2  ) /  moments[1]
-s = ( moments[3] - 3*  moments[1] * moments[2] -2 * moments[1]^3 )/(moments[2] -  moments[1]^2 )^(3/2)
+    m = interf.m
+    n = input_state.n
+
+    nm = moments[1] * m^2 /n
+    cv = sqrt( moments[2] -  moments[1]^2  ) /  moments[1]
+    s = ( moments[3] - 3*  moments[1] * moments[2] -2 * moments[1]^3 )/(moments[2] -  moments[1]^2 )^(3/2)
+
+    @warn "there seems to be a sign mistake!"
+    (nm,cv,s)
+
+end
+
+correlators_nm_cv_s(interf, input_state)

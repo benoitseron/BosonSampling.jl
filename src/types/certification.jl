@@ -164,7 +164,7 @@ mutable struct Correlators <: Certifier
     p_value_null::Union{Real, Nothing}
     p_value_alternative::Union{Real, Nothing}
 
-    function FullBunching(events, null_hypothesis::TIn1, alternative_hypothesis::TIn2) where {TIn1 <: Union{Bosonic, Distinguishable}} where {TIn2 <: Union{Bosonic, Distinguishable}}
+    function Correlators(events, null_hypothesis::TIn1, alternative_hypothesis::TIn2) where {TIn1 <: Union{Bosonic, Distinguishable}} where {TIn2 <: Union{Bosonic, Distinguishable}}
 
         if !isa(events, Vector{Event})
             events = convert(Vector{Event}, events)
