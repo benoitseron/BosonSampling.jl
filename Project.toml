@@ -1,7 +1,7 @@
 name = "BosonSampling"
 uuid = "4f11539d-f4e6-47f3-a15e-0809978c3ed1"
 authors = ["Benoît Seron <benoitseron@gmail.com> and Antoine Restivo <antoinerestivo@hotmail.fr>"]
-version = "1.0.0"
+version = "1.0.1"
 
 [deps]
 ArgCheck = "dce04be8-c92d-5529-be00-80e4d2c0e197"
