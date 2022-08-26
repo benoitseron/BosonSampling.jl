@@ -1,6 +1,6 @@
 using Revise
 
-using BosonSampling
+using BosonSampling:sample!
 using Plots
 using ProgressMeter
 using Distributions
@@ -42,7 +42,7 @@ for i in 1:n_events
     # of counts
 
     ev = Event(input_state, FockSample(), interf)
-    BosonSampling.sample!(ev)
+    sample!(ev)
 
     ev = convert(Event{TIn, FockDetection}, ev)
 
@@ -54,6 +54,8 @@ end
 # now we have the vector of observed events with probabilities
 
 events
+
+events[1]
 
 # next, from events, recover the probabilities under both
 # hypothesis for instance
@@ -85,7 +87,7 @@ interf = RandHaar(m)
 
 # we generate the experimental data
 
-input_state = Input{Distinguishable}(first_modes(n,m))
+input_state = Input{Bosonic}(first_modes(n,m))
 
 events = []
 
@@ -96,7 +98,7 @@ for i in 1:n_events
     # of counts
 
     ev = Event(input_state, FockSample(), interf)
-    BosonSampling.sample!(ev)
+    sample!(ev)
 
     push!(events, ev)
 
@@ -125,7 +127,7 @@ p_q = HypothesisFunction(p_partition_B)
 p_a = HypothesisFunction(p_partition_D)
 
 certif = Bayesian(events, p_q, p_a)
-compute_probability!(certif)
+certify!(certif)
 certif.confidence
 
 scatter(certif.probabilities)
