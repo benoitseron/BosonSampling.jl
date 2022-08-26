@@ -82,7 +82,9 @@ scatter(certif.probabilities)
 # this can be extracted from experimental if given it but here we have to generate it
 
 # generate what would be experimental data
-events = generate_experimental_data(n_events = 1000, n = 5,m = 14, interf = RandHaar(14), TIn = Bosonic)
+m = 14
+n = 5
+events = generate_experimental_data(n_events = 1000, n = n,m = m, interf = RandHaar(m), TIn = Bosonic)
 
 
 n_subsets = 3
@@ -93,3 +95,14 @@ certify!(certif)
 plot(certif.probabilities)
 
 part
+
+
+subset_size = m-n
+subset = Subset(first_modes(subset_size, m))
+
+ev = events[1]
+
+for ev in events
+    @show is_fully_bunched(ev, subset)
+
+end
