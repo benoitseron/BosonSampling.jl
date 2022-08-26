@@ -154,3 +154,35 @@ mutable struct FullBunching <: Certifier
 
     end
 end
+
+mutable struct Correlators <: Certifier
+    events::Vector{Event} # input data as events - note that they shouldn't have probabilities associated, just observations
+    confidence::Union{Real, Nothing} # gives the confidence that the null_hypothesis is true
+    null_hypothesis::Union{HypothesisFunction, InputType}
+    alternative_hypothesis::Union{HypothesisFunction, InputType}
+
+    p_value_null::Union{Real, Nothing}
+    p_value_alternative::Union{Real, Nothing}
+
+    function FullBunching(events, null_hypothesis::TIn1, alternative_hypothesis::TIn2) where {TIn1 <: Union{Bosonic, Distinguishable}} where {TIn2 <: Union{Bosonic, Distinguishable}}
+
+        if !isa(events, Vector{Event})
+            events = convert(Vector{Event}, events)
+        end
+
+        for event in events
+            check_probability_empty(event, resetting_message = false)
+            ########### need to add a check that always same interferometer, input
+        end
+
+        @argcheck TIn1 != TIn2 "no alternative_hypothesis"
+
+        ev = events[1]
+        input_modes = ev.input_state.r
+        m = ev.input_state.m
+        n = ev.input_state.n
+
+        new(events, nothing, null_hypothesis, alternative_hypothesis, nothing, nothing)
+
+    end
+end
