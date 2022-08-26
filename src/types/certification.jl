@@ -118,9 +118,13 @@ mutable struct FullBunching <: Certifier
     confidence::Union{Real, Nothing} # gives the confidence that the null_hypothesis is true
     null_hypothesis::Union{HypothesisFunction, InputType}
     alternative_hypothesis::Union{HypothesisFunction, InputType}
+
     # an input type such as Bosonic can be specified and the correct HypothesisFunction will be created
     subset::Subset
     subset_size::Int
+
+    p_value_null::Union{Real, Nothing}
+    p_value_alternative::Union{Real, Nothing}
 
     function FullBunching(events, null_hypothesis::TIn1, alternative_hypothesis::TIn2, subset_size::Int) where {TIn1 <: Union{Bosonic, Distinguishable}} where {TIn2 <: Union{Bosonic, Distinguishable}}
 
@@ -146,7 +150,7 @@ mutable struct FullBunching <: Certifier
 
         subset = Subset(first_modes(subset_size, input_modes.m))
 
-        new(events, nothing, null_hypothesis, alternative_hypothesis,subset, subset_size)
+        new(events, nothing, null_hypothesis, alternative_hypothesis,subset, subset_size, nothing, nothing)
 
     end
 end
