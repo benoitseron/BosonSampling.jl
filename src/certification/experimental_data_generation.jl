@@ -32,5 +32,9 @@ function generate_experimental_data(;n_events, n, m, interf, TIn, x = nothing, i
 
     end
 
+    if !isa(events, Vector{Event})
+        events = convert(Vector{Event}, events)
+    end
+
     events
 end

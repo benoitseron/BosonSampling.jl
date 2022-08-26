@@ -63,12 +63,19 @@ end
 
 function certify!(fb::FullBunching)
 
-    p_full_bos =
-    p_full_dist =
+    ev = fb.events[1]
+    input_modes = ev.input_state.r
+    interf = ev.interferometer
 
-    bunched_events =
-    p_full_observed =
+    ib = Input{Bosonic}(input_modes)
+    id = Input{Distinguishable}(input_modes)
 
+    p_full_bos = full_bunching_probability(interf, ib, fb.subset)
+    p_full_dist = full_bunching_probability(interf, id, fb.subset)
+
+    p_full_observed = n_bunched_events(events, subset)/length(events)
+
+    @warn "not finished implementation"
     #use statistical test to give confidence, comparing means
 
 end

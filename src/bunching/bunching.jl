@@ -124,3 +124,24 @@ function bunching_probability_brute_force_bosonic(U, input_state, output_state; 
 end
 
 bunching_probability_brute_force_bosonic(interf::Interferometer, i::Input, subset_modes::ModeOccupation) = bunching_probability_brute_force_bosonic(interf.U, i.r.state, subset_modes.r.state; print_output = false)
+
+"""
+	is_fully_bunched(ev::Event, subset::Subset)
+
+Tells if all photons end up in the subset.
+"""
+is_fully_bunched(ev::Event, subset::Subset) = sum(ev.output_measurement.s.state .* subset.subset) == ev.input_state.n
+
+"""
+	n_bunched_events(events::Vector{Event}, subset::Subset)
+
+Gives the number of fully bunched events in subset.
+"""
+function n_bunched_events(events::Vector{Event}, subset::Subset)
+
+    n_bunched = 0
+    for ev in events
+        is_fully_bunched(ev, subset) ? n_bunched+= 1 : nothing
+    end
+    n_bunched
+end
