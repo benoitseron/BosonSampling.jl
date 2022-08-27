@@ -54,4 +54,20 @@ function correlators_nm_cv_s(interf::Interferometer, input_state::Input{T}) wher
 
 end
 
-correlators_nm_cv_s(interf, input_state)
+n = 8
+m = 8
+interf = RandHaar(m)
+TIn = Bosonic
+
+events = generate_experimental_data(n_events = 100, n = n,m = m, interf = RandHaar(m), TIn = Bosonic)
+
+function C(i,j, events::Vector{Event})
+
+    count_in(i, ev::Event) = ev.output_measurement.s.state[i]
+
+    counts_i = [count_in(i, ev) for ev in events]
+    counts_j = [count_in(j, ev) for ev in events]
+
+    mean(counts_i .* counts_j) - mean(counts_i) * mean(counts_j)
+
+end

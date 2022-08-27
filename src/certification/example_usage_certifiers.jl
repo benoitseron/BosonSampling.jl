@@ -27,36 +27,13 @@ using HypothesisTests
 
 # first we generate a series of bosonic events
 
-n_events = 200
-n = 3
+n = 8
 m = 8
 interf = RandHaar(m)
 TIn = Bosonic
-input_state = Input{TIn}(first_modes(n,m))
 
-events = []
+events = generate_experimental_data(n_events = 100, n = n,m = m, interf = RandHaar(m), TIn = Bosonic)
 
-for i in 1:n_events
-
-    # note that we don't compute the event probability
-    # as we would just have experimental observations
-    # of counts
-
-    ev = Event(input_state, FockSample(), interf)
-    sample!(ev)
-
-    ev = convert(Event{TIn, FockDetection}, ev)
-
-    push!(events, ev)
-
-end
-
-
-# now we have the vector of observed events with probabilities
-
-events
-
-events[1]
 
 # next, from events, recover the probabilities under both
 # hypothesis for instance
@@ -96,7 +73,11 @@ plot(certif.probabilities)
 
 part
 
-# full bunching
+### full bunching###
+
+m = 20
+n = 5
+events = generate_experimental_data(n_events = 1000, n = n,m = m, interf = RandHaar(m), TIn = Bosonic)
 
 subset_size = m-n
 subset = Subset(first_modes(subset_size, m))
@@ -104,3 +85,12 @@ subset = Subset(first_modes(subset_size, m))
 fb = FullBunching(events, Bosonic(), Distinguishable(), subset_size)
 
 certify!(fb)
+
+### correlators ###
+
+m = 20
+n = 5
+interf = RandHaar(m)
+events = generate_experimental_data(n_events = 1000, n = n,m = m, interf = interf, TIn = Bosonic)
+
+correlators_nm_cv_s(interf, input_state)
