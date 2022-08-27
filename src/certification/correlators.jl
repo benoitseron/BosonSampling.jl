@@ -38,9 +38,7 @@ function correlators_nm_cv_s(interf::Interferometer, input_state::Input{T}) wher
 
     C_data = C_dataset(interf, input_state)
 
-    moment(k) = mean(C_data.^k)
-
-    moments = [moment(k) for k in 1:3]
+    moments = [mean(C_data.^k) for k in 1:3]
 
     m = interf.m
     n = input_state.n
@@ -54,7 +52,7 @@ function correlators_nm_cv_s(interf::Interferometer, input_state::Input{T}) wher
 
 end
 
-n = 8
+n = 3
 m = 8
 interf = RandHaar(m)
 TIn = Bosonic
@@ -70,4 +68,44 @@ function C(i,j, events::Vector{Event})
 
     mean(counts_i .* counts_j) - mean(counts_i) * mean(counts_j)
 
+
 end
+
+function C_dataset(events::Vector{Event})
+
+    ev = events[1]
+    interf = ev.interferometer
+    m = interf.m
+
+    [C(i,j, events) for i in 1:m for j in 1:m]
+
+end
+
+function correlators_nm_cv_s(events::Vector{Event})
+
+    C_data = C_dataset(events)
+
+    moments = [mean(C_data.^k) for k in 1:3]
+
+    ev = events[1]
+    interf = ev.interferometer
+    m = interf.m
+    n = ev.input_state.n
+
+    nm = moments[1] * m^2 /n
+    cv = sqrt( moments[2] -  moments[1]^2  ) /  moments[1]
+    s = ( moments[3] - 3*  moments[1] * moments[2] -2 * moments[1]^3 )/(moments[2] -  moments[1]^2 )^(3/2)
+
+    @warn "there seems to be a sign mistake!"
+    @warn "there seems to be a  mistake as nm is zero!"
+    (nm,cv,s)
+
+end
+
+correlators_nm_cv_s(events)
+
+C_data = C_dataset(events)
+
+mean(C_data)
+
+moments = [mean(C_data.^k) for k in 1:3]
