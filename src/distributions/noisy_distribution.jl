@@ -1,5 +1,5 @@
 """
-    noisy_distribution(;input::Input, loss::Real, interf::Interferometer, exact=true, approx=true, samp=true; error=1e-4, failure_probability=1e-4)
+    noisy_distribution(;input::Input, loss::Real, interf::Interferometer, exact=true, approx=true, samp=true, error=1e-4, failure_probability=1e-4)
 
 Compute the exact and/or approximated and/or sampled probability distribution of
 all possible output configurations of partially-distinguishable photons through a
@@ -13,7 +13,7 @@ returns an array containing the three distributions.
 !!! note "Reference"
     [https://arxiv.org/pdf/1809.01953.pdf](https://arxiv.org/pdf/1809.01953.pdf)
 """
-function noisy_distribution(;input::Input, loss::Real, interf::Interferometer, exact=true, approx=true, samp=true; error=1e-4, failure_probability=1e-4)
+function noisy_distribution(;input::Input, loss::Real, interf::Interferometer, exact=true, approx=true, samp=true, error=1e-4, failure_probability=1e-4)
 
     output = []
     ϵ = error
