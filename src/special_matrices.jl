@@ -535,8 +535,8 @@ end
 """
 	husimiQ_matrix(V::Matrix)
 
-Returns the complex-valued covariance of the state's Husimi Q-function
-!!! note Reference
+Returns the complex-valued covariance of the state's Husimi Q-function.
+!!! note "Reference"
 	[The Walrus documentation](https://the-walrus.readthedocs.io/en/latest/_modules/thewalrus/quantum/conversions.html#Amat)
 """
 function husimiQ_matrix(V::Matrix)
@@ -556,11 +556,8 @@ end
 """
 	A_mat(V::Matrix)
 
-Return the matrix A defined as
-```math
-A = X (I-\sigma_Q^{-1})
-```
-!!! note Reference
+Return the matrix ``A`` defined from the Wigner covariance matrix ``V``.
+!!! note "Reference"
 	[The Boundary for Quantum Advantage in Gaussian Boson Sampling](https://arxiv.org/pdf/2108.01622.pdf)
 """
 function A_mat(V::Matrix)

@@ -2,7 +2,7 @@
     gaussian_sampler(;input::GaussianInput{T}, nsamples=Int(1e3), burn_in=200, thinning_rate=100) where {T<:Gaussian}
 
 Simulate noiseless Gaussian Boson Sampling with photon number resolving detectors via a MIS sampler.
-!!! note Reference
+!!! note "Reference"
     [The Boundary for Quantum Advantage in Gaussian Boson Sampling](https://arxiv.org/pdf/2108.01622.pdf)
 """
 function gaussian_sampler(;input::GaussianInput{T}, nsamples=Int(1e3), burn_in=200, thinning_rate=100) where {T<:Gaussian}

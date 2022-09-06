@@ -32,7 +32,7 @@ end
 
 Find the Williamson decomposition of the positive semidefinite matrix ``V``.
 Returns ``D`` and ``S`` such that ``V = S D S^T
-!!! note Reference
+!!! note "Reference"
     [The Walrus documentation](https://the-walrus.readthedocs.io/en/latest/code/decompositions.html?highlight=williamson#thewalrus.decompositions.williamson)
 """
 function williamson_decomp(V::AbstractMatrix)
