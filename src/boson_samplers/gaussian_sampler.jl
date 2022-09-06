@@ -1,15 +1,19 @@
 """
-    gaussian_sampler(;input::GaussianInput{T}, nsamples=Int(1e3), burn_in=200, thinning_rate=100) where {T<:Gaussian}
+    gaussian_sampler(;input::GaussianInput{T}, nsamples=Int(1e3), burn_in=200, thinning_rate=100, mean_n=nothing) where {T<:Gaussian}
 
 Simulate noiseless Gaussian Boson Sampling with photon number resolving detectors via a MIS sampler.
+Post-select the proposed states by fixing the mean photon number `mean_n`.
 !!! note "Reference"
     [The Boundary for Quantum Advantage in Gaussian Boson Sampling](https://arxiv.org/pdf/2108.01622.pdf)
 """
-function gaussian_sampler(;input::GaussianInput{T}, nsamples=Int(1e3), burn_in=200, thinning_rate=100) where {T<:Gaussian}
+function gaussian_sampler(;input::GaussianInput{T}, nsamples=Int(1e3), burn_in=200, thinning_rate=100, mean_n=nothing) where {T<:Gaussian}
 
     Ri = input.displacement
     V = input.covariance_matrix
     n = div(LinearAlgebra.checksquare(V), 2)
+    xx_pp_ordering = vcat([i for i in 1:2:2n-1], [i for i in 2:2:2n])
+    V = V[xx_pp_ordering, xx_pp_ordering]
+
     D, S = williamson_decomp(V)
     id = Matrix{eltype(V)}(I, size(V))
     Did = D - id
@@ -30,7 +34,7 @@ function gaussian_sampler(;input::GaussianInput{T}, nsamples=Int(1e3), burn_in=2
     B2 = abs.(B).^2
 
     sample_R() = sqrtW * rand(MvNormal(Ri))
-    compute_displacement(R::AbstractVector) = [(R[i]+im*R[i+1])/sqrt(2) for i in 1:2:length(R)-1]
+    compute_displacement(R::AbstractVector) = [(R[i]+im*R[i+n])/sqrt(2) for i in 1:n]
     sample_displacement() = compute_displacement(sample_R())
 
     function sample_pattern()
@@ -108,7 +112,7 @@ function gaussian_sampler(;input::GaussianInput{T}, nsamples=Int(1e3), burn_in=2
 
     end
 
-    pattern, displacement = valid_sampling(4)
+    pattern, displacement = valid_sampling()
     patterns = [pattern]
     pattern_chain = pattern
     p_proposal_chain = sampled_probability(pattern, displacement)
@@ -119,7 +123,7 @@ function gaussian_sampler(;input::GaussianInput{T}, nsamples=Int(1e3), burn_in=2
     p_proposal_ = []
     p_target_ = []
 
-    for i in 1:nsamples
+    for i in ProgressBar(1:nsamples)
 
         pattern, displacement = valid_sampling(4)
         p_proposal = sampled_probability(pattern, displacement)
