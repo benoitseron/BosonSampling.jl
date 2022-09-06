@@ -418,8 +418,6 @@ Returns a ``n``-by-``n`` Gram matrix parametrized by the real ``0 ≤ x ≦ 1``.
 """
 function gram_matrix_one_param(n::Int, x::Real)
 
-	# @argcheck x>=0 && x<= 1
-
 	S = 1.0 * Matrix(I, n, n)
 	for i in 1:n
 		for j in 1:n
@@ -491,7 +489,7 @@ end
 """
 	direct_sum(A::Matrix, B::Matrix)
 
-Performs the direct sum between `A` and `B`.
+Performs the matrix direct sum between `A` and `B`.
 """
 direct_sum(A::Matrix, B::Matrix) = [A zeros(size(A)[1], size(B)[2]);
 									zeros(size(B)[1], size(A)[1]) B]
@@ -499,7 +497,14 @@ direct_sum(A::Matrix, B::Matrix) = [A zeros(size(A)[1], size(B)[2]);
 """
 	symplectic_mat(n::Int)
 
-Returns the symplectic matrix of dimension `n`.
+Returns the symplectic matrix ``J`` of dimension `2n`:
+```math
+J =
+\begin{pmatrix}
+0_n & I_n \\
+-I_n & 0_n
+\end{pmatrix}
+```
 """
 function symplectic_mat(n::Int)
 	id = Matrix{Float64}(I,n,n)
@@ -507,12 +512,60 @@ function symplectic_mat(n::Int)
 	return [Z id; -id Z]
 end
 
-function x_mat(n::Int)
+"""
+	X_mat(n::Int)
+
+Returns the ``X`` matrix of dimension `2n` defined as
+```math
+X =
+\begin{pmatrix}
+0_n & I_n \\
+-I_n & 0_n
+\end{pmatrix}
+```
+!!! note "Reference"
+	[The Boundary for Quantum Advantage in Gaussian Boson Sampling](https://arxiv.org/pdf/2108.01622.pdf)
+"""
+function X_mat(n::Int)
 	id = Matrix{Float64}(I,n,n)
 	Z = zeros(Float64,n,n)
 	return [Z id; id Z]
 end
 
+"""
+	husimiQ_matrix(V::Matrix)
+
+Returns the complex-valued covariance of the state's Husimi Q-function
+!!! note Reference
+	[The Walrus documentation](https://the-walrus.readthedocs.io/en/latest/_modules/thewalrus/quantum/conversions.html#Amat)
+"""
 function husimiQ_matrix(V::Matrix)
-	body
+
+	n = div(LinearAlgebra.checksquare(V), 2)
+	x = V[1:n, 1:n]
+	xp = V[1:n, n+1:2n]
+	p = V[n+1:2n, n+1:2n]
+
+	a_dag_a = (x+p+(xp-transpose(xp))im - 2*Matrix{ComplexF64}(I,n,n)) / 4
+	aa = (x-p+(xp+transpose(xp))im) / 4
+
+	return [a_dag_a conj(aa); aa conj(a_dag_a)] + Matrix{ComplexF64}(I, 2n, 2n)
+
+end
+
+"""
+	A_mat(V::Matrix)
+
+Return the matrix A defined as
+```math
+A = X (I-\sigma_Q^{-1})
+```
+!!! note Reference
+	[The Boundary for Quantum Advantage in Gaussian Boson Sampling](https://arxiv.org/pdf/2108.01622.pdf)
+"""
+function A_mat(V::Matrix)
+	id = Matrix{eltype(V)}(I,size(V))
+	X = X_mat(div(size(V)[1],2))
+	O = id - inv(husimiQ_matrix(V))
+	return X * conj(O)
 end
