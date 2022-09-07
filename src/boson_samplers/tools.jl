@@ -22,7 +22,7 @@ function duplicate_row_col(A::Array, lengths::Vector{Int})
     if length(size(A)) == 2
         return A[res,res]
     else
-        return res
+        return A[res]
     end
 
 end

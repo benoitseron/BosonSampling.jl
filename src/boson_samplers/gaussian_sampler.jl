@@ -56,16 +56,16 @@ function gaussian_sampler(;input::GaussianInput{T}, nsamples=Int(1e3), burn_in=2
 
     end
 
-    function valid_sampling(N=nothing)
+    function valid_sampling()
 
-        if N == nothing
+        if mean_n == nothing
             return sample_pattern()
         else
             pattern = []
             displacement = []
             count = nothing
 
-            while count != N
+            while count != mean_n
                 pattern, displacement = sample_pattern()
                 count = sum(pattern)
             end
@@ -81,7 +81,7 @@ function gaussian_sampler(;input::GaussianInput{T}, nsamples=Int(1e3), burn_in=2
         Gn = duplicate_row_col(G, pattern)
 
         Bn = duplicate_row_col(B2, pattern)
-        for i in 1:length(G)
+        for i in 1:length(Gn)
             Bn[i,i] = Gn[i]
         end
 
@@ -108,48 +108,47 @@ function gaussian_sampler(;input::GaussianInput{T}, nsamples=Int(1e3), burn_in=2
         factor = abs(exp(arg_exp))^2
         rescale = prod(factorial.(pattern)) * sqrt(detQ)
 
-        return real(factor * lhaf / rescale)
+        return real(factor * lhaf * conj(lhaf) / rescale)
 
     end
 
     pattern, displacement = valid_sampling()
-    patterns = [pattern]
+    chain_pattern_ = [pattern]
     pattern_chain = pattern
     p_proposal_chain = sampled_probability(pattern, displacement)
+    proposal_ = [p_proposal_chain]
     p_target_chain = target_probability(pattern, displacement)
+    target_ = [p_target_chain]
+    outcomes = Vector{Int8}(undef, nsamples)
 
-    pattern_chain_ = []
-    outcomes = []
-    p_proposal_ = []
-    p_target_ = []
 
     for i in ProgressBar(1:nsamples)
 
-        pattern, displacement = valid_sampling(4)
+        pattern, displacement = valid_sampling()
         p_proposal = sampled_probability(pattern, displacement)
         p_target = target_probability(pattern, displacement)
         p_accept = min(1, (p_proposal_chain*p_target)/(p_target_chain*p_proposal))
 
         if rand() <= p_accept
-            push!(pattern_chain_, pattern)
+            push!(chain_pattern_, pattern)
             p_proposal_chain = p_proposal
             p_target_chain = p_target
             pattern_chain = pattern
-            push!(outcomes, 1)
+            outcomes[i] = 1
         else
-            push!(pattern_chain_, pattern_chain)
-            push!(outcomes, 0)
+            push!(chain_pattern_, pattern_chain)
+            outcomes[i] = 0
         end
 
-        push!(p_proposal_, p_proposal)
-        push!(p_target_, p_target)
+        push!(proposal_, p_proposal)
+        push!(target_, p_target)
 
     end
 
     res = []
-    for i in thinning_rate:nsamples
+    for i in burn_in:burn_in+thinning_rate
         if outcomes[i] == 1
-            push!(res, pattern_chain_[i])
+            push!(res, chain_pattern_[i])
         end
     end
 
