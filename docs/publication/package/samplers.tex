@@ -1,10 +1,13 @@
 \begin{Shaded}
 \begin{Highlighting}[]
-\CommentTok{\# Define an input of 2 photons among 4 modes}
-\NormalTok{i }\OperatorTok{=} \FunctionTok{Input}\DataTypeTok{\{Bosonic\}}\NormalTok{(}\FunctionTok{first\_modes}\NormalTok{(}\FloatTok{2}\NormalTok{,}\FloatTok{4}\NormalTok{))}
+\NormalTok{n }\OperatorTok{=} \FloatTok{20}
+\NormalTok{m }\OperatorTok{=} \FloatTok{400}
+
+\CommentTok{\# Define an input of 20 photons among 400 modes}
+\NormalTok{i }\OperatorTok{=} \FunctionTok{Input}\DataTypeTok{\{Bosonic\}}\NormalTok{(}\FunctionTok{first\_modes}\NormalTok{(n,m))}
 
 \CommentTok{\# Define the interferometer}
-\NormalTok{interf }\OperatorTok{=} \FunctionTok{RandHaar}\NormalTok{(}\FloatTok{4}\NormalTok{)}
+\NormalTok{interf }\OperatorTok{=} \FunctionTok{RandHaar}\NormalTok{(m)}
 
 \CommentTok{\# Set the output measurement}
 \NormalTok{o }\OperatorTok{=} \FunctionTok{FockSample}\NormalTok{()}
@@ -14,5 +17,7 @@
 
 \CommentTok{\# Simulate}
 \FunctionTok{sample!}\NormalTok{(ev)}
+\CommentTok{\# output:}
+\CommentTok{\# state = [0,1,0,...]}
 \end{Highlighting}
 \end{Shaded}

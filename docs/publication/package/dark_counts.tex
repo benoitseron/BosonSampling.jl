@@ -14,9 +14,13 @@
 \CommentTok{\# works DarkCountFockSample(0.01)}
 \CommentTok{\# fails DarkCountFockSample({-}1)}
 
-\CommentTok{\# define the sampling algorithm}
-\KeywordTok{function} \FunctionTok{sample!}\NormalTok{(ev}\OperatorTok{::}\DataTypeTok{Event\{TIn, TOut\}}\NormalTok{) }\KeywordTok{where}\NormalTok{ \{TIn}\OperatorTok{\textless{}:}\DataTypeTok{InputType}\NormalTok{, TOut }\OperatorTok{\textless{}:}\DataTypeTok{ DarkCountFockSample}\NormalTok{\}}
-
+\CommentTok{\# define the sampling algorithm:}
+\CommentTok{\# the function sample! is modified to take into account}
+\CommentTok{\# the new measurement type}
+\CommentTok{\# this allows to keep the same syntax and in fact reuse}
+\CommentTok{\# any function that would have previously used sample!}
+\CommentTok{\# at no cost}
+\KeywordTok{function}\NormalTok{ BosonSampling.}\FunctionTok{sample!}\NormalTok{(ev}\OperatorTok{::}\DataTypeTok{Event\{TIn, TOut\}}\NormalTok{) }\KeywordTok{where}\NormalTok{ \{TIn}\OperatorTok{\textless{}:}\DataTypeTok{InputType}\NormalTok{, TOut }\OperatorTok{\textless{}:}\DataTypeTok{ DarkCountFockSample}\NormalTok{\}}
 
     \CommentTok{\# sample without dark counts}
 \NormalTok{    ev\_no\_dark }\OperatorTok{=} \FunctionTok{Event}\NormalTok{(ev.input\_state, }\FunctionTok{FockSample}\NormalTok{(), ev.interferometer)}
@@ -24,17 +28,18 @@
 \NormalTok{    sample\_no\_dark }\OperatorTok{=}\NormalTok{ ev\_no\_dark.output\_measurement.s}
 
     \CommentTok{\# now, apply the dark counts to "perfect" samples}
-
     \FunctionTok{observe\_dark\_count}\NormalTok{(p) }\OperatorTok{=} \FunctionTok{Int}\NormalTok{(}\FunctionTok{do\_with\_probability}\NormalTok{(p)) }\CommentTok{\# 1 with probability p, 0 with probability 1{-}p}
 \NormalTok{    dark\_counts }\OperatorTok{=}\NormalTok{ [}\FunctionTok{observe\_dark\_count}\NormalTok{(ev.output\_measurement.p) for i }\KeywordTok{in} \FloatTok{1}\OperatorTok{:}\NormalTok{ ev.input\_state.m]}
 
 \NormalTok{    ev.output\_measurement.s }\OperatorTok{=}\NormalTok{ sample\_no\_dark }\OperatorTok{+}\NormalTok{ dark\_counts}
 \KeywordTok{end}
 
+\CommentTok{\#\#\# example \#\#\#}
+
+\CommentTok{\# experiment parameters}
 \NormalTok{n }\OperatorTok{=} \FloatTok{10}
 \NormalTok{m }\OperatorTok{=} \FloatTok{10}
 \NormalTok{p\_dark }\OperatorTok{=} \FloatTok{0.1}
-\CommentTok{\# experiment parameters}
 \NormalTok{input\_state }\OperatorTok{=} \FunctionTok{first\_modes}\NormalTok{(n,m)}
 \NormalTok{interf }\OperatorTok{=} \FunctionTok{RandHaar}\NormalTok{(m)}
 \NormalTok{i }\OperatorTok{=} \FunctionTok{Input}\DataTypeTok{\{Bosonic\}}\NormalTok{(input\_state)}
@@ -42,40 +47,7 @@
 \NormalTok{ev }\OperatorTok{=} \FunctionTok{Event}\NormalTok{(i,o,interf)}
 
 \FunctionTok{sample!}\NormalTok{(ev)}
-
-\CommentTok{\# DOESNT WORK but ok if I execute the code of sample copy pasted below}
-\CommentTok{\# n = 3}
-\CommentTok{\# m = 8}
-\CommentTok{\# interf = RandHaar(m)}
-\CommentTok{\# input\_state = Input\{Bosonic\}(first\_modes(n,m))}
-\CommentTok{\# o = FockSample()}
-\CommentTok{\#}
-\CommentTok{\# ev = Event(input\_state, o, interf)}
-\CommentTok{\#}
-\CommentTok{\# sample!(ev)}
-
-\CommentTok{\#}
-\CommentTok{\# function sample!(ev::Event\{TIn, TOut\}) where \{TIn\textless{}:InputType, TOut \textless{}: FockSample\}}
-\CommentTok{\#}
-\CommentTok{\#     check\_probability\_empty(ev)}
-\CommentTok{\#}
-\CommentTok{\#     if TIn == Distinguishable}
-\CommentTok{\#         ev.output\_measurement.s = ModeOccupation(classical\_sampler(ev))}
-\CommentTok{\#     elseif TIn == Bosonic}
-\CommentTok{\#         ev.output\_measurement.s = ModeOccupation(cliffords\_sampler(ev))}
-\CommentTok{\#     else}
-\CommentTok{\#         error("not implemented")}
-\CommentTok{\#}
-\CommentTok{\#     end}
-\CommentTok{\#}
-\CommentTok{\# end}
-\CommentTok{\#}
-\CommentTok{\# function do\_with\_probability(p)}
-\CommentTok{\#}
-\CommentTok{\#     """returns \FloatTok{true} with probability p, \FloatTok{false} with (1{-}p)"""}
-\CommentTok{\#}
-\CommentTok{\#     rand() \textless{} p ? \FloatTok{true} : \FloatTok{false}}
-\CommentTok{\#}
-\CommentTok{\# end}
+\CommentTok{\# output:}
+\CommentTok{\# state = [3, 1, 0, 3, 0, 1, 2, 0, 0, 0]}
 \end{Highlighting}
 \end{Shaded}

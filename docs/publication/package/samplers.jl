@@ -1,7 +1,7 @@
 n = 20
 m = 400
 
-# Define an input of 2 photons among 4 modes
+# Define an input of 20 photons among 400 modes
 i = Input{Bosonic}(first_modes(n,m))
 
 # Define the interferometer
