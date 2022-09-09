@@ -298,4 +298,17 @@ ev = Event(i,o,interf)
 
 compute_probability!(ev)
 
+### Check Gaussian sampler ### 
+r = first_modes(4,4)
+s = ones(r.m)
+i = GaussianInput{SingleModeSqueezedVacuum}(r,s)
+o = FockSample()
+
+ev = GaussianEvent(i,o)
+
+gaussian_sampler(ev,nsamples=120,burn_in=20,thinning_rate=10)
+
+typeof(o)
+
+
 ans = true

@@ -87,7 +87,12 @@ Container holding a sample from `Partition` photon count.
 """
 mutable struct PartitionSample <: OutputMeasurementType
     part_occ::Union{PartitionOccupancy, Nothing}
-
     PartitionSample() = new(nothing)
     PartitionSample(p::PartitionOccupancy) = new(p)
+end
+
+mutable struct TresholdDetection <: OutputMeasurementType
+    s::Union{Vector{Int64}, Nothing}
+    TresholdDetection() = new(nothing)
+    TresholdDetection(s::Vector{Int64}) = new(s)
 end

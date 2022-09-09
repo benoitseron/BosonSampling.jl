@@ -11,7 +11,9 @@ function gaussian_sampler_PNRD(;input::GaussianInput{T}, nsamples=Int(1e3), burn
     Ri = input.displacement
     V = input.covariance_matrix
     n = div(LinearAlgebra.checksquare(V), 2)
+    mean_n == nothing ? mean_n = input.n : nothing
     xx_pp_ordering = vcat([i for i in 1:2:2n-1], [i for i in 2:2:2n])
+    Ri = Ri[xx_pp_ordering]
     V = V[xx_pp_ordering, xx_pp_ordering]
 
     D, S = williamson_decomp(V)
@@ -33,7 +35,12 @@ function gaussian_sampler_PNRD(;input::GaussianInput{T}, nsamples=Int(1e3), burn
     B = A[1:n, 1:n]
     B2 = abs.(B).^2
 
-    sample_R() = sqrtW * rand(MvNormal(Ri, id))
+    # sample_R() = sqrtW * rand(MvNormal(Ri, id))
+    function sample_R()
+        R = sqrtW * rand(MvNormal(Ri, id))
+        return R[xx_pp_ordering]
+    end
+
     compute_displacement(R::AbstractVector) = [(R[i]+im*R[i+n])/sqrt(2) for i in 1:n]
     sample_displacement() = compute_displacement(sample_R())
 
@@ -58,20 +65,16 @@ function gaussian_sampler_PNRD(;input::GaussianInput{T}, nsamples=Int(1e3), burn
 
     function valid_sampling()
 
-        if mean_n == nothing
-            return sample_pattern()
-        else
-            pattern = []
-            displacement = []
-            count = nothing
+        pattern = []
+        displacement = []
+        count = nothing
 
-            while count != mean_n
-                pattern, displacement = sample_pattern()
-                count = sum(pattern)
-            end
-
-            return pattern, displacement
+        while count != mean_n
+            pattern, displacement = sample_pattern()
+            count = sum(pattern)
         end
+
+        return pattern, displacement
 
     end
 
@@ -145,12 +148,9 @@ function gaussian_sampler_PNRD(;input::GaussianInput{T}, nsamples=Int(1e3), burn
 
     end
 
-    res = []
-    for i in burn_in:burn_in+thinning_rate
-        if outcomes[i] == 1
-            push!(res, chain_pattern_[i])
-        end
-    end
+    res = chain_pattern_[burn_in:burn_in+thinning_rate]
+    outcomes = outcomes[burn_in:burn_in+thinning_rate]
+    idx = findall(el -> el!=0, outcomes)
 
     return res
 
@@ -164,6 +164,7 @@ function gaussian_sampler_treshold(;input::GaussianInput{T}, nsamples=Int(1e3), 
     n = div(LinearAlgebra.checksquare(V), 2)
     xx_pp_ordering = vcat([i for i in 1:2:2n-1], [i for i in 2:2:2n])
     V = V[xx_pp_ordering, xx_pp_ordering]
+    Ri = Ri[xx_pp_ordering]
 
     D, S = williamson_decomp(V)
     id = Matrix{eltype(V)}(I, size(V))
@@ -185,7 +186,8 @@ function gaussian_sampler_treshold(;input::GaussianInput{T}, nsamples=Int(1e3), 
     B2 = abs.(B).^2
 
     function sample_R(cov::AbstractMatrix)
-        return cov * rand(MvNormal(Ri, id))
+        R = cov * rand(MvNormal(Ri, id))
+        return R[xx_pp_ordering]
     end
 
     compute_displacement(R::AbstractVector) = [(R[i]+im*R[i+n])/sqrt(2) for i in 1:n]
@@ -213,18 +215,14 @@ function gaussian_sampler_treshold(;input::GaussianInput{T}, nsamples=Int(1e3), 
 
     function valid_sampling()
 
-        if mean_click == nothing
+        count = nothing
+        photon_pattern = []
+        click_modes = []
+        R = []
+        while count != mean_click
             photon_pattern, R = sample_pattern()
             click_modes = findall(el -> el!=0, photon_pattern)
-        else
-            count = nothing
-            photon_pattern = []
-            R = []
-            while count != mean_click
-                photon_pattern, R = sample_pattern()
-                click_modes = findall(el -> el!=0, photon_pattern)
-                count = length(click_modes)
-            end
+            count = length(click_modes)
         end
 
         click_pattern = zeros(Int64, n)
@@ -235,8 +233,8 @@ function gaussian_sampler_treshold(;input::GaussianInput{T}, nsamples=Int(1e3), 
             d = Pareto(photon_pattern[i], 1)
             x[i] = 1/rand(Pareto(photon_pattern[i],1))
         end
-
         η = 1 .- x
+
         Rx = copy(R)
         Vx = copy(V)
         for i in 1:n
@@ -244,8 +242,8 @@ function gaussian_sampler_treshold(;input::GaussianInput{T}, nsamples=Int(1e3), 
             Vx[i+n,:] *= sqrt(η[i])
             Vx[:,i] *= sqrt(η[i])
             Vx[:,i+n] *= sqrt(η[i])
-            Vx[i,i] += (1-η[i]) / 2
-            Vx[i+n,i+n] += (1-η[i]) / 2
+            Vx[i,i] += (1-η[i])
+            Vx[i+n,i+n] += (1-η[i])
             Rx[i] *= sqrt(η[i])
             Rx[i+n] *= sqrt(η[i])
         end
@@ -282,8 +280,7 @@ function gaussian_sampler_treshold(;input::GaussianInput{T}, nsamples=Int(1e3), 
     end
 
     function target_probability(pattern, displacement, Tx)
-        displacement
-        Tx
+
         Qx = husimiQ_matrix(Tx)
         Ax = A_mat(Tx)
         Bx = conj(Ax[1:n, n+1:2n])
@@ -327,7 +324,6 @@ function gaussian_sampler_treshold(;input::GaussianInput{T}, nsamples=Int(1e3), 
     displacement = compute_displacement(R)
     displacement_x = compute_displacement(Rx)
     Cx, dx = apply_loss(x, displacement)
-
     p_proposal_chain = sampled_probability(click_pattern, dx, Cx)
     p_target_chain = target_probability(click_pattern, displacement_x, Tx)
 
@@ -364,23 +360,23 @@ function gaussian_sampler_treshold(;input::GaussianInput{T}, nsamples=Int(1e3), 
 
     end
 
-    res = []
-    for i in burn_in:burn_in+thinning_rate
-        if outcomes[i] == 1
-            push!(res, chain_pattern_[i])
-        end
-    end
+    res = chain_pattern_[burn_in:burn_in+thinning_rate]
+    outcomes = outcomes[burn_in:burn_in+thinning_rate]
+    idx = findall(el -> el!=0, outcomes)
 
-    return res
+    return res[idx]
 
 end
 
-r = first_modes(4,4)
-s_ = ones(r.m)
-input = GaussianInput{SingleModeSqueezedVacuum}(r,s_)
+function gaussian_sampler(ev::GaussianEvent{TIn,TOut}; nsamples=Int(1e3), burn_in=200, thinning_rate=100, mean_val=nothing) where {TIn<:Gaussian, TOut<:Union{FockSample,TresholdDetection}}
 
-burn_in = 20
-thinning_rate = 10
-nsamples = 120
+    if TOut == FockSample
+        gaussian_sampler_PNRD(input=ev.input_state, nsamples=nsamples, burn_in=burn_in, thinning_rate=thinning_rate, mean_n=mean_val)
+    elseif TOut == TresholdDetection
+        mean_val == nothing ? mean_val = 1 : nothing
+        return gaussian_sampler_treshold(input=ev.input_state, nsamples=nsamples, burn_in=burn_in, thinning_rate=thinning_rate, mean_click=mean_val)
+    else
+        error("Measurement ", TOut, " not implemented")
+    end
 
-gaussian_sampler_treshold(input=input, burn_in=burn_in, thinning_rate=thinning_rate, mean_click=1, nsamples=nsamples)
+end
