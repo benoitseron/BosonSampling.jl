@@ -52,12 +52,12 @@ function correlators_nm_cv_s(interf::Interferometer, input_state::Input{T}) wher
 
 end
 
-n = 3
-m = 8
-interf = RandHaar(m)
-TIn = Bosonic
-
-events = generate_experimental_data(n_events = 100, n = n,m = m, interf = RandHaar(m), TIn = Bosonic)
+# n = 3
+# m = 8
+# interf = RandHaar(m)
+# TIn = Bosonic
+#
+# events = generate_experimental_data(n_events = 100, n = n,m = m, interf = RandHaar(m), TIn = Bosonic)
 
 function C(i,j, events::Vector{Event})
 

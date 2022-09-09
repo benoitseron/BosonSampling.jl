@@ -57,60 +57,78 @@ end
 
 ### bosonic to distinguishable single subset ###
 
-begin
 
-    n = 16
-    m = n
 
-    function labels(x)
+n = 14
+m = n
+n_iter = 1000
 
-        if x == 1
-            "Bosonic"
+function labels(x)
 
-        elseif x == 0
-            "Distinguishable"
-        else
-            "x = $x"
-        end
+    if x == 1
+        "Bosonic"
 
+    elseif x == 0
+        "Distinguishable"
+    else
+        "x = $x"
     end
 
-    function add_this_x!(x)
+end
 
-        i = Input{OneParameterInterpolation}(first_modes(n,m),x)
 
-        subset = Subset(first_modes(Int(n/2), m))
+function add_this_x!(x)
+
+    results = []
+
+    i = Input{OneParameterInterpolation}(first_modes(n,m),x)
+
+    subset = Subset(first_modes(Int(n/2), m))
+
+    part = Partition(subset)
+    o = PartitionCountsAll(part)
+
+    for iter in 1:n_iter
+
         interf = RandHaar(m)
-        part = Partition(subset)
-        o = PartitionCountsAll(part)
         ev = Event(i,o,interf)
 
         compute_probability!(ev)
-
-        x_data = collect(0:n)
-        y_data = ev.proba_params.probability.proba
-
-        x_spl = range(0,n, length = 1000)
-        spl = Spline1D(x_data,y_data)
-        y_spl = spl(x_spl)
-
-        scatter!([0:n] , ev.proba_params.probability.proba, c = get(color_map, x), label = "", m = :cross)
-        plot!(x_spl , y_spl, c = get(color_map, x), label = labels(x))
-
+        push!(results, ev.proba_params.probability.proba)
 
     end
 
-    plt = plot()
+    x_data = collect(0:n)
+    y_data = [mean([results[iter][i] for iter in 1:n_iter]) for i in 1:n+1]
+    y_err_data = [sqrt(var([results[iter][i] for iter in 1:n_iter])) for i in 1:n+1]
 
-    for x in [0, 0.6, 0.8, 1]#range(0,1, length = 3)
-        add_this_x!(x)
+    x_spl = range(0,n, length = 1000)
+    spl = Spline1D(x_data,y_data)
+    y_spl = spl(x_spl)
 
+    # plot the error only on the extreme cases
+    y_err(x) = ((x == 0 || x == 1) ? y_err_data : nothing)
+    if x == 0 || x == 1
+        scatter!(x_data, y_data, yerr = y_err(x), c = get(color_map, x), label = "", m = :cross)
     end
+    plot!(x_spl , y_spl, c = get(color_map, x), label = labels(x), xticks = 0:n, grid = true)
 
-    display(plt)
-    savefig(plt,"./images/publication/bosonic_to_distinguishable.png")
 
 end
+
+plt = plot()
+
+for x in [0, 0.6, 0.8, 1]#range(0,1, length = 3)
+    add_this_x!(x)
+
+end
+
+display(plt)
+xlabel!(L"k")
+ylabel!(L"p(k)")
+savefig(plt,"./images/publication/bosonic_to_distinguishable.png")
+
+
 
 ### evolution of the TVD numbers of subsets ###
 begin
