@@ -102,10 +102,10 @@ function correlators_nm_cv_s(events::Vector{Event})
 
 end
 
-correlators_nm_cv_s(events)
-
-C_data = C_dataset(events)
-
-mean(C_data)
-
-moments = [mean(C_data.^k) for k in 1:3]
+# correlators_nm_cv_s(events)
+#
+# C_data = C_dataset(events)
+#
+# mean(C_data)
+#
+# moments = [mean(C_data.^k) for k in 1:3]
