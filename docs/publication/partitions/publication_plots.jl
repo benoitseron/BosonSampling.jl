@@ -19,6 +19,7 @@ using AutoHashEquals
 using LinearRegression
 
 using DataStructures
+PLOTS_DEFAULTS = Dict(:dpi => 1200)
 
 
 cd("docs/publication/partitions/")
