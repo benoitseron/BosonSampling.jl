@@ -1,6 +1,6 @@
 # Embedding BosonSampling.jl in Python
 
-[`Embedding Julia`](https://docs.julialang.org/en/v1/manual/embedding/) can be done in many ways and in several programming languages such as C/C++, C#, Fortran or Python. As an example we describe here how to integrate `BosonSampling.jl` to a python project by using [`PyJulia`](https://pyjulia.readthedocs.io/en/latest/installation.html) that provides a high-level interface to Julia through Python. In the following, we will assume that both Julia and Python are installed and added the `PATH`.
+[`Embedding Julia`](https://docs.julialang.org/en/v1/manual/embedding/) can be done in many ways and in several programming languages such as C/C++, C#, Fortran or Python. As an example we describe here how to integrate `BosonSampling.jl` to a python project by using [`PyJulia`](https://pyjulia.readthedocs.io/en/latest/installation.html) that provides a high-level interface to Julia through Python. In the following, we will assume that both Julia and Python are installed and added to the `PATH`.
 
 ## Installation
 
