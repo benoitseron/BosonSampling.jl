@@ -25,8 +25,8 @@ makedocs(
                 "Optimization" => "tutorial/optimization.md",
                 "Counting statistics" => "tutorial/compute_distr.md",
                 "Circuits" => "tutorial/circuits.md",
-                "Permanent conjectures" => "tutorial/permanent_conjectures.md"
-                        ],
+                "Permanent conjectures" => "tutorial/permanent_conjectures.md",
+                "Python API" => "tutorial/python_API.md"],
         "Benchmarks" => "benchmarks/bench.md",
         "API" => Any[
             "Types" => Any[
