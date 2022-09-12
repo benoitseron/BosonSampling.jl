@@ -58,7 +58,6 @@ end
 ### bosonic to distinguishable single subset ###
 
 
-
 n = 14
 m = n
 n_iter = 1000
