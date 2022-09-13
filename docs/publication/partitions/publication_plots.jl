@@ -1336,6 +1336,7 @@ begin
     hline!([mean(results[1,:])], c = col[2], linestyle = :dash, label = L"\langle c(2) \rangle = %$(round(mean(results[1,:]), digits = 3))")
     plot!(legend=:bottomright)
     xlabel!(L"n")
+    xlims!((n_array[1]-1, n_array[end]+2))
     display(plt)
 end
 savefig(plt, "images/publication/power_law_validity.png")
