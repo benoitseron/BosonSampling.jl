@@ -1075,184 +1075,193 @@ savefig(plt, "images/publication/size.png")
 # we look at the relative time taken to attain a threshold of certainty
 # if using up to lost_up_to photons
 
-
-
-n = 20
-m = 20
-n_subsets = 2
-lost_photons = collect(0:n)
-
-n_unitaries = 1 # number of unitaries on which averaged
-n_trials_each_unitary = 1000
-max_iter = 100000 # max number of samples taken for bayesian estimation
-threshold = 0.95 # confidence to attain
-
-η_array = collect(range(0.8,1,length = 10))
-speed_up_array = zeros((length(η_array), length(lost_photons)))
-speed_up_var_array = copy(speed_up_array)
-#
-# min_proba = 1e5 * eps() # probas lower than that are discarded as they would
-# # change the confidence factor but in an uncertain manner
-#
-
-@showprogress for (η_index ,η) in enumerate(η_array)
-
-    n_sample_this_run = zeros((n_unitaries * n_trials_each_unitary, length(lost_photons)))
-    p_lost_this_run = copy(n_sample_this_run)
-    # to store data before averaging
-
-    for unitary in 1:n_unitaries
-
-        ib = Input{Bosonic}(first_modes(n,2m))
-        id = Input{Distinguishable}(first_modes(n,2m))
-
-        part = to_lossy(equilibrated_partition(m,n_subsets))
-
-        o = PartitionCountsAll(part)
-
-        interf = UniformLossInterferometer(η,m)
-
-        evb = Event(ib,o,interf)
-        evd = Event(id,o,interf)
-
-        pb = compute_probability!(evb)
-        pd = compute_probability!(evd)
-
-        pb_sorted = sort_by_lost_photons(pb)
-        pd_sorted = sort_by_lost_photons(pd)
-
-        p_lost = [sum(pb_sorted[i].proba) for i in 1:length(lost_photons)]
-        # in this simple model, this is the same for both kind of particles
-        #
-        # if η == 1
-        #     @show p_lost
-        # end
-
-        function n_samples_loss(lost_up_to)
-
-            χ = 1
-            n_sampled = 0
-
-            for iter in 1:max_iter
-                n_sampled += 1
-
-                lost = wsample(p_lost[1:lost_up_to+1]) - 1
-                # @show lost
-                event_sampled = wsample(pb_sorted[lost+1].proba)
-
-                χ *= (pb_sorted[lost+1].proba)[event_sampled] / (pd_sorted[lost+1].proba)[event_sampled]
-
-                if confidence(χ) >= threshold
-                    return n_sampled
-                end
-            end
-
-            @warn "max_iter raised, need to raise it"
-            return nothing
-
-        end
-        #
-        # n_sample_this_run_array = zeros((n_trials_each_unitary, length(lost_photons)))
-        # time_factor_this_run_array = zeros((n_trials_each_unitary, length(lost_photons)))
-        # speed_up_this_run_array = zeros((n_trials_each_unitary, length(lost_photons)))
-
-        for trial_this_unitary in 1:n_trials_each_unitary
-
-            # n_sample_this_run = [n_samples_loss(i) for i in lost_photons]
-
-            # n_sample_this_run_array[trial_this_unitary, :] = n_sample_this_run
-
-            #
-            #
-            # time_factor(lost_up_to) = n_sample_this_run[lost_up_to + 1] / sum(p_lost[1:lost_up_to+1])
-            # speed_up(lost_up_to) = (time_factor(lost_up_to) / time_factor(0))^(-1)
-            #
-            # time_factor_this_run_array[trial_this_unitary, :] = [time_factor(lost_up_to) for lost_up_to in lost_photons]
-            # speed_up_this_run_array[trial_this_unitary, :] = [speed_up(lost_up_to) for lost_up_to in lost_photons]
-
-
-
-            #
-            # @show [time_factor(lost_up_to) for lost_up_to in lost_photons]
-            # @show [speed_up(lost_up_to) for lost_up_to in lost_photons]
-            #
-            n_sample_this_run[(unitary-1)*n_trials_each_unitary + trial_this_unitary, :] =  [n_samples_loss(i) for i in lost_photons]
-            p_lost_this_run[(unitary-1)*n_trials_each_unitary + trial_this_unitary, :] = p_lost
-        end
-
-
-        # @show [mean(time_factor_this_run_array[:, lost_up_to + 1]) for lost_up_to in lost_photons]
-        # @show [mean(speed_up_this_run_array[:, lost_up_to + 1]) for lost_up_to in lost_photons]
-
-    end
-
-    # @show "----"
-    # @show [mean(n_sample_this_run[:, lost_up_to + 1]) for lost_up_to in lost_photons]
-    #
-    # @show [mean(sum(p_lost_this_run[:, 1: lost_up_to + 1])) for lost_up_to in lost_photons]
-
-    time_factor_average = [mean(n_sample_this_run[:, lost_up_to + 1]) / mean(sum(p_lost_this_run[:, 1: lost_up_to + 1])) for lost_up_to in lost_photons]
-
-    speed_up_array[η_index,:] = [time_factor_average[1] / time_factor_average[lost_up_to + 1] for lost_up_to in lost_photons]
-
-    # @show speed_up_array[η_index,:] = speed_up_average
-    # speed_up_var_array[η_index,:] = [var(this_run_speed_up[:, lost+1]) for lost in lost_photons]
-
-end
-
-speed_up_array
-
-# setting the number of lost photons to plot
-lost_photons = collect(0:10)
-
 begin
 
-    function lost_photon_color(k, lost_photons)
+    n = 10
+    m = 10
+    n_subsets = 2
+    lost_photons = collect(0:n)
 
-        lost = k-1
-        x = lost / length(lost_photons)
-        get(color_map, x)
+    n_unitaries = 100 # number of unitaries on which averaged
+    n_trials_each_unitary = 1000
+    max_iter = 100000 # max number of samples taken for bayesian estimation
+    threshold = 0.95 # confidence to attain
+
+    η_array = collect(range(0.8,1,length = 20))
+    speed_up_array = zeros((length(η_array), length(lost_photons)))
+    speed_up_var_array = copy(speed_up_array)
+
+    alternative_hypothesis_x = 0
+
+
+    @showprogress for (η_index ,η) in enumerate(η_array)
+
+        n_sample_this_run = zeros((n_unitaries * n_trials_each_unitary, length(lost_photons)))
+        p_lost_this_run = copy(n_sample_this_run)
+        # to store data before averaging
+
+        for unitary in 1:n_unitaries
+
+            ib = Input{Bosonic}(first_modes(n,2m))
+            id = Input{Distinguishable}(first_modes(n,2m))
+
+            part = to_lossy(equilibrated_partition(m,n_subsets))
+
+            o = PartitionCountsAll(part)
+
+            interf = UniformLossInterferometer(η,m)
+
+            evb = Event(ib,o,interf)
+            evd = Event(id,o,interf)
+
+            pb = compute_probability!(evb)
+            pd = compute_probability!(evd)
+
+            pb_sorted = sort_by_lost_photons(pb)
+            pd_sorted = sort_by_lost_photons(pd)
+
+            p_lost = [sum(pb_sorted[i].proba) for i in 1:length(lost_photons)]
+            # in this simple model, this is the same for both kind of particles
+            #
+            # if η == 1
+            #     @show p_lost
+            # end
+
+            function n_samples_loss(lost_up_to)
+
+                χ = 1
+                n_sampled = 0
+
+                for iter in 1:max_iter
+                    n_sampled += 1
+
+                    lost = wsample(p_lost[1:lost_up_to+1]) - 1
+                    # @show lost
+                    event_sampled = wsample(pb_sorted[lost+1].proba)
+
+                    χ *= (pb_sorted[lost+1].proba)[event_sampled] / (pd_sorted[lost+1].proba)[event_sampled]
+
+                    if confidence(χ) >= threshold
+                        return n_sampled
+                    end
+                end
+
+                @warn "max_iter raised, need to raise it"
+                return nothing
+
+            end
+            #
+            # n_sample_this_run_array = zeros((n_trials_each_unitary, length(lost_photons)))
+            # time_factor_this_run_array = zeros((n_trials_each_unitary, length(lost_photons)))
+            # speed_up_this_run_array = zeros((n_trials_each_unitary, length(lost_photons)))
+
+            for trial_this_unitary in 1:n_trials_each_unitary
+
+                # n_sample_this_run = [n_samples_loss(i) for i in lost_photons]
+
+                # n_sample_this_run_array[trial_this_unitary, :] = n_sample_this_run
+
+                #
+                #
+                # time_factor(lost_up_to) = n_sample_this_run[lost_up_to + 1] / sum(p_lost[1:lost_up_to+1])
+                # speed_up(lost_up_to) = (time_factor(lost_up_to) / time_factor(0))^(-1)
+                #
+                # time_factor_this_run_array[trial_this_unitary, :] = [time_factor(lost_up_to) for lost_up_to in lost_photons]
+                # speed_up_this_run_array[trial_this_unitary, :] = [speed_up(lost_up_to) for lost_up_to in lost_photons]
+
+
+
+                #
+                # @show [time_factor(lost_up_to) for lost_up_to in lost_photons]
+                # @show [speed_up(lost_up_to) for lost_up_to in lost_photons]
+                #
+                n_sample_this_run[(unitary-1)*n_trials_each_unitary + trial_this_unitary, :] =  [n_samples_loss(i) for i in lost_photons]
+                p_lost_this_run[(unitary-1)*n_trials_each_unitary + trial_this_unitary, :] = p_lost
+            end
+
+
+            # @show [mean(time_factor_this_run_array[:, lost_up_to + 1]) for lost_up_to in lost_photons]
+            # @show [mean(speed_up_this_run_array[:, lost_up_to + 1]) for lost_up_to in lost_photons]
+
+        end
+
+        # @show "----"
+        # @show [mean(n_sample_this_run[:, lost_up_to + 1]) for lost_up_to in lost_photons]
+        #
+        # @show [mean(sum(p_lost_this_run[:, 1: lost_up_to + 1])) for lost_up_to in lost_photons]
+
+        time_factor_average = [mean(n_sample_this_run[:, lost_up_to + 1]) / mean(sum(p_lost_this_run[:, 1: lost_up_to + 1])) for lost_up_to in lost_photons]
+
+        speed_up_array[η_index,:] = [time_factor_average[1] / time_factor_average[lost_up_to + 1] for lost_up_to in lost_photons]
+
+        # @show speed_up_array[η_index,:] = speed_up_average
+        # speed_up_var_array[η_index,:] = [var(this_run_speed_up[:, lost+1]) for lost in lost_photons]
 
     end
 
-    plt = plot()
-    for (k,lost) in Iterators.reverse(enumerate(lost_photons))
+    save("data/speed_up_loss_(n=$n m=$m n_subsets = $n_subsets alternative_x = $alternative_hypothesis_x).jld", "speed_up_array", speed_up_array, "η_array", η_array)
 
-        x_data = η_array
-        y_data = speed_up_array[:, k]
+    # setting the number of lost photons to plot
+    lost_photons = collect(0:5)
 
-        x_spl = range(minimum(x_data),maximum(x_data), length = 1000)
-        spl = Spline1D(x_data,y_data)
-        y_spl = spl(x_spl)
+    begin
 
-        #scatter!(x_data , y_data, yerr = sqrt.(var_η_array[k,:]), c = lost_photon_color(k,lost_photons), label = "", m = :cross)
+        function lost_photon_color(k, lost_photons)
 
-        # scatter!(x_data , y_data , yerr = sqrt.(speed_up_var_array[:, k]), c = lost_photon_color(k,lost_photons), label = "", m = :cross)
+            lost = k-1
+            x = lost / length(lost_photons)
+            get(color_map, x)
 
-        # scatter!(x_data , y_data, yaxis = :log10, yminorticks = 10, c = lost_photon_color(k,lost_photons), label = "", m = :cross)
+        end
 
-        # plot!(x_spl, y_spl, yaxis = :log10, yminorticks = 10, c = lost_photon_color(k,lost_photons), label = "l <= $lost")
+        plt = plot()
 
-        plot!(x_spl, y_spl, c = lost_photon_color(k,lost_photons), label = "l <= $lost")
+        function add_line(k, lost, c, label)
+
+            x_data = η_array
+            y_data = speed_up_array[:, k]
+
+            x_spl = range(minimum(x_data),maximum(x_data), length = 1000)
+            spl = Spline1D(x_data,y_data)
+            y_spl = spl(x_spl)
+
+            #scatter!(x_data , y_data, yerr = sqrt.(var_η_array[k,:]), c = lost_photon_color(k,lost_photons), label = "", m = :cross)
+
+            # scatter!(x_data , y_data , yerr = sqrt.(speed_up_var_array[:, k]), c = lost_photon_color(k,lost_photons), label = "", m = :cross)
+
+            # scatter!(x_data , y_data, yaxis = :log10, yminorticks = 10, c = lost_photon_color(k,lost_photons), label = "", m = :cross)
+
+            # plot!(x_spl, y_spl, yaxis = :log10, yminorticks = 10, c = lost_photon_color(k,lost_photons), label = "l <= $lost")
+
+            plot!(x_spl, y_spl, c = c, label = label)
 
 
 
-        # plot!(η_array,tvd_η_array[k,:], label = "up to $lost lost", c = lost_photon_color(k,lost_photons))
+            # plot!(η_array,tvd_η_array[k,:], label = "up to $lost lost", c = lost_photon_color(k,lost_photons))
+        end
+        add_line(n+1,n, :red, L"all")
 
+
+        for (k,lost) in Iterators.reverse(enumerate(lost_photons[2:end]))
+
+                add_line(k,lost,lost_photon_color(k,lost_photons), L"l \leq %$lost")
+        end
+
+        add_line(1,0,lost_photon_color(0,1), L"reference")
+
+        ###
+
+        plt = plot!(legend=:topright)
+        # plot!(legend = false)
+        ylims!((0, 1.2 * maximum(speed_up_array)))
+
+        xlabel!(L"η")
+        ylabel!(L"speed up")
+
+        display(plt)
+        savefig(plt, "images/publication/speed_up_(n=$n m=$m n_subsets = $n_subsets alternative_x = $alternative_hypothesis_x).png")
     end
-
-    plt = plot!(legend=:topright)
-    # plot!(legend = false)
-    ylims!((0, 1.2 * maximum(speed_up_array)))
-
-    xlabel!(L"η")
-    ylabel!(L"speed up")
-
-    display(plt)
-    #savefig(plt, "images/publication/lost_photons.png")
 end
-
-plt
 
 
 
