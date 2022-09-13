@@ -1080,14 +1080,14 @@ savefig(plt, "images/publication/size.png")
 n = 10
 m = n
 n_subsets = 2
-lost_photons = collect(0:3)
+lost_photons = collect(0:n)
 
-n_unitaries = 1 # number of unitaries on which averaged
-n_trials_each_unitary = 3
-max_iter = 1000 # max number of samples taken for bayesian estimation
+n_unitaries = 100 # number of unitaries on which averaged
+n_trials_each_unitary = 1000
+max_iter = 10000 # max number of samples taken for bayesian estimation
 threshold = 0.95 # confidence to attain
 
-η_array = collect(range(1,1,length = 1))
+η_array = collect(range(0.8,1,length = 10))
 speed_up_array = zeros((length(η_array), length(lost_photons)))
 speed_up_var_array = copy(speed_up_array)
 #
@@ -1097,7 +1097,8 @@ speed_up_var_array = copy(speed_up_array)
 
 @showprogress for (η_index ,η) in enumerate(η_array)
 
-    this_run_speed_up = zeros((n_unitaries * n_trials_each_unitary, length(lost_photons)))
+    n_sample_this_run = zeros((n_unitaries * n_trials_each_unitary, length(lost_photons)))
+    p_lost_this_run = copy(n_sample_this_run)
     # to store data before averaging
 
     for unitary in 1:n_unitaries
@@ -1150,56 +1151,58 @@ speed_up_var_array = copy(speed_up_array)
             return nothing
 
         end
-
-        n_sample_this_run_array = zeros((n_trials_each_unitary, length(lost_photons)))
-        time_factor_this_run_array = zeros((n_trials_each_unitary, length(lost_photons)))
-        speed_up_this_run_array = zeros((n_trials_each_unitary, length(lost_photons)))
+        #
+        # n_sample_this_run_array = zeros((n_trials_each_unitary, length(lost_photons)))
+        # time_factor_this_run_array = zeros((n_trials_each_unitary, length(lost_photons)))
+        # speed_up_this_run_array = zeros((n_trials_each_unitary, length(lost_photons)))
 
         for trial_this_unitary in 1:n_trials_each_unitary
 
-            n_sample_this_run = [n_samples_loss(i) for i in lost_photons]
+            # n_sample_this_run = [n_samples_loss(i) for i in lost_photons]
 
-            n_sample_this_run_array[trial_this_unitary, :] = n_sample_this_run
+            # n_sample_this_run_array[trial_this_unitary, :] = n_sample_this_run
 
+            #
+            #
+            # time_factor(lost_up_to) = n_sample_this_run[lost_up_to + 1] / sum(p_lost[1:lost_up_to+1])
+            # speed_up(lost_up_to) = (time_factor(lost_up_to) / time_factor(0))^(-1)
+            #
+            # time_factor_this_run_array[trial_this_unitary, :] = [time_factor(lost_up_to) for lost_up_to in lost_photons]
+            # speed_up_this_run_array[trial_this_unitary, :] = [speed_up(lost_up_to) for lost_up_to in lost_photons]
 
-
-            time_factor(lost_up_to) = n_sample_this_run[lost_up_to + 1] / sum(p_lost[1:lost_up_to+1])
-            speed_up(lost_up_to) = (time_factor(lost_up_to) / time_factor(0))^(-1)
-
-            time_factor_this_run_array[trial_this_unitary, :] = [time_factor(lost_up_to) for lost_up_to in lost_photons]
-            speed_up_this_run_array[trial_this_unitary, :] = [speed_up(lost_up_to) for lost_up_to in lost_photons]
-
-            if η == 1
-                @show n_sample_this_run
-                @show [speed_up(lost_up_to) for lost_up_to in lost_photons]
-
-            end
 
 
             #
             # @show [time_factor(lost_up_to) for lost_up_to in lost_photons]
             # @show [speed_up(lost_up_to) for lost_up_to in lost_photons]
             #
-            this_run_speed_up[(unitary-1)*n_trials_each_unitary + trial_this_unitary, :] = [speed_up(lost_up_to) for lost_up_to in lost_photons]
-
+            n_sample_this_run[(unitary-1)*n_trials_each_unitary + trial_this_unitary, :] =  [n_samples_loss(i) for i in lost_photons]
+            p_lost_this_run[(unitary-1)*n_trials_each_unitary + trial_this_unitary, :] = p_lost
         end
 
-        @show [mean(n_sample_this_run_array[:, lost_up_to + 1]) for lost_up_to in lost_photons]
-        @show [mean(time_factor_this_run_array[:, lost_up_to + 1]) for lost_up_to in lost_photons]
-        @show [mean(speed_up_this_run_array[:, lost_up_to + 1]) for lost_up_to in lost_photons]
+
+        # @show [mean(time_factor_this_run_array[:, lost_up_to + 1]) for lost_up_to in lost_photons]
+        # @show [mean(speed_up_this_run_array[:, lost_up_to + 1]) for lost_up_to in lost_photons]
 
     end
 
-    speed_up_array[η_index,:] = [mean(this_run_speed_up[:, lost+1]) for lost in lost_photons]
-    speed_up_var_array[η_index,:] = [var(this_run_speed_up[:, lost+1]) for lost in lost_photons]
+    # @show "----"
+    # @show [mean(n_sample_this_run[:, lost_up_to + 1]) for lost_up_to in lost_photons]
+    #
+    # @show [mean(sum(p_lost_this_run[:, 1: lost_up_to + 1])) for lost_up_to in lost_photons]
+
+    time_factor_average = [mean(n_sample_this_run[:, lost_up_to + 1]) / mean(sum(p_lost_this_run[:, 1: lost_up_to + 1])) for lost_up_to in lost_photons]
+
+    speed_up_average = [time_factor_average[1] / time_factor_average[lost_up_to + 1] for lost_up_to in lost_photons]
+
+    # @show speed_up_array[η_index,:] = speed_up_average
+    # speed_up_var_array[η_index,:] = [var(this_run_speed_up[:, lost+1]) for lost in lost_photons]
 
 end
 
-speed_up_array
-p_lost[1:2]
 
 # setting the number of lost photons to plot
-lost_photons = collect(0:3)
+lost_photons = collect(0:n)
 
 begin
 
@@ -1225,9 +1228,9 @@ begin
 
         # scatter!(x_data , y_data , yerr = sqrt.(speed_up_var_array[:, k]), c = lost_photon_color(k,lost_photons), label = "", m = :cross)
 
-        scatter!(x_data , y_data, c = lost_photon_color(k,lost_photons), label = "", m = :cross)
+        scatter!(x_data , y_data, yaxis = :log10, yminorticks = 10, c = lost_photon_color(k,lost_photons), label = "", m = :cross)
 
-        plot!(x_spl, y_spl, c = lost_photon_color(k,lost_photons), label = "l <= $lost")
+        plot!(x_spl, y_spl, c = lost_photon_color(k,lost_photons), yaxis = :log10, label = "l <= $lost")
 
 
 
@@ -1237,7 +1240,7 @@ begin
 
     plt = plot!(legend=:topright)
     # plot!(legend = false)
-    ylims!((0, 1.2 * maximum(speed_up_array)))
+    ylims!((1, 5 * maximum(speed_up_array)))
 
     xlabel!(L"η")
     ylabel!(L"speed up")
