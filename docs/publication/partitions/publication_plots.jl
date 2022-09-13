@@ -1078,7 +1078,7 @@ savefig(plt, "images/publication/size.png")
 begin
 
     n = 10
-    m = 10
+    m = n
     n_subsets = 2
     lost_photons = collect(0:n)
 
@@ -1087,11 +1087,11 @@ begin
     max_iter = 100000 # max number of samples taken for bayesian estimation
     threshold = 0.95 # confidence to attain
 
-    η_array = collect(range(0.8,1,length = 20))
+    η_array = collect(range(0.8,1,length = 5))
     speed_up_array = zeros((length(η_array), length(lost_photons)))
     speed_up_var_array = copy(speed_up_array)
 
-    alternative_hypothesis_x = 0
+    alternative_hypothesis_x = 0.9
 
 
     @showprogress for (η_index ,η) in enumerate(η_array)
@@ -1201,6 +1201,10 @@ begin
 
     save("data/speed_up_loss_(n=$n m=$m n_subsets = $n_subsets alternative_x = $alternative_hypothesis_x).jld", "speed_up_array", speed_up_array, "η_array", η_array)
 
+end
+
+begin
+
     # setting the number of lost photons to plot
     lost_photons = collect(0:5)
 
@@ -1209,7 +1213,7 @@ begin
         function lost_photon_color(k, lost_photons)
 
             lost = k-1
-            x = lost / length(lost_photons)
+            x = lost / (length(lost_photons))
             get(color_map, x)
 
         end
@@ -1239,15 +1243,18 @@ begin
 
             # plot!(η_array,tvd_η_array[k,:], label = "up to $lost lost", c = lost_photon_color(k,lost_photons))
         end
-        add_line(n+1,n, :red, L"all")
-
-
-        for (k,lost) in Iterators.reverse(enumerate(lost_photons[2:end]))
-
-                add_line(k,lost,lost_photon_color(k,lost_photons), L"l \leq %$lost")
-        end
 
         add_line(1,0,lost_photon_color(0,1), L"reference")
+
+
+        for (k,lost) in enumerate(lost_photons) #Iterators.reverse(enumerate(lost_photons))
+
+                # if k>1
+                    add_line(k,lost,lost_photon_color(k,lost_photons), (k == 1 ? "" : L"l \leq %$lost"))
+                # end
+        end
+
+        add_line(n+1,n, :red, L"all")
 
         ###
 
