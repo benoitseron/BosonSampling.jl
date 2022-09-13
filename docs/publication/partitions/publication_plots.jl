@@ -1072,22 +1072,26 @@ savefig(plt, "images/publication/size.png")
 # we sample bosonic events
 # we want to compare to distinguishable events
 
+# we look at the relative time taken to attain a threshold of certainty
+# if using up to lost_up_to photons
+
+
 
 n = 6
 m = n
 n_subsets = 2
 lost_photons = collect(0:3)
 
-n_unitaries = 100 # number of unitaries on which averaged
+n_unitaries = 20 # number of unitaries on which averaged
 max_iter = 1000 # max number of samples taken for bayesian estimation
 threshold = 0.95 # confidence to attain
 
-η_array = collect(range(0.8,1,length = 10))
-n_samples_array = zeros((length(η_array), length(lost_photons)))
+η_array = collect(range(0.8,1,length = 5))
+speed_up_array = zeros((length(η_array), length(lost_photons)))
 
 @showprogress for (η_index ,η) in enumerate(η_array)
 
-    this_run_n_samples = zeros((n_unitaries, length(lost_photons)))
+    this_run_speed_up = zeros((n_unitaries, length(lost_photons)))
     # to store data before averaging
 
     for unitary in 1:n_unitaries
@@ -1136,17 +1140,20 @@ n_samples_array = zeros((length(η_array), length(lost_photons)))
 
         end
 
-        this_run = [n_samples_loss(i) for i in lost_photons]
-        
-        this_run_n_samples[unitary, :] = this_run
+        n_sample_this_run = [n_samples_loss(i) for i in lost_photons]
+
+        time_factor(lost_up_to) = n_sample_this_run[lost_up_to + 1] / sum(p_lost[1:lost_up_to+1])
+        speed_up(lost_up_to) = (time_factor(lost_up_to) / time_factor(0))^(-1)
+
+        this_run_speed_up[unitary, :] = [speed_up(lost_up_to) for lost_up_to in lost_photons]
 
     end
 
-    n_samples_array[η_index,:] = [mean(this_run_n_samples[:, lost+1]) for lost in lost_photons]
+    speed_up_array[η_index,:] = [mean(this_run_speed_up[:, lost+1]) for lost in lost_photons]
 
 end
 
-n_samples_array
+speed_up_array
 
 foo()
 #
