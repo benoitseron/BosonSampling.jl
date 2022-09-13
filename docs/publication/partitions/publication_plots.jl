@@ -256,6 +256,9 @@ y_data = reverse(tvd_array[1,:])
 
 get_power_law_log_log(x_data,y_data)
 
+
+
+
 ###### TVD with x-model ######
 
 
@@ -1271,15 +1274,71 @@ begin
 end
 
 
+###### density exponents ######
 
+n_array = collect(4:1:18)
 
+results = zeros((2, length(n_array)))
 
+function exponent_fit(n)
 
+    max_density = 1
+    min_density = 0.03
+    steps = 10
+    n_iter = 100
 
+    invert_densities = [max_density * (max_density/min_density)^((i-1)/(steps-1)) for i in 1:steps]
 
+    m_array = Int.(ceil.(n * invert_densities))
+    partition_sizes = 2
 
+    tvd_array = zeros((length(partition_sizes), length(m_array)))
+    var_array = copy(tvd_array)
 
+    for (k,n_subsets) in enumerate(partition_sizes)
 
+        @show n_subsets
+
+        @showprogress for i in 1:length(m_array)
+
+            this_tvd = tvd_equilibrated_partition_real_average(m_array[i], n_subsets, n, niter = n_iter)
+
+            tvd_array[k,i] = (n_subsets <= m_array[i] ? this_tvd[1] : missing)
+            var_array[k,i] = (n_subsets <= m_array[i] ? this_tvd[2] : missing)
+        end
+
+    end
+
+    x_data = reverse(1 ./ invert_densities)
+    y_data = reverse(tvd_array[1,:])
+
+    get_power_law_log_log(x_data,y_data)
+
+end
+
+for (k,n) in enumerate(n_array)
+
+    @show n
+    this_run = exponent_fit(n)
+
+    results[1, k] = this_run[3]
+    results[2, k] = this_run[2]
+end
+
+plt = plot()
+begin
+    col = [get(color_map, 0), get(color_map, 1)]
+
+    scatter!(n_array, results[2,:], label = L"r", c = col[1])
+    scatter!(n_array, results[1,:], label = L"c(2)", c = col[2])
+    ylims!((0,1.2))
+    hline!([mean(results[2,:])], c = col[1], linestyle = :dash, label = L"\langle r \rangle = %$(round(mean(results[2,:]), digits = 3))")
+    hline!([mean(results[1,:])], c = col[2], linestyle = :dash, label = L"\langle c(2) \rangle = %$(round(mean(results[1,:]), digits = 3))")
+    plot!(legend=:bottomright)
+    xlabel!(L"n")
+    display(plt)
+end
+savefig(plt, "images/publication/power_law_validity.png")
 
 
 
