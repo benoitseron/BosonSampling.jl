@@ -1069,29 +1069,35 @@ savefig(plt, "images/publication/size.png")
 # for this we should simply plot the inverse of the number of samples needed
 # compared to a reference to get a speedup factor
 
-n = 10
-m = n
+# we sample bosonic events
+# we want to compare to distinguishable events
 
-lost_photons = collect(0:n)
+
+n = 6
+m = n
 n_subsets = 2
+lost_photons = collect(0:3)
+
+n_unitaries = 100 # number of unitaries on which averaged
+max_iter = 1000 # max number of samples taken for bayesian estimation
+threshold = 0.95 # confidence to attain
 
 η_array = collect(range(0.8,1,length = 10))
-n_samples_η_array = zeros((length(lost_photons), length(η_array)))
+n_samples_array = zeros((length(η_array), length(lost_photons)))
 
-niter = 10
+@showprogress for (η_index ,η) in enumerate(η_array)
 
-@showprogress for (j,η) in enumerate(η_array)
+    this_run_n_samples = zeros((n_unitaries, length(lost_photons)))
+    # to store data before averaging
 
-    n_samples_array = zeros((length(lost_photons),niter))
+    for unitary in 1:n_unitaries
 
-    ib = Input{Bosonic}(first_modes(n,2m))
-    id = Input{Distinguishable}(first_modes(n,2m))
+        ib = Input{Bosonic}(first_modes(n,2m))
+        id = Input{Distinguishable}(first_modes(n,2m))
 
-    part = to_lossy(equilibrated_partition(m,n_subsets))
+        part = to_lossy(equilibrated_partition(m,n_subsets))
 
-    o = PartitionCountsAll(part)
-
-    @showprogress for i in 1:niter
+        o = PartitionCountsAll(part)
 
         interf = UniformLossInterferometer(η,m)
 
@@ -1104,91 +1110,164 @@ niter = 10
         pb_sorted = sort_by_lost_photons(pb)
         pd_sorted = sort_by_lost_photons(pd)
 
-        for (k,lost) in enumerate(lost_photons)
+        p_lost = [sum(pb_sorted[i].proba) for i in 1:length(lost_photons)]
+        # in this simple model, this is the same for both kind of particles
 
-            tvd_array[k,i] = tvd_less_than_k_lost_photons(k, pb_sorted, pd_sorted)
+        function n_samples_loss(lost_up_to)
+
+            χ = 1
+            n_sampled = 0
+
+            for iter in 1:max_iter
+                n_sampled += 1
+
+                lost = wsample(p_lost[1:lost_up_to+1]) - 1
+                event_sampled = wsample(pb_sorted[lost+1].proba)
+
+                χ *= (pb_sorted[lost+1].proba)[event_sampled] / (pd_sorted[lost+1].proba)[event_sampled]
+
+                if confidence(χ) >= threshold
+                    return n_sampled
+                end
+            end
+
+            @warn "max_iter raised, need to raise it"
+            return nothing
 
         end
 
+        this_run = [n_samples_loss(i) for i in lost_photons]
+        
+        this_run_n_samples[unitary, :] = this_run
+
     end
 
-    for (k,lost) in enumerate(lost_photons)
-        tvd_η_array[k,j] = mean(tvd_array[k,:])
-        var_η_array[k,j] = var(tvd_array[k,:])
-    end
+    n_samples_array[η_index,:] = [mean(this_run_n_samples[:, lost+1]) for lost in lost_photons]
 
 end
 
-save("data/tvd_with_lost_photons.jld", "η_array", η_array, "tvd_η_array" ,tvd_η_array, "var_η_array", var_η_array)
+n_samples_array
 
-# setting the number of lost photons to plot
-lost_photons = collect(0:10)
-
-begin
-
-    function lost_photon_color(k, lost_photons)
-
-        lost = k-1
-        x = lost / length(lost_photons)
-        get(color_map, x)
-
-    end
-
-    minimum(η_array)
-
-    plt = plot()
-    for (k,lost) in Iterators.reverse(enumerate(lost_photons))
-
-        x_data = η_array
-        y_data = tvd_η_array[k,:]
-
-        x_spl = range(minimum(x_data),maximum(x_data), length = 1000)
-        spl = Spline1D(x_data,y_data)
-        y_spl = spl(x_spl)
-
-        #scatter!(x_data , y_data, yerr = sqrt.(var_η_array[k,:]), c = lost_photon_color(k,lost_photons), label = "", m = :cross)
-
-        scatter!(x_data , y_data, c = lost_photon_color(k,lost_photons), label = "", m = :cross)
-
-        plot!(x_spl, y_spl, c = lost_photon_color(k,lost_photons), label = "l <= $lost")
-
-
-
-        # plot!(η_array,tvd_η_array[k,:], label = "up to $lost lost", c = lost_photon_color(k,lost_photons))
-
-    end
-
-    plt = plot!(legend=:bottomright)
-    plot!(legend = false)
-
-    xlabel!("η")
-    ylabel!("TVD(B,D)")
-
-    display(plt)
-    savefig(plt, "images/publication/lost_photons.png")
-end
-
-plt
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-############## end ###############
-
-# cd("..")
-# cd("..")
+foo()
+#
+#
+# lost_photons = collect(0:n)
+# n_subsets = 2
+#
+# η_array = collect(range(0.8,1,length = 10))
+# n_samples_η_array = zeros((length(lost_photons), length(η_array)))
+#
+# niter = 10
+#
+# @showprogress for (j,η) in enumerate(η_array)
+#
+#     n_samples_array = zeros((length(lost_photons),niter))
+#
+#     ib = Input{Bosonic}(first_modes(n,2m))
+#     id = Input{Distinguishable}(first_modes(n,2m))
+#
+#     part = to_lossy(equilibrated_partition(m,n_subsets))
+#
+#     o = PartitionCountsAll(part)
+#
+#     @showprogress for i in 1:niter
+#
+#         interf = UniformLossInterferometer(η,m)
+#
+#         evb = Event(ib,o,interf)
+#         evd = Event(id,o,interf)
+#
+#         pb = compute_probability!(evb)
+#         pd = compute_probability!(evd)
+#
+#         pb_sorted = sort_by_lost_photons(pb)
+#         pd_sorted = sort_by_lost_photons(pd)
+#
+#         for (k,lost) in enumerate(lost_photons)
+#
+#             tvd_array[k,i] = tvd_less_than_k_lost_photons(k, pb_sorted, pd_sorted)
+#
+#         end
+#
+#     end
+#
+#     for (k,lost) in enumerate(lost_photons)
+#         tvd_η_array[k,j] = mean(tvd_array[k,:])
+#         var_η_array[k,j] = var(tvd_array[k,:])
+#     end
+#
+# end
+#
+# save("data/tvd_with_lost_photons.jld", "η_array", η_array, "tvd_η_array" ,tvd_η_array, "var_η_array", var_η_array)
+#
+# # setting the number of lost photons to plot
+# lost_photons = collect(0:10)
+#
+# begin
+#
+#     function lost_photon_color(k, lost_photons)
+#
+#         lost = k-1
+#         x = lost / length(lost_photons)
+#         get(color_map, x)
+#
+#     end
+#
+#     minimum(η_array)
+#
+#     plt = plot()
+#     for (k,lost) in Iterators.reverse(enumerate(lost_photons))
+#
+#         x_data = η_array
+#         y_data = tvd_η_array[k,:]
+#
+#         x_spl = range(minimum(x_data),maximum(x_data), length = 1000)
+#         spl = Spline1D(x_data,y_data)
+#         y_spl = spl(x_spl)
+#
+#         #scatter!(x_data , y_data, yerr = sqrt.(var_η_array[k,:]), c = lost_photon_color(k,lost_photons), label = "", m = :cross)
+#
+#         scatter!(x_data , y_data, c = lost_photon_color(k,lost_photons), label = "", m = :cross)
+#
+#         plot!(x_spl, y_spl, c = lost_photon_color(k,lost_photons), label = "l <= $lost")
+#
+#
+#
+#         # plot!(η_array,tvd_η_array[k,:], label = "up to $lost lost", c = lost_photon_color(k,lost_photons))
+#
+#     end
+#
+#     plt = plot!(legend=:bottomright)
+#     plot!(legend = false)
+#
+#     xlabel!("η")
+#     ylabel!("TVD(B,D)")
+#
+#     display(plt)
+#     savefig(plt, "images/publication/lost_photons.png")
+# end
+#
+# plt
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+# ############## end ###############
+#
+# # cd("..")
+# # cd("..")
