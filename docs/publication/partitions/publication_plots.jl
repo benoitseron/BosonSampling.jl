@@ -1083,7 +1083,7 @@ n_subsets = 2
 lost_photons = collect(0:3)
 
 n_unitaries = 1 # number of unitaries on which averaged
-n_trials_each_unitary = 1000
+n_trials_each_unitary = 3
 max_iter = 1000 # max number of samples taken for bayesian estimation
 threshold = 0.95 # confidence to attain
 
@@ -1161,15 +1161,19 @@ speed_up_var_array = copy(speed_up_array)
 
             n_sample_this_run_array[trial_this_unitary, :] = n_sample_this_run
 
-            if η == 1
-                @show n_sample_this_run
-            end
+
 
             time_factor(lost_up_to) = n_sample_this_run[lost_up_to + 1] / sum(p_lost[1:lost_up_to+1])
             speed_up(lost_up_to) = (time_factor(lost_up_to) / time_factor(0))^(-1)
 
             time_factor_this_run_array[trial_this_unitary, :] = [time_factor(lost_up_to) for lost_up_to in lost_photons]
             speed_up_this_run_array[trial_this_unitary, :] = [speed_up(lost_up_to) for lost_up_to in lost_photons]
+
+            if η == 1
+                @show n_sample_this_run
+                @show [speed_up(lost_up_to) for lost_up_to in lost_photons]
+
+            end
 
 
             #
