@@ -1077,14 +1077,14 @@ savefig(plt, "images/publication/size.png")
 
 
 
-n = 10
-m = n
+n = 20
+m = 60
 n_subsets = 2
 lost_photons = collect(0:n)
 
-n_unitaries = 100 # number of unitaries on which averaged
+n_unitaries = 1 # number of unitaries on which averaged
 n_trials_each_unitary = 1000
-max_iter = 10000 # max number of samples taken for bayesian estimation
+max_iter = 100000 # max number of samples taken for bayesian estimation
 threshold = 0.95 # confidence to attain
 
 η_array = collect(range(0.8,1,length = 10))
@@ -1193,16 +1193,17 @@ speed_up_var_array = copy(speed_up_array)
 
     time_factor_average = [mean(n_sample_this_run[:, lost_up_to + 1]) / mean(sum(p_lost_this_run[:, 1: lost_up_to + 1])) for lost_up_to in lost_photons]
 
-    speed_up_average = [time_factor_average[1] / time_factor_average[lost_up_to + 1] for lost_up_to in lost_photons]
+    speed_up_array[η_index,:] = [time_factor_average[1] / time_factor_average[lost_up_to + 1] for lost_up_to in lost_photons]
 
     # @show speed_up_array[η_index,:] = speed_up_average
     # speed_up_var_array[η_index,:] = [var(this_run_speed_up[:, lost+1]) for lost in lost_photons]
 
 end
 
+speed_up_array
 
 # setting the number of lost photons to plot
-lost_photons = collect(0:n)
+lost_photons = collect(0:10)
 
 begin
 
@@ -1228,9 +1229,11 @@ begin
 
         # scatter!(x_data , y_data , yerr = sqrt.(speed_up_var_array[:, k]), c = lost_photon_color(k,lost_photons), label = "", m = :cross)
 
-        scatter!(x_data , y_data, yaxis = :log10, yminorticks = 10, c = lost_photon_color(k,lost_photons), label = "", m = :cross)
+        # scatter!(x_data , y_data, yaxis = :log10, yminorticks = 10, c = lost_photon_color(k,lost_photons), label = "", m = :cross)
 
-        plot!(x_spl, y_spl, c = lost_photon_color(k,lost_photons), yaxis = :log10, label = "l <= $lost")
+        # plot!(x_spl, y_spl, yaxis = :log10, yminorticks = 10, c = lost_photon_color(k,lost_photons), label = "l <= $lost")
+
+        plot!(x_spl, y_spl, c = lost_photon_color(k,lost_photons), label = "l <= $lost")
 
 
 
@@ -1240,7 +1243,7 @@ begin
 
     plt = plot!(legend=:topright)
     # plot!(legend = false)
-    ylims!((1, 5 * maximum(speed_up_array)))
+    ylims!((0, 1.2 * maximum(speed_up_array)))
 
     xlabel!(L"η")
     ylabel!(L"speed up")
