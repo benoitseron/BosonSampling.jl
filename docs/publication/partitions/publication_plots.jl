@@ -1078,7 +1078,7 @@ savefig(plt, "images/publication/size.png")
 
 
 n = 20
-m = 60
+m = 20
 n_subsets = 2
 lost_photons = collect(0:n)
 
