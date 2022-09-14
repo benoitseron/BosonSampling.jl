@@ -236,7 +236,6 @@ end
 
 Creates a beam-splitter with tunable transmissivity and loss. Uniform model of loss: each input line i1,i2 has a beam splitter in front with transmission amplitude of `loss` into an environment mode.
 """
-
 struct LossyBeamSplitter <: Interferometer
     transmission_amplitude::Real
     loss::Real
@@ -249,3 +248,27 @@ struct LossyBeamSplitter <: Interferometer
         new(transmission_amplitude, loss, virtual_interferometer_uniform_loss(beam_splitter(transmission_amplitude), loss), 4)
     end
 end
+
+
+"""
+    LossyLine(loss)
+
+Optical line with some loss: represented by a `BeamSplitter` with a transmission amplitude of `loss` into an environment mode.
+"""
+struct LossyLine <: Interferometer
+
+    loss::Real
+    U::Matrix
+    m::Int
+
+    function LossyLine(loss::Real)
+
+        @argcheck between_one_and_zero(loss)
+
+        new(loss, virtual_interferometer_uniform_loss(ones((1,1)), loss), 2)
+    end
+end
+
+LossyLine(0.1).U
+
+@warn "need to check the conventions between beam splitter if reflectivity or amplitude and see if it is consistent with loss eg in virtual_interferometer_uniform_loss"
