@@ -230,3 +230,22 @@ function tvd_less_than_k_lost_photons(k, pb_sorted, pd_sorted)
     sum(tvd(pb_sorted[j].proba,pd_sorted[j].proba) for j in 1:k)
 
 end
+
+"""
+    LossyBeamSplitter(transmission_amplitude, loss)
+
+Creates a beam-splitter with tunable transmissivity and loss. Uniform model of loss: each input line i1,i2 has a beam splitter in front with transmission amplitude of `loss` into an environment mode.
+"""
+
+struct LossyBeamSplitter <: Interferometer
+    transmission_amplitude::Real
+    loss::Real
+    U::Matrix
+    m::Int
+    function LossyBeamSplitter(transmission_amplitude::Real, loss::Real)
+        @argcheck between_one_and_zero(transmission_amplitude)
+        @argcheck between_one_and_zero(loss)
+
+        new(transmission_amplitude, loss, virtual_interferometer_uniform_loss(beam_splitter(transmission_amplitude), loss), 4)
+    end
+end
