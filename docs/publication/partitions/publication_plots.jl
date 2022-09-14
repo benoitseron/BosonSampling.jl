@@ -964,17 +964,20 @@ savefig(plt,"./images/publication/fourier.png")
 ###### plot of evolution with n,m ######
 
 n_max = 16
-n_array = collect(4:n_max)
+n_array = collect(6:n_max)
 m_no_coll(n) = n^2
+m_dense(n) = n
 m_sparse(n) = 5n
 n_iter = 100
 partition_sizes = 2:4
 
-laws = [m_sparse, m_no_coll]
+laws = [m_dense, m_sparse, m_no_coll]
+
+y_max = zeros(length(laws))
 
 plots = []
 
-for m_law in laws
+for (pl, m_law) in enumerate(laws)
 
     plt = plot()
     m_array = m_law.(n_array)
@@ -994,11 +997,11 @@ for m_law in laws
 
     end
 
-    save("data/evolution_n_m_$(String(Symbol(m_law))).jld", "tvd_array", tvd_array, "var_array" ,var_array)
+    save("data/evolution_n_m_$(String(Symbol(m_law))).jld", "tvd_array", tvd_array, "var_array" ,var_array, "partition_sizes", partition_sizes, "n_array", n_array)
 
     tvd_array
 
-    partition_color(k, partition_sizes) = get(color_map, k / length(partition_sizes))
+    partition_color(k, partition_sizes) = get(color_map, (k-1) / (length(partition_sizes)-1))
 
     for (k,K) in enumerate(partition_sizes)
 
@@ -1029,11 +1032,11 @@ for m_law in laws
         #
         # scatter!(x_data , y_data, yerr = sqrt.(var_array[k,:]), c = partition_color(k,partition_sizes), label = "", m = :cross, xaxis=:log10, yaxis = :log10)
 
-        scatter!(x_data , y_data, yerr = sqrt.(var_array[k,:]), c = partition_color(k,partition_sizes), label = "", m = :cross)
+        scatter!(x_data , y_data, yerr = sqrt.(var_array[k,:]), c = partition_color(k,partition_sizes), label = "", m = :cross, xticks = x_data)
 
         # scatter!(x_data , y_data, yerr = sqrt.(var_array[k,:]), c = partition_color(k,partition_sizes), label = "", m = :cross, xaxis=:log10)
 
-        #ylims!((0.01,1))
+
 
 
 
@@ -1050,6 +1053,7 @@ for m_law in laws
     end
 
     plt = plot!(legend=:topright)
+    y_max[pl] = 1.2*(maximum(tvd_array + sqrt.(var_array)))
 
     xlabel!(L"n")
     ylabel!(L"TVD(B,D)")
@@ -1061,7 +1065,8 @@ for m_law in laws
 end
 
 
-plt = plot(plots[1],plots[2], layout = (2,1))
+plt = plot(plots[1],plots[2],plots[3], layout = (3,1))
+# ylims!((0, maximum(y_max)))
 
 savefig(plt, "images/publication/size.png")
 
@@ -1346,8 +1351,8 @@ savefig(plt, "images/publication/power_law_validity.png")
 
 # we want to plot the decay of the sqrt(var)/mean of the TVD
 
-n_max = 10
-n_array = collect(4:n_max)
+n_max = 16
+n_array = collect(8:n_max)
 m_no_coll(n) = n^2
 m_sparse(n) = 5n
 n_iter = 100
@@ -1378,11 +1383,23 @@ for m_law in laws
 
     end
 
-    # save("data/evolution_n_m_$(String(Symbol(m_law))).jld", "tvd_array", tvd_array, "var_array" ,var_array)
+    save("data/coefficient_variation$(String(Symbol(m_law))).jld", "tvd_array", tvd_array, "var_array" ,var_array)
+
+end
+
+saved_names = ["data/save/evolution_n_m_m_no_coll.jld", "data/save/evolution_n_m_m_sparse.jld"]
+
+for name in saved_names
+
+    a = load(name)
+    partition_sizes = a["partition_sizes"]
+    n_array = a["n_array"]
+    tvd_array = a["tvd_array"]
+    var_array = a["var_array"]
 
     # tvd_array
 
-    partition_color(k, partition_sizes) = get(color_map, k / length(partition_sizes))
+    partition_color(k, partition_sizes) = get(color_map, (k-1) / (length(partition_sizes) -1))
 
     for (k,K) in enumerate(partition_sizes)
 
