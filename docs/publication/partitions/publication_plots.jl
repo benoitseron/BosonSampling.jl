@@ -969,7 +969,7 @@ m_no_coll(n) = n^2
 m_dense(n) = n
 m_sparse(n) = 5n
 n_iter = 100
-partition_sizes = 2:4
+partition_sizes = 2:3
 
 laws = [m_dense, m_sparse, m_no_coll]
 
@@ -1065,8 +1065,8 @@ for (pl, m_law) in enumerate(laws)
 end
 
 
-plt = plot(plots[1],plots[2],plots[3], layout = (3,1))
-# ylims!((0, maximum(y_max)))
+plt = plot(plots[2],plots[3], layout = (2,1))
+ylims!((0, 0.18))
 
 savefig(plt, "images/publication/size.png")
 
@@ -1365,7 +1365,7 @@ plots = []
 
 for m_law in laws
 
-    plt = plot()
+
     m_array = m_law.(n_array)
 
     tvd_array = zeros((length(partition_sizes), length(m_array)))
@@ -1387,88 +1387,100 @@ for m_law in laws
 
 end
 
-saved_names = ["data/save/evolution_n_m_m_no_coll.jld", "data/save/evolution_n_m_m_sparse.jld"]
+begin
 
-for name in saved_names
+    println("********")
+    for name in saved_names
 
+
+        plt = plot()
+        a = load(name)
+        partition_sizes = a["partition_sizes"]
+        n_array = a["n_array"]
+        tvd_array = a["tvd_array"]
+        var_array = a["var_array"]
+
+        # tvd_array
+
+        partition_color(k, partition_sizes) = get(color_map, (k-1) / (length(partition_sizes) -1))
+
+        for (k,K) in enumerate(partition_sizes)
+
+            x_data = n_array
+            y_data = sqrt.(var_array[k,:]) ./ tvd_array[k,:]
+
+            x_spl = collect(range(minimum(x_data),maximum(x_data), length = 1000))
+
+            spl = Spline1D(x_data,y_data)
+            y_spl = spl(x_spl)
+
+            legend_string = "K = $K"
+
+            # if m_law == m_sparse
+            #     lr_func(x) =  mean(y_data) # removed the slope
+            #
+            #     plot!(x_spl, lr_func.(x_spl), c = partition_color(k,partition_sizes), label = LaTeXString(legend_string))
+            #
+            # else
+                lr_func = get_power_law_log_log(x_data,y_data)[1]
+
+                plot!(x_spl, lr_func.(x_spl), c = partition_color(k,partition_sizes), label = LaTeXString(legend_string))
+            # end
+
+
+            #
+            # scatter!(x_data , y_data, yerr = sqrt.(var_array[k,:]), c = lost_photon_color(k,lost_photons), label = "", m = :cross, xaxis=:log10)
+            #
+            # scatter!(x_data , y_data, yerr = sqrt.(var_array[k,:]), c = partition_color(k,partition_sizes), label = "", m = :cross, xaxis=:log10, yaxis = :log10)
+
+            scatter!(x_data , y_data, c = partition_color(k,partition_sizes), label = "", m = :cross)
+            ylims!((0, 1.2*maximum(y_data)), xticks = x_data)
+
+            # scatter!(x_data , y_data, yerr = sqrt.(var_array[k,:]), c = partition_color(k,partition_sizes), label = "", m = :cross, xaxis=:log10)
+
+            #ylims!((0.01,1))
+
+
+
+
+
+
+            #
+            # plot!(x_spl, y_spl, c = partition_color(k,partition_sizes), label = "K = $K", xaxis=:log10, yaxis =:log10)
+
+
+
+            # plot!(η_array,tvd_η_array[k,:], label = "up to $lost lost", c = lost_photon_color(k,lost_photons))
+
+        end
+
+        plt = plot!(legend=:topright)
+
+        xlabel!(L"n")
+        ylabel!(L"\sqrt{\sigma}/TVD(B,D)")
+
+        display(plt)
+
+        push!(plots, plt)
+
+    end
+
+    plt = plot(plots[1],plots[2], layout = (2,1))
+    name = saved_names[1]
     a = load(name)
     partition_sizes = a["partition_sizes"]
     n_array = a["n_array"]
     tvd_array = a["tvd_array"]
     var_array = a["var_array"]
 
-    # tvd_array
-
-    partition_color(k, partition_sizes) = get(color_map, (k-1) / (length(partition_sizes) -1))
-
-    for (k,K) in enumerate(partition_sizes)
-
-        x_data = n_array
-        y_data = sqrt.(var_array[k,:]) ./ tvd_array[k,:]
-
-        x_spl = collect(range(minimum(x_data),maximum(x_data), length = 1000))
-
-        spl = Spline1D(x_data,y_data)
-        y_spl = spl(x_spl)
-
-        legend_string = "K = $K"
-
-        # if m_law == m_sparse
-        #     lr_func(x) =  mean(y_data) # removed the slope
-        #
-        #     plot!(x_spl, lr_func.(x_spl), c = partition_color(k,partition_sizes), label = LaTeXString(legend_string))
-        #
-        # else
-            lr_func = get_power_law_log_log(x_data,y_data)[1]
-
-            plot!(x_spl, lr_func.(x_spl), c = partition_color(k,partition_sizes), label = LaTeXString(legend_string))
-        # end
-
-
-        #
-        # scatter!(x_data , y_data, yerr = sqrt.(var_array[k,:]), c = lost_photon_color(k,lost_photons), label = "", m = :cross, xaxis=:log10)
-        #
-        # scatter!(x_data , y_data, yerr = sqrt.(var_array[k,:]), c = partition_color(k,partition_sizes), label = "", m = :cross, xaxis=:log10, yaxis = :log10)
-
-        scatter!(x_data , y_data, c = partition_color(k,partition_sizes), label = "", m = :cross)
-        ylims!((0, 1.2*maximum(y_data)))
-
-        # scatter!(x_data , y_data, yerr = sqrt.(var_array[k,:]), c = partition_color(k,partition_sizes), label = "", m = :cross, xaxis=:log10)
-
-        #ylims!((0.01,1))
-
-
-
-
-
-
-        #
-        # plot!(x_spl, y_spl, c = partition_color(k,partition_sizes), label = "K = $K", xaxis=:log10, yaxis =:log10)
-
-
-
-        # plot!(η_array,tvd_η_array[k,:], label = "up to $lost lost", c = lost_photon_color(k,lost_photons))
-
-    end
-
-    plt = plot!(legend=:topright)
-
-    xlabel!(L"n")
-    ylabel!(L"\sqrt{\sigma}/TVD(B,D)")
+    plot!(xticks = n_array)
+    ylims!((0,0.3))
 
     display(plt)
+    savefig(plt, "images/publication/coefficient_variation_size.png")
 
-    push!(plots, plt)
 
 end
-
-
-plt = plot(plots[1],plots[2], layout = (2,1))
-
-savefig(plt, "images/publication/coefficient_variation_size.png")
-
-
-
 
 
 ############## end ###############
