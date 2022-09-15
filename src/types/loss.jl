@@ -1,3 +1,5 @@
+loss_amplitude_to_transmission_amplitude(loss::Real) = sqrt(1-loss^2)
+
 """
     virtual_interferometer_uniform_loss(real_interf::Matrix, η)
     virtual_interferometer_uniform_loss(real_interf::Interferometer, η)
@@ -232,43 +234,39 @@ function tvd_less_than_k_lost_photons(k, pb_sorted, pd_sorted)
 end
 
 """
-    LossyBeamSplitter(transmission_amplitude, loss)
+    LossyBeamSplitter(transmission_amplitude, transmission_amplitude_loss)
 
-Creates a beam-splitter with tunable transmissivity and loss. Uniform model of loss: each input line i1,i2 has a beam splitter in front with transmission amplitude of `loss` into an environment mode.
+Creates a beam-splitter with tunable transmissivity and loss. Uniform model of loss: each input line i1,i2 has a beam splitter in front with transmission amplitude of `transmission_amplitude_loss` into an environment mode.
 """
 struct LossyBeamSplitter <: Interferometer
     transmission_amplitude::Real
-    loss::Real
+    transmission_amplitude_loss::Real
     U::Matrix
     m::Int
-    function LossyBeamSplitter(transmission_amplitude::Real, loss::Real)
+    function LossyBeamSplitter(transmission_amplitude::Real, transmission_amplitude_loss::Real)
         @argcheck between_one_and_zero(transmission_amplitude)
-        @argcheck between_one_and_zero(loss)
+        @argcheck between_one_and_zero(transmission_amplitude_loss)
 
-        new(transmission_amplitude, loss, virtual_interferometer_uniform_loss(beam_splitter(transmission_amplitude), loss), 4)
+        new(transmission_amplitude, transmission_amplitude_loss, virtual_interferometer_uniform_loss(beam_splitter(transmission_amplitude),transmission_amplitude_loss), 4)
     end
 end
 
 
 """
-    LossyLine(loss)
+    LossyLine(transmission_amplitude_loss)
 
-Optical line with some loss: represented by a `BeamSplitter` with a transmission amplitude of `loss` into an environment mode.
+Optical line with some loss: represented by a `BeamSplitter` with a transmission amplitude of `transmission_amplitude_loss` into an environment mode.
 """
 struct LossyLine <: Interferometer
 
-    loss::Real
+    transmission_amplitude_loss::Real
     U::Matrix
     m::Int
 
-    function LossyLine(loss::Real)
+    function LossyLine(transmission_amplitude_loss::Real)
 
-        @argcheck between_one_and_zero(loss)
+        @argcheck between_one_and_zero(transmission_amplitude_loss)
 
-        new(loss, virtual_interferometer_uniform_loss(ones((1,1)), loss), 2)
+        new(transmission_amplitude_loss, virtual_interferometer_uniform_loss(ones((1,1)), transmission_amplitude_loss), 2)
     end
 end
-
-LossyLine(0.1).U
-
-@warn "need to check the conventions between beam splitter if reflectivity or amplitude and see if it is consistent with loss eg in virtual_interferometer_uniform_loss"

@@ -133,7 +133,7 @@ mutable struct Circuit <: Interferometer
 
     m::Int
     circuit_elements::Vector{Interferometer}
-    U::Union{Matrix{ComplexF64}, Nothing}
+    U::Union{Matrix, Nothing}
 
     function Circuit(m::Int)
         new(m, [], nothing)
@@ -142,7 +142,8 @@ mutable struct Circuit <: Interferometer
 end
 
 """
-    add_element!(circuit::Circuit, interf::Interferometer, target_modes::Vector{Int})
+    add_element!(circuit::Circuit, interf::Interferometer; target_modes::Vector{Int})
+    add_element!(;circuit::Circuit, interf::Interferometer, target_modes::Vector{Int})
 
 Adds the circuit element `interf` that will be applied on `target_modes` to the `circuit`.
 Will automatically update the unitary representing the circuit.
@@ -167,6 +168,8 @@ function add_element!(;circuit::Circuit, interf::Interferometer, target_modes::V
     end
 
 end
+
+add_element!(circuit::Circuit, interf::Interferometer; target_modes::Vector{Int}) = add_element!(circuit=circuit, interf=interf, target_modes=target_modes)
 
 Base.show(io::IO, interf::Interferometer) = print(io, "Interferometer :\n\n", "Type : ", typeof(interf), "\n", "m : ", interf.m)
 
