@@ -43,6 +43,11 @@ Base.:+(s2::Vector{Int}, s1::ModeOccupation) = begin
     return s1 + s2
 end
 
+"""
+        Base.zeros(mo::ModeOccupation)
+
+Returns a `ModeOccupation` similar to the input but with a state made of zeros.
+"""
 function Base.zeros(mo::ModeOccupation)
 
     physical_state = mo.state
@@ -51,6 +56,11 @@ function Base.zeros(mo::ModeOccupation)
 
 end
 
+"""
+        Base.cat(s1::ModeOccupation, s2::ModeOccupation)
+
+Concatenates two `ModeOccupation`.
+"""
 function Base.cat(s1::ModeOccupation, s2::ModeOccupation)
 
     ModeOccupation(vcat(s1.state, s2.state))
