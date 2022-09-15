@@ -107,6 +107,17 @@ function to_lossy(part::Partition)
 end
 
 """
+    to_lossy(mo::ModeOccupation)
+
+Transforms a `ModeOccupation` into the same with extra padding to account for the environment modes.
+"""
+function to_lossy(mo::ModeOccupation)
+
+    cat(mo,zeros(mo))
+
+end
+
+"""
     LossyInterferometer <: Interferometer
 
 Interferometers with inclusion of loss: the real `Interferometer` has dimension `m_real * m_real` while we model it by a `2m_real * 2m_real` one where the last `m_real` modes are environment modes containing the lost photons.
@@ -235,45 +246,58 @@ function tvd_less_than_k_lost_photons(k, pb_sorted, pd_sorted)
 end
 
 """
-    LossyBeamSplitter(transmission_amplitude, transmission_amplitude_loss)
+    LossyBeamSplitter(transmission_amplitude, η_loss)
 
 Creates a beam-splitter with tunable transmissivity and loss. Uniform model of loss: each input line i1,i2 has a beam splitter in front with transmission amplitude of `transmission_amplitude_loss` into an environment mode.
 """
 struct LossyBeamSplitter <: Interferometer
     transmission_amplitude::Real
-    transmission_amplitude_loss::Real
+    η_loss::Real
     U::Matrix
     m::Int
-    function LossyBeamSplitter(transmission_amplitude::Real, transmission_amplitude_loss::Real)
+    function LossyBeamSplitter(transmission_amplitude::Real, η_loss::Real)
         @argcheck between_one_and_zero(transmission_amplitude)
-        @argcheck between_one_and_zero(transmission_amplitude_loss)
+        @argcheck between_one_and_zero(η_loss)
 
-        new(transmission_amplitude, transmission_amplitude_loss, virtual_interferometer_uniform_loss(beam_splitter(transmission_amplitude),transmission_amplitude_loss), 4)
+        new(transmission_amplitude, η_loss, virtual_interferometer_uniform_loss(beam_splitter(transmission_amplitude),η_loss), 4)
     end
 end
 
 
 """
-    LossyLine(transmission_amplitude_loss)
+    LossyLine(η_loss)
 
 Optical line with some loss: represented by a `BeamSplitter` with a transmission amplitude of `transmission_amplitude_loss` into an environment mode.
 """
 struct LossyLine <: Interferometer
 
-    transmission_amplitude_loss::Real
+    η_loss::Real
     U::Matrix
     m::Int
 
-    function LossyLine(transmission_amplitude_loss::Real)
+    function LossyLine(η_loss::Real)
 
-        @argcheck between_one_and_zero(transmission_amplitude_loss)
+        @argcheck between_one_and_zero(η_loss)
 
-        new(transmission_amplitude_loss, virtual_interferometer_uniform_loss(ones((1,1)), transmission_amplitude_loss), 2)
+        new(η_loss, virtual_interferometer_uniform_loss(ones((1,1)), η_loss), 2)
     end
 end
 
+"""
+    LossyCircuit(m_real::Int)
+
+Lossy `Interferometer` constructed from `circuit_elements`.
+"""
 mutable struct LossyCircuit <: LossyInterferometer
 
-    #####
+    m_real::Int
+    m::Int
+    circuit_elements::Vector{Interferometer}
+    U_physical::Union{Matrix{Complex}, Nothing} # physical matrix
+    U::Union{Matrix{Complex}, Nothing} # virtual 2m*2m interferometer
+
+    function LossyCircuit(m_real::Int)
+        new(m_real, 2*m_real, [], nothing, nothing)
+    end
 
 end

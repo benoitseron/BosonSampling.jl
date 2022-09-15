@@ -43,6 +43,20 @@ Base.:+(s2::Vector{Int}, s1::ModeOccupation) = begin
     return s1 + s2
 end
 
+function Base.zeros(mo::ModeOccupation)
+
+    physical_state = mo.state
+    state = zeros(eltype(physical_state), size(physical_state))
+    ModeOccupation(state)
+
+end
+
+function Base.cat(s1::ModeOccupation, s2::ModeOccupation)
+
+    ModeOccupation(vcat(s1.state, s2.state))
+
+end
+
 
 at_most_one_photon_per_bin(state) = all(state[:] .<= 1)
 at_most_one_photon_per_bin(r::ModeOccupation) = at_most_one_photon_per_bin(r.state)

@@ -11,6 +11,7 @@ Pages = ["about.md"]
 ```@contents
 Pages = ["tutorial/installation.md",
         "tutorial/basic_usage.md",
+        "tutorial/loss.md",
         "tutorial/user_defined_models.md",
         "tutorial/boson_samplers.md",
         "tutorial/partitions.md",
