@@ -41,7 +41,7 @@ end
 
 function rotation_matrix(angle::Float64)
 	[cos(angle) -sin(angle);
-	 sin(angle) coss(angle)]
+	 sin(angle) cos(angle)]
  end
 
  function rotation_matrix_modes(;in_up, in_dow, out_up, out_down, angle, n)
