@@ -106,6 +106,11 @@ function to_lossy(part::Partition)
 
 end
 
+"""
+    LossyInterferometer <: Interferometer
+
+Interferometers with inclusion of loss: the real `Interferometer` has dimension `m_real * m_real` while we model it by a `2m_real * 2m_real` one where the last `m_real` modes are environment modes containing the lost photons.
+"""
 abstract type LossyInterferometer <: Interferometer end
 
 """
@@ -151,10 +156,6 @@ struct UniformLossInterferometer <: LossyInterferometer
     UniformLossInterferometer(η::Real, m::Int) = UniformLossInterferometer(η, RandHaar(m))
 
 end
-
-
-
-
 
 """
     GeneralLossInterferometer <: LossyInterferometer
@@ -269,4 +270,10 @@ struct LossyLine <: Interferometer
 
         new(transmission_amplitude_loss, virtual_interferometer_uniform_loss(ones((1,1)), transmission_amplitude_loss), 2)
     end
+end
+
+mutable struct LossyCircuit <: LossyInterferometer
+
+    #####
+
 end
