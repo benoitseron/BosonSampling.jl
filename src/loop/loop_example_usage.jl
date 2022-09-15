@@ -23,9 +23,14 @@ begin
 end
 
 n = 1
-m = 2
+m = 1
 i = Input{Bosonic}(first_modes(n,m))
 o = FockDetection(first_modes(n,m))
+η_loss = 0.9
+
+interf = LossyCircuit(m)
+add_element!(interf, LossyLine(η_loss), target_modes = [1,2])
+
 
 function lossy_line_example(transmission_amplitude_loss)
 

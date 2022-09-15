@@ -117,6 +117,23 @@ function to_lossy(mo::ModeOccupation)
 
 end
 
+function to_lossy(interf::Interferometer)
+
+    if isa(interf, LossyInterferometer)
+        error("$interf is already a LossyInterferometer")
+    else
+
+        U = interf.U
+        m = interf.m
+        U_lossy = Matrix{eltype(U)}(I, 2 .* size(U))
+        U_lossy[1:m,1:m] = U
+
+        return UserDefinedLossyInterferometer(U_lossy)
+    end
+
+end
+
+
 """
     LossyInterferometer <: Interferometer
 
@@ -150,8 +167,8 @@ struct UniformLossInterferometer <: LossyInterferometer
     m_real::Int
     m::Int
     η::Real #transmissivity of the upfront beamsplitters
-    U_physical::Matrix{Complex} # physical matrix
-    U::Matrix{Complex} # virtual 2m*2m interferometer
+    U_physical::Union{Matrix{Complex},Nothing} # physical matrix
+    U::Union{Matrix{Complex},Nothing} # virtual 2m*2m interferometer
 
     function UniformLossInterferometer(η::Real, U_physical::Matrix)
         if isa_transmissitivity(η)
@@ -180,10 +197,10 @@ struct GeneralLossInterferometer <: LossyInterferometer
     m_real::Int
     m::Int
     η::Vector{Real} #transmissivity of the upfront beamsplitters
-    U_physical::Matrix{Complex} # physical matrix
-    V::Matrix{Complex}
-    W::Matrix{Complex}
-    U::Matrix{Complex} # virtual 2m*2m interferometer
+    U_physical::Union{Matrix{Complex},Nothing} # physical matrix
+    V::Union{Matrix{Complex},Nothing}
+    W::Union{Matrix{Complex},Nothing}
+    U::Union{Matrix{Complex},Nothing} # virtual 2m*2m interferometer
 
     function GeneralLossInterferometer(η::Vector{Real}, V::Matrix, W::Matrix)
         if isa_transmissitivity(η)
@@ -192,6 +209,23 @@ struct GeneralLossInterferometer <: LossyInterferometer
         else
             error("invalid η")
         end
+    end
+
+end
+
+
+struct UserDefinedLossyInterferometer <: LossyInterferometer
+    m_real::Int
+    m::Int
+    η::Union{Real, Vector{Real}, Nothing} #transmissivity of the upfront beamsplitters
+    U_physical::Union{Matrix{Complex},Nothing} # physical matrix
+    U::Union{Matrix{Complex},Nothing} # virtual 2m*2m interferometer
+
+    function UserDefinedLossyInterferometer(U::Matrix)
+
+        m_real = Int(size(U,1)/2)
+        new(m_real, 2*m_real, nothing, U[1:m_real,1:m_real], U)
+
     end
 
 end
@@ -281,23 +315,4 @@ struct LossyLine <: Interferometer
 
         new(η_loss, virtual_interferometer_uniform_loss(ones((1,1)), η_loss), 2)
     end
-end
-
-"""
-    LossyCircuit(m_real::Int)
-
-Lossy `Interferometer` constructed from `circuit_elements`.
-"""
-mutable struct LossyCircuit <: LossyInterferometer
-
-    m_real::Int
-    m::Int
-    circuit_elements::Vector{Interferometer}
-    U_physical::Union{Matrix{Complex}, Nothing} # physical matrix
-    U::Union{Matrix{Complex}, Nothing} # virtual 2m*2m interferometer
-
-    function LossyCircuit(m_real::Int)
-        new(m_real, 2*m_real, [], nothing, nothing)
-    end
-
 end
