@@ -117,6 +117,12 @@ function to_lossy(mo::ModeOccupation)
 
 end
 
+function to_lossy(state::Vector{Int})
+
+    vcat(state,zeros(eltype(state), length(state)))
+
+end
+
 function to_lossy(interf::Interferometer)
 
     if isa(interf, LossyInterferometer)
@@ -130,6 +136,21 @@ function to_lossy(interf::Interferometer)
 
         return UserDefinedLossyInterferometer(U_lossy)
     end
+
+end
+
+"""
+    lossy_target_modes(target_modes::Vector{Int})
+
+Converts a vector of mode occupation into the same concatenated twice. This allows for modes occupied by circuit elements to have their loss mode attributed. For instance, a LossyLine targeting mode 1 with m=2 has
+
+    target_modes = [1,0]
+    lossy_target_modes(target_modes) = [1,0,1,0]
+
+"""
+function lossy_target_modes(target_modes::Vector{Int})
+
+    vcat(target_modes, target_modes)
 
 end
 
@@ -284,16 +305,17 @@ end
 
 Creates a beam-splitter with tunable transmissivity and loss. Uniform model of loss: each input line i1,i2 has a beam splitter in front with transmission amplitude of `transmission_amplitude_loss` into an environment mode.
 """
-struct LossyBeamSplitter <: Interferometer
+struct LossyBeamSplitter <: LossyInterferometer
     transmission_amplitude::Real
     η_loss::Real
     U::Matrix
     m::Int
+    m_real::Int
     function LossyBeamSplitter(transmission_amplitude::Real, η_loss::Real)
         @argcheck between_one_and_zero(transmission_amplitude)
         @argcheck between_one_and_zero(η_loss)
 
-        new(transmission_amplitude, η_loss, virtual_interferometer_uniform_loss(beam_splitter(transmission_amplitude),η_loss), 4)
+        new(transmission_amplitude, η_loss, virtual_interferometer_uniform_loss(beam_splitter(transmission_amplitude),η_loss), 4,2)
     end
 end
 
@@ -303,16 +325,17 @@ end
 
 Optical line with some loss: represented by a `BeamSplitter` with a transmission amplitude of `transmission_amplitude_loss` into an environment mode.
 """
-struct LossyLine <: Interferometer
+struct LossyLine <: LossyInterferometer
 
     η_loss::Real
     U::Matrix
     m::Int
+    m_real::Int
 
     function LossyLine(η_loss::Real)
 
         @argcheck between_one_and_zero(η_loss)
 
-        new(η_loss, virtual_interferometer_uniform_loss(ones((1,1)), η_loss), 2)
+        new(η_loss, virtual_interferometer_uniform_loss(ones((1,1)), η_loss), 2,1)
     end
 end

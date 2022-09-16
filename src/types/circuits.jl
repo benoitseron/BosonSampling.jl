@@ -70,18 +70,37 @@ function add_element!(;circuit::Circuit, interf::Interferometer, target_modes::V
 
 end
 
-add_element!(circuit::Circuit, interf::Interferometer; target_modes::Vector{Int}) = add_element!(circuit=circuit, interf=interf, target_modes=target_modes)
+add_element!(circuit::Circuit, interf::Interferometer; target_modes::ModeOccupation) = add_element!(circuit=circuit, interf=interf, target_modes=target_modes.state)
+#
+
+# bug:
+
+# WARNING: Method definition add_element!(BosonSampling.Circuit, BosonSampling.Interferometer) in module BosonSampling at /home/benoitseron/.julia/dev/BosonSampling/src/types/circuits.jl:73 overwritten at /home/benoitseron/.julia/dev/BosonSampling/src/types/circuits.jl:75.
+#   ** incremental compilation may be fatally broken for this module **
+#
+# WARNING: Method definition add_element!##kw(Any, typeof(BosonSampling.add_element!), BosonSampling.Circuit, BosonSampling.Interferometer) in module BosonSampling at /home/benoitseron/.julia/dev/BosonSampling/src/types/circuits.jl:73 overwritten at /home/benoitseron/.julia/dev/BosonSampling/src/types/circuits.jl:75.
+#   ** incremental compilation may be fatally broken for this module **
+
+# add_element!(circuit::Circuit, interf::Interferometer; target_modes::ModeList) = begin
+#
+#     mo = convert(ModeOccupation, target_modes)
+#     add_element!(circuit=circuit, interf=interf, target_modes=mo)
+#
+# end
 
 function add_element!(circuit::LossyCircuit, interf::Union{Interferometer, LossyInterferometer}; target_modes::Vector{Int})
 
-    if !isa(interf, LossyInterferometer)
+    if !(isa(interf, LossyInterferometer))
         # convert to a LossyInterferometer any lossless element just for size requirements and consistency
 
+        println("converting to lossy")
         interf = to_lossy(interf)
 
     end
 
     if length(target_modes) != interf.m_real
+
+        println("unexpected length")
 
         if length(target_modes) == 2*interf.m_real
 
@@ -95,10 +114,7 @@ function add_element!(circuit::LossyCircuit, interf::Union{Interferometer, Lossy
 
     end
 
-
-
-     # add_element!(circuit=circuit, interf=interf, target_modes=target_modes)
-
+     add_element!(circuit, interf, target_modes=lossy_target_modes(target_modes))
 
 end
 

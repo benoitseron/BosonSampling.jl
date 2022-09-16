@@ -23,17 +23,37 @@ begin
 end
 
 n = 1
-m = 2
+m = 1
 i = Input{Bosonic}(first_modes(n,m))
 o = FockDetection(first_modes(n,m))
 η_loss = 0.9
 
-interf = Fourier(m)
-target_modes = [i for i in m]
+circuit = LossyCircuit(1)
+interf = LossyLine(η_loss)
+interf.m_real
 
-# LossyCircuit(m)
-add_element!(interf, LossyLine(η_loss), target_modes = [1,2])
+isa(interf, LossyInterferometer)
 
+target_modes = [1]
+
+length(target_modes) != interf.m_real
+
+add_element!(circuit, interf, target_modes = target_modes)
+
+length(target_modes) != interf.m_real
+
+isa(interf, LossyInterferometer)
+
+if !(isa(interf, LossyInterferometer))
+    # convert to a LossyInterferometer any lossless element just for size requirements and consistency
+    @show "..."
+    interf = to_lossy(interf)
+
+end
+
+target_modes = ModeList([1,2],4)
+
+convert(ModeOccupation, target_modes)
 
 # function to_lossy(target_modes)
 
