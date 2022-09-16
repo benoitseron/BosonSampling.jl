@@ -43,3 +43,7 @@ Let us now discuss the various lossy elements available.
 * [`UniformLossInterferometer`](@ref) : This simplest model is one where photons have an identical chance of being lost.
 * [`GeneralLossInterferometer`](@ref) This is a generic model as described in ...
 * Lossy circuit elements : When constructing a [`Circuit`](@ref) from elements, each element has its own loss characteristics. We also introduce lines, representing for instance optical fibers that have no interaction but can still be lossy.
+
+## Circuits
+
+When using `circuit_elements` to construct a lossy interferometer, the loss channel associated to mode `i` will always be mode `m+i`. Therefore, doing 

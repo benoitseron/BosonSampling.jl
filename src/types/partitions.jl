@@ -1,6 +1,8 @@
 """
     ModeOccupation(state)
 
+A list of the size of the number of modes `m`, with entry `j` of `state` being the number of photons in mode `j`. See also [`ModeList`](@ref).
+
     fields:
          - n::Int
          - m::Int
@@ -66,6 +68,44 @@ function Base.cat(s1::ModeOccupation, s2::ModeOccupation)
     ModeOccupation(vcat(s1.state, s2.state))
 
 end
+
+"""
+    ModeList(state)
+
+Contrasting to [`ModeOccupation`](@ref) this list is of size `n`, the number of photons. Entry `j` is the index of the mode occupied by photon `j`.
+
+This can also be used just to select modes for instance.
+
+See also [`ModeOccupation`](@ref).
+
+    fields:
+        - n::Int
+        - m::Union{Int, Nothing}
+        - modes::Vector{Int}
+"""
+@auto_hash_equals struct ModeList
+    n::Int
+    m::Union{Int, Nothing}
+    modes::Vector{Int}
+
+    ModeList(modes::Vector{Int}) = all(modes[:] .>= 1) ? new(length(modes), nothing, modes) : error("modes start at one")
+
+        function ModeList(modes::Vector{Int}, m::Int)
+
+                if all(modes[:] .>= 1) && all(modes[:] .<= m)
+                    new(length(modes), m, modes)
+                else
+                    error("incoherent or invalid mode inputs")
+                end
+        end
+
+
+end
+
+
+
+
+
 
 
 at_most_one_photon_per_bin(state) = all(state[:] .<= 1)

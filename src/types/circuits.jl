@@ -70,9 +70,38 @@ function add_element!(;circuit::Circuit, interf::Interferometer, target_modes::V
 
 end
 
-
-
 add_element!(circuit::Circuit, interf::Interferometer; target_modes::Vector{Int}) = add_element!(circuit=circuit, interf=interf, target_modes=target_modes)
+
+function add_element!(circuit::LossyCircuit, interf::Union{Interferometer, LossyInterferometer}; target_modes::Vector{Int})
+
+    if !isa(interf, LossyInterferometer)
+        # convert to a LossyInterferometer any lossless element just for size requirements and consistency
+
+        interf = to_lossy(interf)
+
+    end
+
+    if length(target_modes) != interf.m_real
+
+        if length(target_modes) == 2*interf.m_real
+
+            @warn "target_modes given with size 2*interf.m_real, discarding last m_real mode info and using the convention that mode i is lost into mode i+m_real"
+
+        else
+
+            error("invalid size of target_modes")
+
+        end
+
+    end
+
+
+
+     # add_element!(circuit=circuit, interf=interf, target_modes=target_modes)
+
+
+end
+
 
 Base.show(io::IO, interf::Interferometer) = print(io, "Interferometer :\n\n", "Type : ", typeof(interf), "\n", "m : ", interf.m)
 

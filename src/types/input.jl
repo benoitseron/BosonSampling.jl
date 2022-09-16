@@ -347,31 +347,31 @@ struct GaussianInput{T<:Gaussian}
 
     end
 
-    function GaussianInput{T}(r::ModeOccupation, mean_photon_numbers::Vector) where {T<:Gaussian}
-
-        if T == ThermalState
-            r.state[1] == 1 ? sq = ThermalState(mean_photon_numbers[1]) : sq = VacuumState()
-            cov = sq.covariance_matrix
-            R = sq.displacement
-
-            for i in 2:r.m
-                if r.state[i] == 1
-                    sq = ThermalState[mean_photon_numbers[i]]
-                    R = [R;sq.displacement]
-                    sigma = sq.covariance_matrix
-                else
-                    vacc = VacuumState()
-                    R = [R;vacc.displacement]
-                    sigma = vacc.covariance_matrix
-                end
-                cov = direct_sum(cov, sigma)
-            end
-            return new{T}(r, r.n, r.m, R, cov, nothing, displacement_parameters, nothing, nothing)
-        else
-            error("type ", T, " not implemented")
-        end
-
-    end
+    # function GaussianInput{T}(r::ModeOccupation, mean_photon_numbers::Vector) where {T<:Gaussian}
+    #
+    #     if T == ThermalState
+    #         r.state[1] == 1 ? sq = ThermalState(mean_photon_numbers[1]) : sq = VacuumState()
+    #         cov = sq.covariance_matrix
+    #         R = sq.displacement
+    #
+    #         for i in 2:r.m
+    #             if r.state[i] == 1
+    #                 sq = ThermalState[mean_photon_numbers[i]]
+    #                 R = [R;sq.displacement]
+    #                 sigma = sq.covariance_matrix
+    #             else
+    #                 vacc = VacuumState()
+    #                 R = [R;vacc.displacement]
+    #                 sigma = vacc.covariance_matrix
+    #             end
+    #             cov = direct_sum(cov, sigma)
+    #         end
+    #         return new{T}(r, r.n, r.m, R, cov, nothing, displacement_parameters, nothing, nothing)
+    #     else
+    #         error("type ", T, " not implemented")
+    #     end
+    #
+    # end
 
     function GaussianInput{T}(r::ModeOccupation, squeezing_parameters::Vector, source_transmission::Union{Real, Nothing}) where {T<:Gaussian}
 
