@@ -102,11 +102,20 @@ See also [`ModeOccupation`](@ref).
 
 end
 
+function Base.convert(::Type{ModeOccupation}, ml::ModeList)
 
+        if ml.m == nothing
+                error("need to give m")
+        else
+                state = zeros(Int, ml.m)
 
+                for mode in ml.modes
+                        state[mode] += 1
+                end
 
-
-
+                return ModeOccupation(state)
+        end
+end
 
 at_most_one_photon_per_bin(state) = all(state[:] .<= 1)
 at_most_one_photon_per_bin(r::ModeOccupation) = at_most_one_photon_per_bin(r.state)

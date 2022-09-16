@@ -35,28 +35,6 @@ target_modes = [i for i in m]
 add_element!(interf, LossyLine(η_loss), target_modes = [1,2])
 
 
-if !isa(interf, LossyInterferometer)
-    # convert to a LossyInterferometer any lossless element just for size requirements and consistency
-
-    interf = to_lossy(interf)
-
-end
-
-if length(target_modes) != interf.m_real
-
-    if length(target_modes) == 2*interf.m_real
-
-        @warn "target_modes given with size 2*interf.m_real, discarding last m_real mode info and using the convention that mode i is lost into mode i+m_real"
-
-    else
-
-        error("invalid size of target_modes")
-
-    end
-
-end
-
-
 # function to_lossy(target_modes)
 
 function lossy_line_example(transmission_amplitude_loss)
