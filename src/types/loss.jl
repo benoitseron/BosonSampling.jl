@@ -155,12 +155,7 @@ function lossy_target_modes(target_modes::Vector{Int})
 end
 
 
-"""
-    LossyInterferometer <: Interferometer
 
-Interferometers with inclusion of loss: the real `Interferometer` has dimension `m_real * m_real` while we model it by a `2m_real * 2m_real` one where the last `m_real` modes are environment modes containing the lost photons.
-"""
-abstract type LossyInterferometer <: Interferometer end
 
 """
     isa_transmissitivity(η::Real)

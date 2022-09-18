@@ -38,7 +38,9 @@ target_modes = [1]
 
 length(target_modes) != interf.m_real
 
-add_element!(circuit, interf, target_modes = target_modes)
+add_element_lossy!(circuit, interf, target_modes = target_modes)
+
+typeof([1, 1])
 
 length(target_modes) != interf.m_real
 

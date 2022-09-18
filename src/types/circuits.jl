@@ -1,6 +1,8 @@
+abstract type Circuit <: Interferometer end
+abstract type LossyCircuit <: LossyInterferometer end
 
 """
-    Circuit(m::Int)
+    LosslessCircuit(m::Int)
 
 Creates an empty circuit with `m` input modes. The unitary representing the circuit
 is accessed via the field `.U`.
@@ -10,7 +12,7 @@ is accessed via the field `.U`.
         - circuit_elements::Vector{Interferometer}
         - U::Union{Matrix{ComplexF64}, Nothing}
 """
-mutable struct Circuit <: Interferometer
+mutable struct LosslessCircuit <: Circuit
 
     m::Int
     circuit_elements::Vector{Interferometer}
@@ -27,7 +29,7 @@ end
 
 Lossy `Interferometer` constructed from `circuit_elements`.
 """
-mutable struct LossyCircuit <: LossyInterferometer
+mutable struct LossyCircuit <: LossyCircuit
 
     m_real::Int
     m::Int
@@ -71,6 +73,8 @@ function add_element!(;circuit::Circuit, interf::Interferometer, target_modes::V
 end
 
 add_element!(circuit::Circuit, interf::Interferometer; target_modes::ModeOccupation) = add_element!(circuit=circuit, interf=interf, target_modes=target_modes.state)
+
+add_element!(circuit::Circuit, interf::Interferometer; target_modes::Vector{Int}) = add_element!(circuit=circuit, interf=interf, target_modes=target_modes)
 #
 
 # bug:
@@ -88,7 +92,7 @@ add_element!(circuit::Circuit, interf::Interferometer; target_modes::ModeOccupat
 #
 # end
 
-function add_element!(circuit::LossyCircuit, interf::Union{Interferometer, LossyInterferometer}; target_modes::Vector{Int})
+function add_element_lossy!(circuit::LossyCircuit, interf::LossyInterferometer; target_modes::Vector{Int})
 
     @warn "health checks commented"
 
@@ -116,7 +120,8 @@ function add_element!(circuit::LossyCircuit, interf::Union{Interferometer, Lossy
     #
     # end
 
-     add_element!(circuit, interf, target_modes=lossy_target_modes(target_modes))
+    @show lossy_target_modes(target_modes)
+     add_element!(circuit = circuit, interf = interf, target_modes=lossy_target_modes(target_modes))
 
 end
 

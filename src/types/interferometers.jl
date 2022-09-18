@@ -6,6 +6,13 @@ Supertype to any concrete interferomter type such as [`UserDefinedInterferometer
 abstract type Interferometer end
 
 """
+    LossyInterferometer <: Interferometer
+
+Interferometers with inclusion of loss: the real `Interferometer` has dimension `m_real * m_real` while we model it by a `2m_real * 2m_real` one where the last `m_real` modes are environment modes containing the lost photons.
+"""
+abstract type LossyInterferometer <: Interferometer end
+
+"""
     UserDefinedInterferometer(U::Matrix)
 
 Creates an instance of [`Interferometer`](@ref) from a given unitary matrix `U`.
