@@ -109,6 +109,26 @@ struct Event{TIn<:InputType, TOut<:OutputMeasurementType}
             proba_params = EventProbability(nothing)
         end
 
+		# in case input or outputs are given with m instead of 2m
+		# for lossy cases, convert them to have the proper dimension for
+		# computations
+
+		if (LossParameters(typeof(interferometer)) == IsLossy())
+			if input_state.m != 2*interferometer.m_real
+				println("converting Input to lossy")
+				input_state = to_lossy(input_state)
+			end
+
+			if StateMeasurement(typeof(output_measurement)) == FockStateMeasurement()
+				
+				if output_measurement.s.m != 2*interferometer.m_real
+					println("converting Output to lossy")
+					output_measurement = to_lossy(output_measurement)
+				end
+			end
+
+		end
+
         new{TIn,TOut}(input_state, output_measurement, proba_params, interferometer)
     end
 
@@ -128,5 +148,5 @@ end
 
 Base.convert(::Type{Event{TIn, FockDetection}}, ev::Event{TIn, FockSample}) where {TIn <: InputType} = Event(ev.input_state, convert(FockDetection, ev.output_measurement), ev.interferometer, ev.proba_params)
 
-fs = FockSample([1,2,3])
-convert(FockDetection, fs)
+# fs = FockSample([1,2,3])
+# convert(FockDetection, fs)

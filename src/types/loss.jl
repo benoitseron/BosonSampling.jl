@@ -139,6 +139,26 @@ function to_lossy(interf::Interferometer)
 
 end
 
+function to_lossy(i::Input{T}) where {T<:InputType}
+
+    Input{T}(to_lossy(i.r), i.n, 2*i.m, i.G, i.distinguishability_param)
+
+end
+
+function to_lossy(o::OutputMeasurementType)
+
+    # if StateMeasurement(typeof(output_measurement)) == FockStateMeasurement
+    if typeof(o) == FockDetection
+        FockDetection(to_lossy(o.s))
+
+    else
+
+        error("not implemented")
+
+    end
+
+end
+
 """
     lossy_target_modes(target_modes::Vector{Int})
 

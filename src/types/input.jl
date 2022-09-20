@@ -256,6 +256,10 @@ struct Input{T<:InputType}
     G::GramMatrix
     distinguishability_param::Union{Real,Nothing}
 
+    function Input{T}(r::ModeOccupation, n::Int, m::Int, G::GramMatrix, distinguishability_param::Union{Real,Nothing}) where {T<:InputType}
+        new{T}(r,n,m,G, distinguishability_param)
+    end
+
     function Input{T}(r::ModeOccupation) where {T<:InputType}
         if T in [Bosonic, Distinguishable, Undef, RandomGramMatrix]
             return new{T}(r, r.n, r.m, GramMatrix{T}(r.n), nothing)

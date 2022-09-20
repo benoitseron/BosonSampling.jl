@@ -3,6 +3,16 @@
 abstract type OutputMeasurementType end
 
 """
+    StateMeasurement
+
+Type trait to know which kind of state the detectors will measure, such as Fock or Gaussian.
+"""
+abstract type StateMeasurement end
+struct FockStateMeasurement <: StateMeasurement end
+struct PartitionMeasurement <: StateMeasurement end
+struct GaussianStateMeasurement <: StateMeasurement end
+
+"""
     FockDetection(s::ModeOccupation)
 
 Measuring the probability of getting the [`ModeOccupation`](@ref) `s` at the output.
@@ -14,6 +24,8 @@ struct FockDetection <: OutputMeasurementType
     s::ModeOccupation
     FockDetection(s::ModeOccupation) = new(s) #at_most_one_photon_per_bin(s) ? new(s) : error("more than one detector per more")
 end
+
+StateMeasurement(::Type{FockDetection}) = FockStateMeasurement()
 
 """
     PartitionCount(part_occupancy::PartitionOccupancy)
@@ -29,6 +41,8 @@ struct PartitionCount <: OutputMeasurementType
     PartitionCount(part_occupancy::PartitionOccupancy) = new(part_occupancy)
 end
 
+StateMeasurement(::Type{PartitionCount}) = PartitionMeasurement()
+
 """
     PartitionCountsAll(part::Partition)
 
@@ -41,6 +55,8 @@ struct PartitionCountsAll <: OutputMeasurementType
     part::Partition
     PartitionCountsAll(part::Partition) = new(part)
 end
+
+StateMeasurement(::Type{PartitionCountsAll}) = PartitionMeasurement()
 
 struct OutputMeasurement{T<:OutputMeasurementType}
 
@@ -80,6 +96,8 @@ mutable struct FockSample <: OutputMeasurementType
     FockSample(s::ModeOccupation) = new(s)
 end
 
+StateMeasurement(::Type{FockSample}) = FockStateMeasurement()
+
 Base.convert(::Type{FockDetection}, fs::FockSample) = FockDetection(fs.s)
 
 
@@ -94,3 +112,5 @@ mutable struct PartitionSample <: OutputMeasurementType
     PartitionSample() = new(nothing)
     PartitionSample(p::PartitionOccupancy) = new(p)
 end
+
+StateMeasurement(::Type{PartitionSample}) = PartitionMeasurement()
