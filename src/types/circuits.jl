@@ -1,5 +1,5 @@
 abstract type Circuit <: Interferometer end
-abstract type LossyCircuit <: LossyInterferometer end
+abstract type LossyCircuitElement <: Circuit end
 
 """
     LosslessCircuit(m::Int)
@@ -24,12 +24,14 @@ mutable struct LosslessCircuit <: Circuit
 
 end
 
+LossParameters(::Type{LosslessCircuit}) = IsLossless()
+
 """
     LossyCircuit(m_real::Int)
 
 Lossy `Interferometer` constructed from `circuit_elements`.
 """
-mutable struct LossyCircuit <: LossyCircuit
+mutable struct LossyCircuit <: Circuit
 
     m_real::Int
     m::Int
@@ -43,6 +45,50 @@ mutable struct LossyCircuit <: LossyCircuit
 
 end
 
+LossParameters(::Type{LossyCircuit}) = IsLossy()
+
+"""
+    LossyBeamSplitter(transmission_amplitude, η_loss)
+
+Creates a beam-splitter with tunable transmissivity and loss. Uniform model of loss: each input line i1,i2 has a beam splitter in front with transmission amplitude of `transmission_amplitude_loss` into an environment mode.
+"""
+struct LossyBeamSplitter <: LossyCircuitElement
+    transmission_amplitude::Real
+    η_loss::Real
+    U::Matrix
+    m::Int
+    m_real::Int
+    function LossyBeamSplitter(transmission_amplitude::Real, η_loss::Real)
+        @argcheck between_one_and_zero(transmission_amplitude)
+        @argcheck between_one_and_zero(η_loss)
+
+        new(transmission_amplitude, η_loss, virtual_interferometer_uniform_loss(beam_splitter(transmission_amplitude),η_loss), 4,2)
+    end
+end
+
+LossParameters(::Type{LossyBeamSplitter}) = IsLossy()
+
+"""
+    LossyLine(η_loss)
+
+Optical line with some loss: represented by a `BeamSplitter` with a transmission amplitude of `transmission_amplitude_loss` into an environment mode.
+"""
+struct LossyLine <: LossyCircuitElement
+
+    η_loss::Real
+    U::Matrix
+    m::Int
+    m_real::Int
+
+    function LossyLine(η_loss::Real)
+
+        @argcheck between_one_and_zero(η_loss)
+
+        new(η_loss, virtual_interferometer_uniform_loss(ones((1,1)), η_loss), 2,1)
+    end
+end
+
+LossParameters(::Type{LossyLine}) = IsLossy()
 
 """
     add_element!(circuit::Circuit, interf::Interferometer; target_modes::Vector{Int})
@@ -73,8 +119,8 @@ function add_element!(;circuit::Circuit, interf::Interferometer, target_modes::V
 end
 
 add_element!(circuit::Circuit, interf::Interferometer; target_modes::ModeOccupation) = add_element!(circuit=circuit, interf=interf, target_modes=target_modes.state)
-
-add_element!(circuit::Circuit, interf::Interferometer; target_modes::Vector{Int}) = add_element!(circuit=circuit, interf=interf, target_modes=target_modes)
+#
+# add_element!(circuit::Circuit, interf::Interferometer; target_modes::Vector{Int}) = add_element!(circuit=circuit, interf=interf, target_modes=target_modes)
 #
 
 # bug:
@@ -92,35 +138,35 @@ add_element!(circuit::Circuit, interf::Interferometer; target_modes::Vector{Int}
 #
 # end
 
-function add_element_lossy!(circuit::LossyCircuit, interf::LossyInterferometer; target_modes::Vector{Int})
+function add_element_lossy!(circuit::LossyCircuit, interf::Interferometer; target_modes::Vector{Int})
 
-    @warn "health checks commented"
+    # @warn "health checks commented"
 
-    # if !(isa(interf, LossyInterferometer))
-    #     # convert to a LossyInterferometer any lossless element just for size requirements and consistency
-    #
-    #     println("converting to lossy")
-    #     interf = to_lossy(interf)
-    #
-    # end
-    #
-    # if length(target_modes) != interf.m_real
-    #
-    #     println("unexpected length")
-    #
-    #     if length(target_modes) == 2*interf.m_real
-    #
-    #         @warn "target_modes given with size 2*interf.m_real, discarding last m_real mode info and using the convention that mode i is lost into mode i+m_real"
-    #
-    #     else
-    #
-    #         error("invalid size of target_modes")
-    #
-    #     end
-    #
-    # end
+    if !(LossParameters(typeof(interf)) == IsLossy())
+        # convert to a LossyInterferometer any lossless element just for size requirements and consistency
 
-    @show lossy_target_modes(target_modes)
+        println("converting to lossy")
+        interf = to_lossy(interf)
+
+    end
+
+    if length(target_modes) != interf.m_real
+
+        println("unexpected length")
+
+        if length(target_modes) == 2*interf.m_real
+
+            @warn "target_modes given with size 2*interf.m_real, discarding last m_real mode info and using the convention that mode i is lost into mode i+m_real"
+
+        else
+
+            error("invalid size of target_modes")
+
+        end
+
+    end
+
+    # @show lossy_target_modes(target_modes)
      add_element!(circuit = circuit, interf = interf, target_modes=lossy_target_modes(target_modes))
 
 end

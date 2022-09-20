@@ -179,7 +179,7 @@ Simulates a simple, uniformly lossy interferometer: take a 2m*2m interferometer 
 
 The last form, `UniformLossInterferometer(m::Int, η::Real)` samples from a Haar random unitary.
 """
-struct UniformLossInterferometer <: LossyInterferometer
+struct UniformLossInterferometer <: Interferometer
     m_real::Int
     m::Int
     η::Real #transmissivity of the upfront beamsplitters
@@ -209,7 +209,7 @@ physical matrix `U` = `V*W`. In between `V` and `W` are sandwiched a diagonal ar
 of beam splitters, with transmissivity `η` (`m`-dimensional vector corresponding
 to the transmissivity of each layer) : `U_total` = `V*Diag(η)*W`
 """
-struct GeneralLossInterferometer <: LossyInterferometer
+struct GeneralLossInterferometer <: Interferometer
     m_real::Int
     m::Int
     η::Vector{Real} #transmissivity of the upfront beamsplitters
@@ -230,7 +230,7 @@ struct GeneralLossInterferometer <: LossyInterferometer
 end
 
 
-struct UserDefinedLossyInterferometer <: LossyInterferometer
+struct UserDefinedLossyInterferometer <: Interferometer
     m_real::Int
     m::Int
     η::Union{Real, Vector{Real}, Nothing} #transmissivity of the upfront beamsplitters
@@ -293,44 +293,4 @@ function tvd_less_than_k_lost_photons(k, pb_sorted, pd_sorted)
 
     sum(tvd(pb_sorted[j].proba,pd_sorted[j].proba) for j in 1:k)
 
-end
-
-"""
-    LossyBeamSplitter(transmission_amplitude, η_loss)
-
-Creates a beam-splitter with tunable transmissivity and loss. Uniform model of loss: each input line i1,i2 has a beam splitter in front with transmission amplitude of `transmission_amplitude_loss` into an environment mode.
-"""
-struct LossyBeamSplitter <: LossyInterferometer
-    transmission_amplitude::Real
-    η_loss::Real
-    U::Matrix
-    m::Int
-    m_real::Int
-    function LossyBeamSplitter(transmission_amplitude::Real, η_loss::Real)
-        @argcheck between_one_and_zero(transmission_amplitude)
-        @argcheck between_one_and_zero(η_loss)
-
-        new(transmission_amplitude, η_loss, virtual_interferometer_uniform_loss(beam_splitter(transmission_amplitude),η_loss), 4,2)
-    end
-end
-
-
-"""
-    LossyLine(η_loss)
-
-Optical line with some loss: represented by a `BeamSplitter` with a transmission amplitude of `transmission_amplitude_loss` into an environment mode.
-"""
-struct LossyLine <: LossyInterferometer
-
-    η_loss::Real
-    U::Matrix
-    m::Int
-    m_real::Int
-
-    function LossyLine(η_loss::Real)
-
-        @argcheck between_one_and_zero(η_loss)
-
-        new(η_loss, virtual_interferometer_uniform_loss(ones((1,1)), η_loss), 2,1)
-    end
 end

@@ -6,11 +6,15 @@ Supertype to any concrete interferomter type such as [`UserDefinedInterferometer
 abstract type Interferometer end
 
 """
-    LossyInterferometer <: Interferometer
+    IsLossy{T}
+    IsLossless{T}
 
-Interferometers with inclusion of loss: the real `Interferometer` has dimension `m_real * m_real` while we model it by a `2m_real * 2m_real` one where the last `m_real` modes are environment modes containing the lost photons.
+Trait to refer to quantities with inclusion of loss: the real `Interferometer` has dimension `m_real * m_real` while we model it by a `2m_real * 2m_real` one where the last `m_real` modes are environment modes containing the lost photons.
 """
-abstract type LossyInterferometer <: Interferometer end
+abstract type LossParameters end
+
+struct IsLossy <: LossParameters end
+struct IsLossless <: LossParameters end
 
 """
     UserDefinedInterferometer(U::Matrix)

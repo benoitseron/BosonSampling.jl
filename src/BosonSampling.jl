@@ -27,6 +27,8 @@ using Luxor
 using AutoHashEquals
 using LinearRegression
 using HypothesisTests
+using SimpleTraits
+
 # using Distributed
 # using SharedArrays
 

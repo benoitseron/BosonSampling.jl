@@ -31,12 +31,14 @@ o = FockDetection(first_modes(n,m))
 circuit = LossyCircuit(1)
 interf = LossyLine(η_loss)
 interf.m_real
-
-isa(interf, LossyInterferometer)
+#
+# isa(interf, LossyInterferometer)
 
 target_modes = [1]
 
 length(target_modes) != interf.m_real
+
+LossParameters(typeof(interf)) == IsLossy()
 
 add_element_lossy!(circuit, interf, target_modes = target_modes)
 
