@@ -138,7 +138,7 @@ add_element!(circuit::Circuit, interf::Interferometer; target_modes::ModeOccupat
 #
 # end
 
-function add_element_lossy!(circuit::LossyCircuit, interf::Interferometer; target_modes::Vector{Int})
+function add_element!(circuit::LossyCircuit, interf::Interferometer; target_modes::Vector{Int})
 
     # @warn "health checks commented"
 
