@@ -18,7 +18,7 @@ mutable struct LosslessCircuit <: Circuit
     circuit_elements::Vector{Interferometer}
     U::Union{Matrix, Nothing}
 
-    function Circuit(m::Int)
+    function LosslessCircuit(m::Int)
         new(m, [], nothing)
     end
 
@@ -97,7 +97,7 @@ LossParameters(::Type{LossyLine}) = IsLossy()
 Adds the circuit element `interf` that will be applied on `target_modes` to the `circuit`.
 Will automatically update the unitary representing the circuit.
 """
-function add_element!(;circuit::Circuit, interf::Interferometer, target_modes::Vector{Int})
+function add_element!(circuit<:Circuit, interf::Interferometer, target_modes::Vector{Int})
 
     @argcheck interf.m == length(target_modes)
 
@@ -113,12 +113,18 @@ function add_element!(;circuit::Circuit, interf::Interferometer, target_modes::V
                 u[target_modes[i], target_modes[j]] = interf.U[i,j]
             end
         end
+
+        @show circuit.U
+        @show u
+
         circuit.U = u * circuit.U
+
+        @show circuit.U
     end
 
 end
-
-add_element!(circuit::Circuit, interf::Interferometer; target_modes::ModeOccupation) = add_element!(circuit=circuit, interf=interf, target_modes=target_modes.state)
+#
+# add_element!(circuit::Circuit, interf::Interferometer; target_modes::ModeOccupation) = add_element!(circuit=circuit, interf=interf, target_modes=target_modes.state)
 #
 # add_element!(circuit::Circuit, interf::Interferometer; target_modes::Vector{Int}) = add_element!(circuit=circuit, interf=interf, target_modes=target_modes)
 #
@@ -167,7 +173,7 @@ function add_element!(circuit::LossyCircuit, interf::Interferometer; target_mode
     end
 
     # @show lossy_target_modes(target_modes)
-     add_element!(circuit = circuit, interf = interf, target_modes=lossy_target_modes(target_modes))
+     add_element!(circuit, interf, target_modes=lossy_target_modes(target_modes))
 
 end
 

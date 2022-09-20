@@ -98,3 +98,26 @@ interf = LossyBeamSplitter(1/sqrt(2), η_loss)
 target_modes = [1,2]
 
 add_element!(circuit, interf, target_modes = target_modes)
+
+####### to be continued
+
+### building the loop ###
+
+n = 3
+m = n
+reflectivities = 0.3 .* ones(m-1) # see selection of target_modes = [i, i+1] for m-1
+η_loss = 1. .* ones(m-1)
+
+circuit = LosslessCircuit(m) #LossyCircuit(m)
+
+for mode in 1:m-1
+
+    interf = BeamSplitter(reflectivities[mode]) #LossyBeamSplitter(reflectivities[mode], η_loss[mode])
+    target_modes = [mode, mode+1]
+    add_element!(circuit, interf, target_modes = target_modes)
+
+end
+
+circuit.U
+
+LosslessCircuit <: Circuit
