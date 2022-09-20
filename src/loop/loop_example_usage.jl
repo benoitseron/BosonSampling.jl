@@ -22,47 +22,44 @@ begin
     using DataStructures
 end
 
+###### one dimension example ######
+
+# n = 1
+# m = 1
+# i = Input{Bosonic}(first_modes(n,m))
+# o = FockDetection(first_modes(n,m))
+# η_loss = 0.9
+#
+# circuit = LossyCircuit(1)
+# interf = LossyLine(η_loss)
+# target_modes = [1]
+#
+# add_element!(circuit, interf, target_modes = target_modes)
+
+# function to_lossy(target_modes)
+
 n = 1
 m = 1
 i = Input{Bosonic}(first_modes(n,m))
 o = FockDetection(first_modes(n,m))
-η_loss = 0.9
 
-circuit = LossyCircuit(1)
-interf = LossyLine(η_loss)
-target_modes = [1]
+function lossy_line_example(η_loss)
 
-add_element_lossy!(circuit, interf, target_modes = target_modes)
+    circuit = LossyCircuit(1)
+    interf = LossyLine(η_loss)
+    target_modes = [1]
 
-typeof([1, 1])
-
-length(target_modes) != interf.m_real
-
-isa(interf, LossyInterferometer)
-
-if !(isa(interf, LossyInterferometer))
-    # convert to a LossyInterferometer any lossless element just for size requirements and consistency
-    @show "..."
-    interf = to_lossy(interf)
+    add_element!(circuit, interf, target_modes = target_modes)
+    circuit
 
 end
 
-target_modes = ModeList([1,2],4)
-
-convert(ModeOccupation, target_modes)
-
-# function to_lossy(target_modes)
-
-function lossy_line_example(transmission_amplitude_loss)
-
-    interf = Circuit(2)
-    add_element!(interf, LossyLine(transmission_amplitude_loss), target_modes = [1,2])
-
-    interf
-end
+lossy_line_example(0.9)
 
 transmission_amplitude_loss_array = 0:0.1:1
 output_proba = []
+
+########### need conversion in to_lossy for Inputs etc at the construction of Events
 
 for transmission in transmission_amplitude_loss_array
     ev = Event(i,o, lossy_line_example(transmission))
@@ -73,3 +70,17 @@ end
 plot(transmission_amplitude_loss_array, output_proba)
 ylabel!("p no lost")
 xlabel!("transmission amplitude")
+
+
+
+n = 2
+m = 2
+i = Input{Bosonic}(first_modes(n,m))
+o = FockDetection(first_modes(n,m))
+η_loss = 0.9
+
+circuit = LossyCircuit(m)
+interf = LossyBeamSplitter(1/sqrt(2), η_loss)
+target_modes = [1,2]
+
+add_element!(circuit, interf, target_modes = target_modes)
