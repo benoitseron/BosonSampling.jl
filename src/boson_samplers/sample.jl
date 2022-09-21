@@ -53,6 +53,23 @@ function sample!(ev::Event{TIn, TOut}) where {TIn<:InputType, TOut <: DarkCountF
     ev.output_measurement.s = sample_no_dark + dark_counts
 end
 
+function sample!(ev::Event{TIn, TOut}) where {TIn<:InputType, TOut <: RealisticDetectorsFockSample}
+
+    # sample with dark counts but seeing all photons
+    ev_dark = Event(ev.input_state, DarkCountFockSample(ev.output_measurement.p_dark), ev.interferometer)
+    sample!(ev_dark)
+    sample_dark = ev_dark.output_measurement.s
+
+    # remove each of the readings with p_no_count
+    for mode in 1:sample_dark.m
+        if do_with_probability(ev.output_measurement.p_no_count)
+            sample_dark.s[mode] = 0
+        end
+    end
+
+    ev.output_measurement.s = sample_dark
+end
+
 """
     scattershot_sampling(n::Int, m::Int; N=1000, interf=nothing)
 

@@ -313,3 +313,11 @@ o = DarkCountFockSample(p_dark)
 ev = Event(i,o,interf)
 
 sample!(ev)
+
+### RealisticDetectorsFockSample ###
+
+p_no_count = 0.1
+o = RealisticDetectorsFockSample(p_dark, p_no_count)
+ev = Event(i,o,interf)
+
+sample!(ev)

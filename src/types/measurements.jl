@@ -27,18 +27,6 @@ end
 
 StateMeasurement(::Type{FockDetection}) = FockStateMeasurement()
 
-mutable struct DarkCountFockSample <: OutputMeasurementType
-
-    s::Union{ModeOccupation, Nothing} # observed output, possibly undefined
-    p::Real # probability of a dark count in each mode
-
-    DarkCountFockSample(p::Real) = isa_probability(p) ? new(nothing, p) : error("invalid probability")
-    # instantiate if no known output
-end
-
-StateMeasurement(::Type{DarkCountFockSample}) = FockStateMeasurement()
-
-
 """
     PartitionCount(part_occupancy::PartitionOccupancy)
 
@@ -111,6 +99,50 @@ end
 StateMeasurement(::Type{FockSample}) = FockStateMeasurement()
 
 Base.convert(::Type{FockDetection}, fs::FockSample) = FockDetection(fs.s)
+
+
+
+"""
+    DarkCountFockSample(p)
+
+Same as [`FockSample`](@ref) but each output mode has an extra probability `p` of giving a positive reading no matter if there is genuinely a photon.
+"""
+mutable struct DarkCountFockSample <: OutputMeasurementType
+
+    s::Union{ModeOccupation, Nothing} # observed output, possibly undefined
+    p::Real # probability of a dark count in each mode
+
+    DarkCountFockSample(p::Real) = isa_probability(p) ? new(nothing, p) : error("invalid probability")
+    # instantiate if no known output
+end
+
+StateMeasurement(::Type{DarkCountFockSample}) = FockStateMeasurement()
+
+"""
+    RealisticDetectorsFockSample(p_dark::Real, p_no_count::Real)
+
+Same as [`DarkCountFockSample`](@ref) with the added possibility that no reading is observed although there is a photon. This same probability also removes dark counts (first a dark count sample is generated then readings are discarded with probability `p_no_count`).
+"""
+mutable struct RealisticDetectorsFockSample <: OutputMeasurementType
+
+    s::Union{ModeOccupation, Nothing} # observed output, possibly undefined
+    p_dark::Real # probability of a dark count in each mode
+    p_no_count::Real # probability that there is a photon but it is not seen
+
+    # instantiate if no known output
+    RealisticDetectorsFockSample(p_dark::Real, p_no_count::Real) = begin
+        if isa_probability(p_dark) && isa_probability(p_no_count)
+            new(nothing, p_dark, p_no_count)
+        else
+            error("invalid probability")
+        end
+    end
+
+end
+
+StateMeasurement(::Type{RealisticDetectorsFockSample}) = FockStateMeasurement()
+
+
 
 
 """

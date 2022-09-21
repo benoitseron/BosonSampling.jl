@@ -33,6 +33,8 @@ struct UserDefinedInterferometer <: Interferometer
     UserDefinedInterferometer(U) = is_unitary(U) ? new(size(U,1), U) : error("input matrix is non unitary")
 end
 
+LossParameters(::Type{UserDefinedInterferometer}) = IsLossless()
+
 """
     RandHaar(m::Int)
 
@@ -47,6 +49,8 @@ struct RandHaar <: Interferometer
     U::Matrix{ComplexF64}
     RandHaar(m) = new(m,rand_haar(m))
 end
+
+LossParameters(::Type{RandHaar}) = IsLossless()
 
 """
     Fourier(m::Int)
@@ -63,6 +67,8 @@ struct Fourier <: Interferometer
     Fourier(m::Int) = new(m,fourier_matrix(m))
 end
 
+LossParameters(::Type{Fourier}) = IsLossless()
+
 """
     Hadamard(m::Int)
 
@@ -77,3 +83,5 @@ struct Hadamard <: Interferometer
     U::Matrix
     Hadamard(m::Int) = new(m,hadamard_matrix(m))
 end
+
+LossParameters(::Type{Hadamard}) = IsLossless()
