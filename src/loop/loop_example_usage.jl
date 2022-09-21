@@ -47,7 +47,7 @@ function lossy_line_example(η_loss)
     interf = LossyLine(η_loss)
     target_modes = [1]
 
-    add_element!(circuit, interf, target_modes = target_modes)
+    add_element_lossy!(circuit, interf, target_modes = target_modes)
     circuit
 
 end
@@ -85,21 +85,37 @@ for transmission in transmission_amplitude_loss_array
     push!(output_proba, ev.proba_params.probability)
 end
 
-### 2d examples ###
+### 2d HOM with loss example ###
 
 n = 2
 m = 2
 i = Input{Bosonic}(first_modes(n,m))
-o = FockDetection(first_modes(n,m))
-η_loss = 0.9
+o = FockDetection(ModeOccupation([2,0])) # detecting bunching, should be 0.5 in probability if there was no loss
+transmission_amplitude_loss_array = 0:0.1:1
+output_proba = []
 
-circuit = LossyCircuit(m)
-interf = LossyBeamSplitter(1/sqrt(2), η_loss)
-target_modes = [1,2]
+function lossy_bs_example(η_loss)
 
-add_element!(circuit, interf, target_modes = target_modes)
+    circuit = LossyCircuit(2)
+    interf = LossyBeamSplitter(1/sqrt(2), η_loss)
+    target_modes = [1,2]
 
-####### to be continued
+    add_element_lossy!(circuit, interf, target_modes = target_modes)
+    circuit
+
+end
+
+for transmission in transmission_amplitude_loss_array
+
+    ev = Event(i,o, lossy_bs_example(transmission))
+    @show compute_probability!(ev)
+    push!(output_proba, ev.proba_params.probability)
+end
+
+plot(transmission_amplitude_loss_array, output_proba)
+ylabel!("p bunching top mode")
+xlabel!("transmission amplitude")
+
 
 ### building the loop ###
 

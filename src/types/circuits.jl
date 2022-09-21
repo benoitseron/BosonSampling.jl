@@ -97,9 +97,15 @@ LossParameters(::Type{LossyLine}) = IsLossy()
 Adds the circuit element `interf` that will be applied on `target_modes` to the `circuit`.
 Will automatically update the unitary representing the circuit.
 """
-function add_element!(circuit::Circuit, interf::Interferometer, target_modes::Vector{Int})
+function add_element!(circuit::Circuit, interf::Interferometer; target_modes::Vector{Int})
 
-    @argcheck interf.m == length(target_modes)
+    if interf.m != length(target_modes)
+        if interf.m == 2*length(target_modes)
+            error("use add_element_lossy! instead")
+        else
+            error("invalid length(target_modes)")
+        end
+    end
 
     push!(circuit.circuit_elements, interf)
     circuit.U == nothing ? circuit.U = Matrix{ComplexF64}(I, circuit.m, circuit.m) : nothing
@@ -144,7 +150,7 @@ end
 #
 # end
 
-function add_element!(circuit::LossyCircuit, interf::Interferometer; target_modes::Vector{Int})
+function add_element_lossy!(circuit::LossyCircuit, interf::Interferometer; target_modes::Vector{Int})
 
     # @warn "health checks commented"
 
