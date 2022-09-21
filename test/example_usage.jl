@@ -299,3 +299,17 @@ ev = Event(i,o,interf)
 compute_probability!(ev)
 
 ans = true
+
+
+### dark counts ###
+
+n = 10
+m = 10
+p_dark = 0.1
+input_state = first_modes(n,m)
+interf = RandHaar(m)
+i = Input{Bosonic}(input_state)
+o = DarkCountFockSample(p_dark)
+ev = Event(i,o,interf)
+
+sample!(ev)

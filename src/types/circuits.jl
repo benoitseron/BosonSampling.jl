@@ -1,6 +1,6 @@
 abstract type Circuit <: Interferometer end
 abstract type CircuitElement <: Interferometer end
-abstract type LossyCircuitElement <: Circuit end
+abstract type LossyCircuitElement <: Interferometer end
 
 """
     LosslessCircuit(m::Int)
@@ -47,6 +47,82 @@ mutable struct LossyCircuit <: Circuit
 end
 
 LossParameters(::Type{LossyCircuit}) = IsLossy()
+
+"""
+    BeamSplitter(transmission_amplitude::Float64)
+
+Creates a beam-splitter with tunable transmissivity.
+
+    Fields:
+        - transmission_amplitude::Float
+        - U::Matrix{Complex}
+        - m::Int
+"""
+struct BeamSplitter <: CircuitElement
+    transmission_amplitude::Real
+    U::Matrix
+    m::Int
+    BeamSplitter(transmission_amplitude::Real) = new(transmission_amplitude, beam_splitter(transmission_amplitude), 2)
+end
+
+LossParameters(::Type{BeamSplitter}) = IsLossless()
+
+"""
+    PhaseShift(phase)
+
+Creates a phase-shifter with parameter `phase`.
+
+    Fields:
+        - phase::Float64
+        - m::Int
+        - U::Matrix{ComplexF64}
+"""
+struct PhaseShift <: CircuitElement
+    phase::Real
+    U::Matrix
+    m::Int
+
+    PhaseShift(phase) = new(phase, exp(1im * phase) * ones((1,1)), 1)
+
+end
+
+LossParameters(::Type{PhaseShift}) = IsLossless()
+
+#
+# """
+#     Rotation(angle::Float64)
+#
+# Creates a Rotation matrix with tunable angle.
+#
+#     Fields:
+#         - angle::Float64
+#         - U::Matrix{ComplexF64}
+#         - m::Int
+# """
+# struct Rotation <: Interferometer
+#     angle::Real
+#     U::Matrix
+#     m::Int
+#     Rotation(angle::Real) = new(angle, rotation_matrix(angle),2)
+# end
+#
+# """
+#     PhaseShift(phase::Float64)
+#
+# Creates a phase-shifter with parameter `phase`.
+#
+#     Fields:
+#         - phase::Float64
+#         - m::Int
+#         - U::Matrix{ComplexF64}
+# """
+# struct PhaseShift <: Interferometer
+#     phase::Real
+#     U::Matrix
+#     m::Int
+#     PhaseShift(phase::Real) = new(phase, phase_shift(phase), 2)
+# end
+
 
 """
     LossyBeamSplitter(transmission_amplitude, η_loss)

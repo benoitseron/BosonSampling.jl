@@ -33,6 +33,26 @@ function sample!(ev::Event{TIn,TOut}, loss::Real) where {TIn<:InputType, TOut<:F
     end
 end
 
+# define the sampling algorithm:
+# the function sample! is modified to take into account
+# the new measurement type
+# this allows to keep the same syntax and in fact reuse
+# any function that would have previously used sample!
+# at no cost
+function sample!(ev::Event{TIn, TOut}) where {TIn<:InputType, TOut <: DarkCountFockSample}
+
+    # sample without dark counts
+    ev_no_dark = Event(ev.input_state, FockSample(), ev.interferometer)
+    sample!(ev_no_dark)
+    sample_no_dark = ev_no_dark.output_measurement.s
+
+    # now, apply the dark counts to "perfect" samples
+    observe_dark_count(p) = Int(do_with_probability(p)) # 1 with probability p, 0 with probability 1-p
+    dark_counts = [observe_dark_count(ev.output_measurement.p) for i in 1: ev.input_state.m]
+
+    ev.output_measurement.s = sample_no_dark + dark_counts
+end
+
 """
     scattershot_sampling(n::Int, m::Int; N=1000, interf=nothing)
 

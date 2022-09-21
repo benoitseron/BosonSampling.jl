@@ -27,6 +27,18 @@ end
 
 StateMeasurement(::Type{FockDetection}) = FockStateMeasurement()
 
+mutable struct DarkCountFockSample <: OutputMeasurementType
+
+    s::Union{ModeOccupation, Nothing} # observed output, possibly undefined
+    p::Real # probability of a dark count in each mode
+
+    DarkCountFockSample(p::Real) = isa_probability(p) ? new(nothing, p) : error("invalid probability")
+    # instantiate if no known output
+end
+
+StateMeasurement(::Type{DarkCountFockSample}) = FockStateMeasurement()
+
+
 """
     PartitionCount(part_occupancy::PartitionOccupancy)
 
