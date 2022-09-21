@@ -160,8 +160,17 @@ ev = Event(i,o3, circuit)
 @show compute_probability!(ev)
 0.0625+ 0.1875
 
-@show
+### random phase shifter ###
 
+d = Uniform(0, 2pi)
+
+RandomPhaseShifter(d)
+abs(RandomPhaseShifter(d).U[1,1])
+
+
+
+
+@show
 # ###### unitary of Motes et al. ######
 # TO BE DEBUGGED
 # U = zeros(Complex, (n+1,n+1))

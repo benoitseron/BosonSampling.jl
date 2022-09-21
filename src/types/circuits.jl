@@ -1,4 +1,5 @@
 abstract type Circuit <: Interferometer end
+abstract type CircuitElement <: Interferometer end
 abstract type LossyCircuitElement <: Circuit end
 
 """
@@ -89,6 +90,32 @@ struct LossyLine <: LossyCircuitElement
 end
 
 LossParameters(::Type{LossyLine}) = IsLossy()
+
+"""
+    RandomPhaseShifter <: CircuitElement
+
+Applies a RandomPhase shift to a single optical line according to a distribution `d`. For a uniform phase shift for instance
+
+    d = Uniform(0, 2pi)
+
+"""
+struct RandomPhaseShifter <: CircuitElement
+
+    U::Matrix
+    m::Int
+    d::Distribution
+
+    function RandomPhaseShifter(d::Distribution)
+
+        new(exp(1im * rand(d)) * ones((1,1)), 1, d)
+
+    end
+end
+
+LossParameters(::Type{RandomPhaseShifter}) = IsLossless()
+
+
+
 
 """
     add_element!(circuit::Circuit, interf::Interferometer; target_modes::Vector{Int})
