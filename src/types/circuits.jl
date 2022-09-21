@@ -120,12 +120,12 @@ function add_element!(circuit::Circuit, interf::Interferometer; target_modes::Ve
             end
         end
 
-        @show circuit.U
-        @show u
+        @show pretty_table(circuit.U)
+        @show pretty_table(u)
 
         circuit.U = u * circuit.U
 
-        @show circuit.U
+        @show pretty_table(circuit.U)
     end
 
 end
@@ -184,7 +184,9 @@ function add_element_lossy!(circuit::LossyCircuit, interf::Interferometer; targe
 end
 
 
-Base.show(io::IO, interf::Interferometer) = print(io, "Interferometer :\n\n", "Type : ", typeof(interf), "\n", "m : ", interf.m)
+Base.show(io::IO, interf::Interferometer) = begin
+    print(io, "Interferometer :\n\n", "Type : ", typeof(interf), "\n", "m : ", interf.m, "\n", "U : ", "\n", interf.U)
+end
 
 Base.show(io::IO, interf::UserDefinedInterferometer) = begin
      print(io, "Interferometer :\n\n", "Type : ", typeof(interf), "\n", "m : ", interf.m, "\nUnitary : \n")

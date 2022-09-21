@@ -121,19 +121,73 @@ xlabel!("transmission amplitude")
 
 n = 3
 m = n
-reflectivities = 0.3 .* ones(m-1) # see selection of target_modes = [i, i+1] for m-1
+η = 1/sqrt(2) .* ones(m-1) # see selection of target_modes = [i, i+1] for m-1
+# [1/sqrt(2), 1] #1/sqrt(2) .* ones(m-1) # see selection of target_modes = [i, i+1] for m-1
 η_loss = 1. .* ones(m-1)
 
 circuit = LosslessCircuit(m) #LossyCircuit(m)
 
 for mode in 1:m-1
-
-    interf = BeamSplitter(reflectivities[mode]) #LossyBeamSplitter(reflectivities[mode], η_loss[mode])
+    @show mode
+    interf = BeamSplitter(η[mode]) #LossyBeamSplitter(reflectivities[mode], η_loss[mode])
     target_modes = [mode, mode+1]
     add_element!(circuit, interf, target_modes = target_modes)
 
 end
 
-circuit.U
+pretty_table(circuit.U)
 
-LosslessCircuit <: Circuit
+i = Input{Bosonic}(first_modes(n,m))
+
+#outputs compatible with two photons top mode
+o1 = FockDetection(ModeOccupation([2,1,0]))
+o2 = FockDetection(ModeOccupation([2,0,1]))
+
+o_array = [o1,o2]
+
+p_two_photon_first_mode = 0
+
+for o in o_array
+    ev = Event(i,o, circuit)
+    @show compute_probability!(ev)
+    p_two_photon_first_mode += ev.proba_params.probability
+end
+
+p_two_photon_first_mode
+
+o3 = FockDetection(ModeOccupation([3,0,0]))
+ev = Event(i,o3, circuit)
+@show compute_probability!(ev)
+0.0625+ 0.1875
+
+@show
+
+# ###### unitary of Motes et al. ######
+# TO BE DEBUGGED
+# U = zeros(Complex, (n+1,n+1))
+# reflectivities = 0.3 .* ones(n+1)
+# reflectivities[1] = 0
+# reflectivities[n+1] = 1
+#
+# bs = BeamSplitter.(reflectivities)
+#
+# for i in 1:n
+#     for j in 1:n
+#
+#         if i>j+1
+#             U[i,j] = 0
+#         elseif i == j+1
+#             U[i,j] = bs[i].U[2,1]
+#         else
+#
+#             p = 1 # intermediary product in the expression
+#
+#             if length((i+1):j) != 0
+#                 p = prod([bs[k].U[1,2] for k in (i+1):j])
+#             end
+#             U[i,j] = bs[i].U[2,2] * bs[j+1].U[1,1] * p
+#         end
+#     end
+# end
+#
+# U
