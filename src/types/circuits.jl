@@ -97,7 +97,7 @@ LossParameters(::Type{LossyLine}) = IsLossy()
 Adds the circuit element `interf` that will be applied on `target_modes` to the `circuit`.
 Will automatically update the unitary representing the circuit.
 """
-function add_element!(circuit<:Circuit, interf::Interferometer, target_modes::Vector{Int})
+function add_element!(circuit::Circuit, interf::Interferometer, target_modes::Vector{Int})
 
     @argcheck interf.m == length(target_modes)
 
