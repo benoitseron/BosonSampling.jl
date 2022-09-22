@@ -115,14 +115,14 @@ struct Event{TIn<:InputType, TOut<:OutputMeasurementType}
 
 		if (LossParameters(typeof(interferometer)) == IsLossy())
 			if input_state.m != 2*interferometer.m_real
-				println("converting Input to lossy")
+				#println("converting Input to lossy")
 				input_state = to_lossy(input_state)
 			end
 
 			if StateMeasurement(typeof(output_measurement)) == FockStateMeasurement()
-				
+
 				if output_measurement.s.m != 2*interferometer.m_real
-					println("converting Output to lossy")
+					#println("converting Output to lossy")
 					output_measurement = to_lossy(output_measurement)
 				end
 			end

@@ -9,7 +9,7 @@ function beam_splitter(transmission_amplitude = sqrt(0.5))
 	t = transmission_amplitude
 	r = sqrt(1-t^2)
 
-	bs = [[t -r]; [r t]]
+	bs = [[t -r]; [r t]]#[[t r]; [-r t]] 
 
 end
 

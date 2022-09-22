@@ -195,12 +195,14 @@ LossParameters(::Type{RandomPhaseShifter}) = IsLossless()
 
 """
     add_element!(circuit::Circuit, interf::Interferometer; target_modes::Vector{Int})
-    add_element!(;circuit::Circuit, interf::Interferometer, target_modes::Vector{Int})
+    add_element!(circuit::Circuit, interf::Interferometer; target_modes_in::Vector{Int}, target_modes_out::Vector{Int})
 
 Adds the circuit element `interf` that will be applied on `target_modes` to the `circuit`.
 Will automatically update the unitary representing the circuit.
+
+If giving a single target modes, assumes that they are the same for out and in
 """
-function add_element!(circuit::Circuit, interf::Interferometer; target_modes::Vector{Int})
+function add_element!(circuit::Circuit, interf::Interferometer; target_modes_in::Vector{Int}, target_modes_out::Vector{Int})
 
     if interf.m != length(target_modes)
         if interf.m == 2*length(target_modes)
@@ -219,17 +221,23 @@ function add_element!(circuit::Circuit, interf::Interferometer; target_modes::Ve
         u = Matrix{ComplexF64}(I, circuit.m, circuit.m)
         for i in 1:size(interf.U)[1]
             for j in 1:size(interf.U)[2]
-                u[target_modes[i], target_modes[j]] = interf.U[i,j]
+                u[target_modes_in[i], target_modes_out[j]] = interf.U[i,j]
             end
         end
 
         @show pretty_table(circuit.U)
         @show pretty_table(u)
 
-        circuit.U = u * circuit.U
+        circuit.U *= u
 
         @show pretty_table(circuit.U)
     end
+
+end
+
+# if giving a single target modes, assumes that they are the same for out and in
+function add_element!(circuit::Circuit, interf::Interferometer; target_modes)
+    add_element!(circuit, interf; target_modes_in = target_modes, target_modes_out = target_modes)
 
 end
 #
@@ -253,7 +261,7 @@ end
 #
 # end
 
-function add_element_lossy!(circuit::LossyCircuit, interf::Interferometer; target_modes::Vector{Int})
+function add_element_lossy!(circuit::LossyCircuit, interf::Interferometer; target_modes_in::Vector{Int}, target_modes_out::Vector{Int})
 
     # @warn "health checks commented"
 
@@ -265,24 +273,28 @@ function add_element_lossy!(circuit::LossyCircuit, interf::Interferometer; targe
 
     end
 
-    if length(target_modes) != interf.m_real
+    for target_modes in [target_modes_in,target_modes_out]
 
-        println("unexpected length")
+        if length(target_modes) != interf.m_real
 
-        if length(target_modes) == 2*interf.m_real
+            println("unexpected length")
 
-            @warn "target_modes given with size 2*interf.m_real, discarding last m_real mode info and using the convention that mode i is lost into mode i+m_real"
+            if length(target_modes) == 2*interf.m_real
 
-        else
+                @warn "target_modes given with size 2*interf.m_real, discarding last m_real mode info and using the convention that mode i is lost into mode i+m_real"
 
-            error("invalid size of target_modes")
+            else
+
+                error("invalid size of target_modes")
+
+            end
 
         end
 
     end
 
     # @show lossy_target_modes(target_modes)
-     add_element!(circuit, interf, target_modes=lossy_target_modes(target_modes))
+     add_element!(circuit, interf, target_modes_in=lossy_target_modes(target_modes_in), target_modes_out=lossy_target_modes(target_modes_out))
 
 end
 

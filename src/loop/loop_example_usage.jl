@@ -57,8 +57,6 @@ lossy_line_example(0.9)
 transmission_amplitude_loss_array = 0:0.1:1
 output_proba = []
 
-########### need conversion in to_lossy for Inputs etc at the construction of Events
-
 i = Input{Bosonic}(to_lossy(first_modes(n,m)))
 o = FockDetection(to_lossy(first_modes(n,m)))
 
@@ -121,19 +119,24 @@ xlabel!("transmission amplitude")
 
 n = 3
 m = n
-η = 1/sqrt(2) .* ones(m-1) # see selection of target_modes = [i, i+1] for m-1
+η = 1/sqrt(2) .* ones(m-1)
+# 1/sqrt(2) .* [1,0] #ones(m-1) # see selection of target_modes = [i, i+1] for m-1
 # [1/sqrt(2), 1] #1/sqrt(2) .* ones(m-1) # see selection of target_modes = [i, i+1] for m-1
-η_loss = 1. .* ones(m-1)
+
+# η_loss = 1. .* ones(m-1)
 
 circuit = LosslessCircuit(m) #LossyCircuit(m)
 
 for mode in 1:m-1
     @show mode
     interf = BeamSplitter(η[mode]) #LossyBeamSplitter(reflectivities[mode], η_loss[mode])
-    target_modes = [mode, mode+1]
-    add_element!(circuit, interf, target_modes = target_modes)
+    target_modes_in = [mode, mode+1]
+    target_modes_out = [mode, mode+1]
+    add_element!(circuit, interf, target_modes_in = target_modes_in, target_modes_out = target_modes_out)
 
 end
+
+BeamSplitter(1/sqrt(2))
 
 pretty_table(circuit.U)
 
@@ -158,7 +161,7 @@ p_two_photon_first_mode
 o3 = FockDetection(ModeOccupation([3,0,0]))
 ev = Event(i,o3, circuit)
 @show compute_probability!(ev)
-0.0625+ 0.1875
+
 
 ### random phase shifter ###
 

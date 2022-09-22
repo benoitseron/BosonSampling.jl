@@ -16,8 +16,8 @@ In general, the function [`to_lossy`](@ref) converts physical `m`-mode objects i
     state = [1, 1, 1, 0, 0, 0, 0, 0]
 
     # creating a Subset:
-    Subset(first_modes(n,m)).m
-    4
+    Subset(first_modes(n,m))
+    subset = [1, 2, 3]
 
     # expanding it doesn't change the Subset
     to_lossy(Subset(first_modes(n,m)))
@@ -46,4 +46,4 @@ Let us now discuss the various lossy elements available.
 
 ## Circuits
 
-When using `circuit_elements` to construct a lossy interferometer, the loss channel associated to mode `i` will always be mode `m+i`. Therefore, doing 
+When using `circuit_elements` to construct a lossy interferometer, the loss channel associated to mode `i` will always be mode `m+i`. Therefore, doing
