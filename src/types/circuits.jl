@@ -236,8 +236,9 @@ function add_element!(circuit::Circuit, interf::Interferometer; target_modes_in:
 end
 
 # if giving a single target modes, assumes that they are the same for out and in
-function add_element!(circuit::Circuit, interf::Interferometer; target_modes)
-    add_element!(circuit, interf; target_modes_in = target_modes, target_modes_out = target_modes)
+function add_element!(circuit::Circuit, interf::Interferometer; target_modes::Vector{Int})
+    println("temporarily disabled")
+    # add_element!(circuit, interf; target_modes_in = target_modes, target_modes_out = target_modes)
 
 end
 #
