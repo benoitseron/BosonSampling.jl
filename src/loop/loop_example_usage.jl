@@ -22,7 +22,7 @@ begin
     using DataStructures
 end
 
-###### one dimension example ######
+### 2d HOM with loss example ###
 
 # n = 1
 # m = 1
@@ -67,6 +67,8 @@ for transmission in transmission_amplitude_loss_array
     push!(output_proba, ev.proba_params.probability)
 end
 
+print(output_proba)
+
 plot(transmission_amplitude_loss_array, output_proba)
 ylabel!("p no lost")
 xlabel!("transmission amplitude")
@@ -109,6 +111,8 @@ for transmission in transmission_amplitude_loss_array
     @show compute_probability!(ev)
     push!(output_proba, ev.proba_params.probability)
 end
+
+print(output_proba)
 
 plot(transmission_amplitude_loss_array, output_proba)
 ylabel!("p bunching top mode")
