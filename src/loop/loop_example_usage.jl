@@ -47,7 +47,7 @@ function lossy_line_example(η_loss)
     interf = LossyLine(η_loss)
     target_modes = [1]
 
-    add_element_lossy!(circuit, interf, target_modes = target_modes)
+    add_element_lossy!(circuit, interf, target_modes_in = target_modes)
     circuit
 
 end
@@ -98,7 +98,7 @@ function lossy_bs_example(η_loss)
     interf = LossyBeamSplitter(1/sqrt(2), η_loss)
     target_modes = [1,2]
 
-    add_element_lossy!(circuit, interf, target_modes = target_modes)
+    add_element_lossy!(circuit, interf, target_modes_in = target_modes)
     circuit
 
 end
@@ -203,3 +203,17 @@ abs(RandomPhaseShifter(d).U[1,1])
 # end
 #
 # U
+
+function foo(a;b)
+end
+
+function foo(a;b,c)
+end
+
+methods(foo)
+
+function g(;a,b=a)
+    @show a,b
+end
+
+g(a = 1, b = 2)

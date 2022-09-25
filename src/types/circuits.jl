@@ -202,13 +202,17 @@ Will automatically update the unitary representing the circuit.
 
 If giving a single target modes, assumes that they are the same for out and in
 """
-function add_element!(circuit::Circuit, interf::Interferometer; target_modes_in::Vector{Int}, target_modes_out::Vector{Int})
+function add_element!(circuit::Circuit, interf::Interferometer; target_modes_in::Vector{Int}, target_modes_out::Vector{Int} = target_modes_in)
 
-    if interf.m != length(target_modes)
-        if interf.m == 2*length(target_modes)
+    if target_modes_in != target_modes_out
+        @argcheck length(target_modes_in) == length(target_modes_out)
+    end
+
+    if interf.m != length(target_modes_in)
+        if interf.m == 2*length(target_modes_in)
             error("use add_element_lossy! instead")
         else
-            error("invalid length(target_modes)")
+            error("invalid length(target_modes_in)")
         end
     end
 
@@ -235,12 +239,12 @@ function add_element!(circuit::Circuit, interf::Interferometer; target_modes_in:
 
 end
 
-# if giving a single target modes, assumes that they are the same for out and in
-function add_element!(circuit::Circuit, interf::Interferometer; target_modes::Vector{Int})
-    println("temporarily disabled")
-    # add_element!(circuit, interf; target_modes_in = target_modes, target_modes_out = target_modes)
-
-end
+# # if giving a single target modes, assumes that they are the same for out and in
+# function add_element!(circuit::Circuit, interf::Interferometer; target_modes::Vector{Int})
+#     println("temporarily disabled")
+#     # add_element!(circuit, interf; target_modes_in = target_modes, target_modes_out = target_modes)
+#
+# end
 #
 # add_element!(circuit::Circuit, interf::Interferometer; target_modes::ModeOccupation) = add_element!(circuit=circuit, interf=interf, target_modes=target_modes.state)
 #
@@ -262,7 +266,7 @@ end
 #
 # end
 
-function add_element_lossy!(circuit::LossyCircuit, interf::Interferometer; target_modes_in::Vector{Int}, target_modes_out::Vector{Int})
+function add_element_lossy!(circuit::LossyCircuit, interf::Interferometer; target_modes_in::Vector{Int}, target_modes_out::Vector{Int} = target_modes_in)
 
     # @warn "health checks commented"
 
@@ -274,25 +278,23 @@ function add_element_lossy!(circuit::LossyCircuit, interf::Interferometer; targe
 
     end
 
-    for target_modes in [target_modes_in,target_modes_out]
 
-        if length(target_modes) != interf.m_real
+    if length(target_modes_in) != interf.m_real
 
-            println("unexpected length")
+        println("unexpected length")
 
-            if length(target_modes) == 2*interf.m_real
+        if length(target_modes_in) == 2*interf.m_real
 
-                @warn "target_modes given with size 2*interf.m_real, discarding last m_real mode info and using the convention that mode i is lost into mode i+m_real"
+            @warn "target_modes given with size 2*interf.m_real, discarding last m_real mode info and using the convention that mode i is lost into mode i+m_real"
 
-            else
+        else
 
-                error("invalid size of target_modes")
-
-            end
+            error("invalid size of target_modes")
 
         end
 
     end
+
 
     # @show lossy_target_modes(target_modes)
      add_element!(circuit, interf, target_modes_in=lossy_target_modes(target_modes_in), target_modes_out=lossy_target_modes(target_modes_out))
