@@ -127,20 +127,25 @@ m = n
 # 1/sqrt(2) .* [1,0] #ones(m-1) # see selection of target_modes = [i, i+1] for m-1
 # [1/sqrt(2), 1] #1/sqrt(2) .* ones(m-1) # see selection of target_modes = [i, i+1] for m-1
 
-# η_loss = 1. .* ones(m-1)
+η_loss = 1. .* ones(m-1)
 
-circuit = LosslessCircuit(m) #LossyCircuit(m)
+circuit = LossyCircuit(m)
 
 for mode in 1:m-1
     @show mode
-    interf = BeamSplitter(η[mode]) #LossyBeamSplitter(reflectivities[mode], η_loss[mode])
+    interf = LossyBeamSplitter(η[mode], η_loss[mode])
     target_modes_in = [mode, mode+1]
     target_modes_out = [mode, mode+1]
-    add_element!(circuit, interf, target_modes_in = target_modes_in, target_modes_out = target_modes_out)
+    add_element_lossy!(circuit, interf, target_modes_in = target_modes_in, target_modes_out = target_modes_out)
 
 end
 
+length(circuit.circuit_elements)
+circuit.U
 
+############## lossy_target_modes needs to be changed, it need to take into account the size of the circuit rather than that of the target modes
+
+virtual_interferometer_uniform_loss(beam_splitter(η[1]),η_loss[1])
 pretty_table(circuit.U)
 
 i = Input{Bosonic}(first_modes(n,m))
