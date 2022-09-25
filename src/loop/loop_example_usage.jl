@@ -136,7 +136,6 @@ for mode in 1:m-1
 
 end
 
-BeamSplitter(1/sqrt(2))
 
 pretty_table(circuit.U)
 

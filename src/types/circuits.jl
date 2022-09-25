@@ -228,13 +228,14 @@ function add_element!(circuit::Circuit, interf::Interferometer; target_modes_in:
                 u[target_modes_in[i], target_modes_out[j]] = interf.U[i,j]
             end
         end
-
-        @show pretty_table(circuit.U)
-        @show pretty_table(u)
+        #
+        # @show pretty_table(circuit.U)
+        # @show pretty_table(u)
 
         circuit.U *= u
+        #circuit.U = u * circuit.U
 
-        @show pretty_table(circuit.U)
+        # @show pretty_table(circuit.U)
     end
 
 end
