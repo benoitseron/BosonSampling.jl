@@ -18,25 +18,11 @@ begin
     using JLD
     using AutoHashEquals
     using LinearRegression
-
     using DataStructures
+
 end
 
-### 2d HOM with loss example ###
-
-# n = 1
-# m = 1
-# i = Input{Bosonic}(first_modes(n,m))
-# o = FockDetection(first_modes(n,m))
-# η_loss = 0.9
-#
-# circuit = LossyCircuit(1)
-# interf = LossyLine(η_loss)
-# target_modes = [1]
-#
-# add_element!(circuit, interf, target_modes = target_modes)
-
-# function to_lossy(target_modes)
+### one d ex ##
 
 n = 1
 m = 1
@@ -47,7 +33,7 @@ function lossy_line_example(η_loss)
     interf = LossyLine(η_loss)
     target_modes = [1]
 
-    add_element_lossy!(circuit, interf, target_modes_in = target_modes)
+    add_element_lossy!(circuit, interf, target_modes)
     circuit
 
 end
@@ -100,7 +86,7 @@ function lossy_bs_example(η_loss)
     interf = LossyBeamSplitter(1/sqrt(2), η_loss)
     target_modes = [1,2]
 
-    add_element_lossy!(circuit, interf, target_modes_in = target_modes)
+    add_element_lossy!(circuit, interf, target_modes)
     circuit
 
 end
@@ -143,7 +129,35 @@ end
 length(circuit.circuit_elements)
 circuit.U
 
+circuit.m_real
+
+target_modes_in = [1,3]
+ml = ModeList(target_modes_in, circuit.m_real)
+
+convert(ModeOccupation, ml)
+
+mode = 1
+add_element_lossy!(circuit, LossyBeamSplitter(η[mode], η_loss[mode]), target_modes_in = convert(ModeOccupation, ml) target_modes_out = convert(ModeOccupation, ml)
+
 ############## lossy_target_modes needs to be changed, it need to take into account the size of the circuit rather than that of the target modes
+
+@kwdispatch foo()
+
+@kwmethod function foo(;v::Vector{Int})
+    @show v
+end
+
+@kwmethod function foo(;v::ModeOccupation)
+    foo(v = v.state)
+end
+
+function foo(;v::ModeList)
+    @show v
+end
+
+v = first_modes(2,2)
+
+foo(;v)
 
 virtual_interferometer_uniform_loss(beam_splitter(η[1]),η_loss[1])
 pretty_table(circuit.U)

@@ -54,7 +54,7 @@ function build_loop(m::Int, η::Union{T, Vector{T}}, η_loss::Union{Nothing, T, 
             interf = BeamSplitter(η[mode])
             target_modes_in = [mode, mode+1]
             target_modes_out = [mode, mode+1]
-            add_element!(circuit, interf, target_modes_in = target_modes_in, target_modes_out = target_modes_out)
+            add_element!(circuit, interf, target_modes_in, target_modes_out)
 
         end
 

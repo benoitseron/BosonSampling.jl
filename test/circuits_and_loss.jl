@@ -11,7 +11,7 @@ function lossy_line_example(η_loss)
     interf = LossyLine(η_loss)
     target_modes = [1]
 
-    add_element_lossy!(circuit, interf, target_modes_in = target_modes)
+    add_element_lossy!(circuit, interf, target_modes)
     circuit
 
 end
@@ -48,7 +48,7 @@ function lossy_bs_example(η_loss)
     interf = LossyBeamSplitter(1/sqrt(2), η_loss)
     target_modes = [1,2]
 
-    add_element_lossy!(circuit, interf, target_modes_in = target_modes)
+    add_element_lossy!(circuit, interf, target_modes)
     circuit
 
 end
@@ -79,7 +79,7 @@ for mode in 1:m-1
     interf = BeamSplitter(η[mode]) #LossyBeamSplitter(reflectivities[mode], η_loss[mode])
     target_modes_in = [mode, mode+1]
     target_modes_out = [mode, mode+1]
-    add_element!(circuit, interf, target_modes_in = target_modes_in, target_modes_out = target_modes_out)
+    add_element!(circuit, interf, target_modes_in, target_modes_out)
 
 end
 
