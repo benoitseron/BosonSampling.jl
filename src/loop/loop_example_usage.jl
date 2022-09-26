@@ -22,6 +22,29 @@ begin
 
 end
 
+### 2d HOM without loss but with ModeList example ###
+
+n = 2
+m = 2
+i = Input{Bosonic}(first_modes(n,m))
+o = FockDetection(ModeOccupation([1,1])) # detecting bunching, should be 0.5 in probability if there was no loss
+transmission_amplitude_loss_array = 0:0.1:1
+output_proba = []
+
+circuit = LosslessCircuit(2)
+interf = BeamSplitter(1/sqrt(2))
+target_modes = ModeList([1,2], m)
+
+add_element!(circuit, interf, target_modes)
+
+ev = Event(i,o, circuit)
+compute_probability!(ev)
+
+@test isapprox(ev.proba_params.probability, 0., atol = eps())
+
+
+
+
 ### one d ex ##
 
 n = 1
@@ -31,7 +54,7 @@ function lossy_line_example(η_loss)
 
     circuit = LossyCircuit(1)
     interf = LossyLine(η_loss)
-    target_modes = [1]
+    target_modes = ModeList([1],m)
 
     add_element_lossy!(circuit, interf, target_modes)
     circuit
@@ -71,39 +94,6 @@ for transmission in transmission_amplitude_loss_array
     push!(output_proba, ev.proba_params.probability)
 end
 
-### 2d HOM with loss example ###
-
-n = 2
-m = 2
-i = Input{Bosonic}(first_modes(n,m))
-o = FockDetection(ModeOccupation([2,0])) # detecting bunching, should be 0.5 in probability if there was no loss
-transmission_amplitude_loss_array = 0:0.1:1
-output_proba = []
-
-function lossy_bs_example(η_loss)
-
-    circuit = LossyCircuit(2)
-    interf = LossyBeamSplitter(1/sqrt(2), η_loss)
-    target_modes = [1,2]
-
-    add_element_lossy!(circuit, interf, target_modes)
-    circuit
-
-end
-
-for transmission in transmission_amplitude_loss_array
-
-    ev = Event(i,o, lossy_bs_example(transmission))
-    @show compute_probability!(ev)
-    push!(output_proba, ev.proba_params.probability)
-end
-
-print(output_proba)
-
-plot(transmission_amplitude_loss_array, output_proba)
-ylabel!("p bunching top mode")
-xlabel!("transmission amplitude")
-
 
 ### building the loop ###
 
@@ -115,14 +105,17 @@ m = n
 
 η_loss = 1. .* ones(m-1)
 
-circuit = LossyCircuit(m)
+circuit = LosslessCircuit(m)
 
 for mode in 1:m-1
-    @show mode
-    interf = LossyBeamSplitter(η[mode], η_loss[mode])
+
+    interf = BeamSplitter(η[mode])#LossyBeamSplitter(η[mode], η_loss[mode])
+    #target_modes_in = ModeList([mode, mode+1], circuit.m_real)
+    #target_modes_out = ModeList([mode, mode+1], circuit.m_real)
+
     target_modes_in = [mode, mode+1]
-    target_modes_out = [mode, mode+1]
-    add_element_lossy!(circuit, interf, target_modes_in = target_modes_in, target_modes_out = target_modes_out)
+    target_modes_out = target_modes_in
+    add_element!(circuit, interf, target_modes_in, target_modes_out)
 
 end
 
@@ -131,38 +124,10 @@ circuit.U
 
 circuit.m_real
 
-target_modes_in = [1,3]
-ml = ModeList(target_modes_in, circuit.m_real)
-
-convert(ModeOccupation, ml)
-
-mode = 1
-add_element_lossy!(circuit, LossyBeamSplitter(η[mode], η_loss[mode]), target_modes_in = convert(ModeOccupation, ml) target_modes_out = convert(ModeOccupation, ml)
+ModeList([1,2],3)
 
 ############## lossy_target_modes needs to be changed, it need to take into account the size of the circuit rather than that of the target modes
 
-@kwdispatch foo()
-
-@kwmethod function foo(;v::Vector{Int})
-    @show v
-end
-
-@kwmethod function foo(;v::ModeOccupation)
-    foo(v = v.state)
-end
-
-function foo(;v::ModeList)
-    @show v
-end
-
-v = first_modes(2,2)
-
-foo(;v)
-
-virtual_interferometer_uniform_loss(beam_splitter(η[1]),η_loss[1])
-pretty_table(circuit.U)
-
-i = Input{Bosonic}(first_modes(n,m))
 
 #outputs compatible with two photons top mode
 o1 = FockDetection(ModeOccupation([2,1,0]))

@@ -1,5 +1,26 @@
 @testset "circuits and loss" begin
 
+### 2d HOM without loss but with ModeList example ###
+
+n = 2
+m = 2
+i = Input{Bosonic}(first_modes(n,m))
+o = FockDetection(ModeOccupation([1,1])) # detecting bunching, should be 0.5 in probability if there was no loss
+transmission_amplitude_loss_array = 0:0.1:1
+output_proba = []
+
+circuit = LosslessCircuit(2)
+interf = BeamSplitter(1/sqrt(2))
+target_modes = ModeList([1,2], m)
+
+add_element!(circuit, interf, target_modes)
+
+ev = Event(i,o, circuit)
+compute_probability!(ev)
+
+@test isapprox(ev.proba_params.probability, 0., atol = eps())
+
+
 ### 2d HOM with loss example ###
 
 n = 1

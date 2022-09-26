@@ -202,17 +202,20 @@ Will automatically update the unitary representing the circuit.
 
 If giving a single target modes, assumes that they are the same for out and in
 """
-function add_element!(circuit::Circuit, interf::Interferometer, target_modes_in::Vector{Int}, target_modes_out::Vector{Int} = target_modes_in)
+function add_element!(circuit::Circuit, interf::Interferometer, target_modes_in::ModeList, target_modes_out::ModeList = target_modes_in)
 
     if target_modes_in != target_modes_out
-        @argcheck length(target_modes_in) == length(target_modes_out)
+        @argcheck target_modes_in.n == target_modes_out.n
+        @argcheck target_modes_in.m == target_modes_out.m
     end
 
-    if interf.m != length(target_modes_in)
-        if interf.m == 2*length(target_modes_in)
+    if circuit.m != target_modes_in.m
+        if circuit.m == 2*target_modes_in.m
             error("use add_element_lossy! instead")
         else
-            error("invalid length(target_modes_in)")
+            @show circuit.m
+            @show target_modes_in.m
+            error("target_modes_in.m")
         end
     end
 
@@ -225,7 +228,9 @@ function add_element!(circuit::Circuit, interf::Interferometer, target_modes_in:
         u = Matrix{ComplexF64}(I, circuit.m, circuit.m)
         for i in 1:size(interf.U)[1]
             for j in 1:size(interf.U)[2]
-                u[target_modes_in[i], target_modes_out[j]] = interf.U[i,j]
+                
+                u[target_modes_in.modes[i], target_modes_out.modes[j]] = interf.U[i,j]
+
             end
         end
         #
@@ -296,6 +301,8 @@ function add_element_lossy!(circuit::LossyCircuit, interf::Interferometer, targe
 
     end
 
+    @show target_modes_in
+    @show lossy_target_modes(target_modes_in)
 
     # @show lossy_target_modes(target_modes)
      add_element!(circuit, interf, lossy_target_modes(target_modes_in), lossy_target_modes(target_modes_out))
@@ -307,6 +314,8 @@ function add_element_lossy!(circuit::LossyCircuit, interf::Interferometer, targe
     target_modes_in = target_modes_in.state
     target_modes_out = target_modes_out.state
 
+    @show target_modes_in
+
     add_element_lossy!(circuit, interf, target_modes_in, target_modes_out)
 
 end
@@ -316,6 +325,8 @@ function add_element_lossy!(circuit::LossyCircuit, interf::Interferometer, targe
 
     target_modes_in = convert(ModeOccupation, target_modes_in)
     target_modes_out = convert(ModeOccupation, target_modes_out)
+
+    @show target_modes_in
 
     add_element_lossy!(circuit, interf, target_modes_in, target_modes_out)
 
