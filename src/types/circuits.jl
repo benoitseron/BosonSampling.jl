@@ -236,12 +236,11 @@ function add_element!(circuit::Circuit, interf::Interferometer, target_modes_in:
 
             end
         end
-        #
+
         # @show pretty_table(circuit.U)
         # @show pretty_table(u)
 
         circuit.U *= u
-        #circuit.U = u * circuit.U
 
         # @show pretty_table(circuit.U)
     end
@@ -308,7 +307,7 @@ function add_element_lossy!(circuit::LossyCircuit, interf::Interferometer, targe
     # @show target_modes_in
     # @show lossy_target_modes(target_modes_in)
 
-    # @show lossy_target_modes(target_modes)
+
      add_element!(circuit, interf, lossy_target_modes(target_modes_in), lossy_target_modes(target_modes_out))
 
 end

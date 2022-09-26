@@ -29,7 +29,7 @@ function virtual_interferometer_uniform_loss(U::Matrix, η)
     #V = V[1:2m, 1:2m] # disregard virtual mode to connect second input branch of beam splitters
     ############ this must clearly not be good for unitarity
 
-    V = copy(transpose(V))
+    #V = copy(transpose(V))
 
     V
 
@@ -176,7 +176,8 @@ end
 
 function lossy_target_modes(target_modes::ModeList)
 
-    ModeList(lossy_target_modes(target_modes.modes), 2*target_modes.m)
+    new_modes = vcat(target_modes.modes, target_modes.modes .+ target_modes.m)
+    ModeList(new_modes, 2*target_modes.m)
 
 end
 
