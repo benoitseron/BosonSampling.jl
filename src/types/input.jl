@@ -341,6 +341,8 @@ struct GaussianInput{T<:Gaussian}
 
         return new{ThermalState}(r, r.n, r.m, R, cov, nothing, displacement_parameters, nothing, nothing)
 
+    end
+
 
     # function GaussianInput{T}(r::ModeOccupation, mean_photon_numbers::Vector) where {T<:Gaussian}
     #
