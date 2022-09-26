@@ -130,8 +130,54 @@ compute_probability!(ev)
 
 @test ev.proba_params.probability ≈ 0.
 
+### equivalence of lossy constructed circuit and nonlossy ###
+
+begin
+    n = 3
+    m = n
+
+    i = Input{Bosonic}(first_modes(n,m))
+
+    η = 1/sqrt(2) .* ones(m-1)
+    # 1/sqrt(2) .* [1,0] #ones(m-1) # see selection of target_modes = [i, i+1] for m-1
+    # [1/sqrt(2), 1] #1/sqrt(2) .* ones(m-1) # see selection of target_modes = [i, i+1] for m-1
+
+    η_loss = 1 .* ones(m-1)
+
+    circuit = LossyCircuit(m)
+
+    for mode in 1:m-1
 
 
+        interf = LossyBeamSplitter(η[mode], η_loss[mode])
+        target_modes_in = ModeList([mode, mode+1], circuit.m_real)
+        target_modes_out = target_modes_in
+        add_element_lossy!(circuit, interf, target_modes_in, target_modes_out)
+
+    end
+
+    sub_circuit_lossy = circuit.U[1:3, 1:3]
+
+    circuit = LosslessCircuit(m)
+
+    for mode in 1:m-1
+
+        interf = BeamSplitter(η[mode])#LossyBeamSplitter(η[mode], η_loss[mode])
+        #target_modes_in = ModeList([mode, mode+1], circuit.m_real)
+        #target_modes_out = ModeList([mode, mode+1], circuit.m_real)
+
+        target_modes_in = ModeList([mode, mode+1], m)
+        target_modes_out = target_modes_in
+        add_element!(circuit, interf, target_modes_in, target_modes_out)
+
+    end
+
+
+    pretty_table(sub_circuit_lossy)
+    pretty_table(circuit.U)
+
+    @test sub_circuit_lossy ≈ circuit.U
+end
 
 
 

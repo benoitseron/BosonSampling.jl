@@ -125,7 +125,7 @@ end
 
 function to_lossy(interf::Interferometer)
 
-    if isa(interf, LossyInterferometer)
+    if (LossParameters(typeof(interf)) == IsLossy())
         error("$interf is already a LossyInterferometer")
     else
 

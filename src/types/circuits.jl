@@ -179,16 +179,48 @@ struct RandomPhaseShifter <: CircuitElement
 
     U::Matrix
     m::Int
-    d::Distribution
+    d::Union{Distribution, Nothing}
 
     function RandomPhaseShifter(d::Distribution)
 
         new(exp(1im * rand(d)) * ones((1,1)), 1, d)
 
     end
+
+    function RandomPhaseShifter(ϕ::Real)
+
+        new(exp(1im * ϕ) * ones((1,1)), 1, nothing)
+
+    end
 end
 
 LossParameters(::Type{RandomPhaseShifter}) = IsLossless()
+
+struct LossyLineWithRandomPhase <: LossyCircuitElement
+
+    η_loss::Real
+    U::Matrix
+    m::Int
+    m_real::Int
+    d::Union{Distribution, Real, Nothing}
+
+    function LossyLineWithRandomPhase(η_loss::Real, ϕ::Union{Real, Distribution})
+        m = 1
+        circuit = LossyCircuit(m)
+        target_modes_in = ModeList([1], circuit.m_real)
+        target_modes_out = target_modes_in
+
+        interf = LossyLine(η_loss)
+        add_element_lossy!(circuit, interf, target_modes_in, target_modes_out)
+
+        interf = RandomPhaseShifter(ϕ)
+        add_element_lossy!(circuit, interf, target_modes_in, target_modes_out)
+
+        new(η_loss, circuit.U, circuit.m, circuit.m_real, ϕ)
+    end
+end
+
+LossParameters(::Type{LossyLineWithRandomPhase}) = IsLossy()
 
 """
     is_compatible(target_modes_in::ModeList, circuit::Circuit)
