@@ -180,5 +180,43 @@ begin
 end
 
 
+### loop with loss and types ###
+
+begin
+    n = 3
+    m = n
+
+    i = Input{Bosonic}(first_modes(n,m))
+
+    η = 1/sqrt(2) .* ones(m-1)
+    η_loss_bs = 0.9 .* ones(m-1)
+    η_loss_lines = 0.9 .* ones(m)
+    d = Uniform(0, 2pi)
+    ϕ = rand(d, m)
+
+end
+
+circuit = LossyLoop(m, η, η_loss_bs, η_loss_lines, ϕ).circuit
+
+o1 = FockDetection(ModeOccupation([2,1,0]))
+o2 = FockDetection(ModeOccupation([2,0,1]))
+
+o_array = [o1,o2]
+
+p_two_photon_first_mode = 0
+
+for o in o_array
+    ev = Event(i,o, circuit)
+    @show compute_probability!(ev)
+    p_two_photon_first_mode += ev.proba_params.probability
+end
+
+@test p_two_photon_first_mode ≈ 0.09324549025354557
+
+o3 = FockDetection(ModeOccupation([3,0,0]))
+ev = Event(i,o3, circuit)
+compute_probability!(ev)
+
+@test ev.proba_params.probability ≈ 0.
 
 end
