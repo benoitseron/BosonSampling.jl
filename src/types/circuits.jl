@@ -305,8 +305,8 @@ function add_element_lossy!(circuit::LossyCircuit, interf::Interferometer, targe
 
     end
 
-    @show target_modes_in
-    @show lossy_target_modes(target_modes_in)
+    # @show target_modes_in
+    # @show lossy_target_modes(target_modes_in)
 
     # @show lossy_target_modes(target_modes)
      add_element!(circuit, interf, lossy_target_modes(target_modes_in), lossy_target_modes(target_modes_out))
