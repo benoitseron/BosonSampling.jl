@@ -159,6 +159,7 @@ end
 
 StateMeasurement(::Type{PartitionSample}) = PartitionMeasurement()
 
+
 mutable struct TresholdDetection <: OutputMeasurementType
     s::Union{Vector{Int64}, Nothing}
     TresholdDetection() = new(nothing)

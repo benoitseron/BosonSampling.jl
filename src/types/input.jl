@@ -338,7 +338,8 @@ struct GaussianInput{T<:Gaussian}
 
         return new{CoherentState}(r, r.n, r.m, R, cov, displacement_parameters, nothing, nothing, nothing)
 
-    end
+
+        return new{ThermalState}(r, r.n, r.m, R, cov, nothing, displacement_parameters, nothing, nothing)
 
 
     # function GaussianInput{T}(r::ModeOccupation, mean_photon_numbers::Vector) where {T<:Gaussian}
