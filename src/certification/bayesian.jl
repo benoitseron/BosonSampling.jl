@@ -50,16 +50,101 @@ function compute_χ(events, p_q, p_a)
 end
 
 """
-    compute_probability!(b::Bayesian)
+    certify!(b::Bayesian)
 
 Updates all probabilities associated with a `Bayesian` `Certifier`.
 """
-function compute_probability!(b::Bayesian)
+function certify!(b::Union{Bayesian, BayesianPartition})
 
     b.probabilities = compute_confidence_array(b.events, b.null_hypothesis.f, b.alternative_hypothesis.f)
     b.confidence = b.probabilities[end]
 
 end
+
+"""
+    function certify!(fb::FullBunching)
+
+Returns the p_value of the null and alternative hypothesis.
+"""
+function certify!(fb::FullBunching)
+
+    events = fb.events
+    ev = fb.events[1]
+    input_modes = ev.input_state.r
+    interf = ev.interferometer
+
+    ib = Input{Bosonic}(input_modes)
+    id = Input{Distinguishable}(input_modes)
+
+    p_full_bos = full_bunching_probability(interf, ib, fb.subset)
+    p_full_dist = full_bunching_probability(interf, id, fb.subset)
+
+    p_full_observed = n_bunched_events(events, fb.subset)/length(events)
+
+    p_value_bosonic =  pvalue(OneSampleTTest([Int(is_fully_bunched(ev, fb.subset)) for ev in events], p_full_bos))
+    p_value_dist =  pvalue(OneSampleTTest([Int(is_fully_bunched(ev, fb.subset)) for ev in events], p_full_dist))
+
+    TNull = typeof(fb.null_hypothesis)
+    TAlternative = typeof(fb.alternative_hypothesis)
+
+    if TNull == Bosonic && TAlternative == Distinguishable
+        fb.p_value_null = p_value_bosonic
+        fb.p_value_alternative = p_value_dist
+
+    elseif TNull == Distinguishable && TAlternative == Bosonic
+        fb.p_value_null = p_value_dist
+        fb.p_value_alternative = p_value_bosonic
+    else
+        error("not implemented")
+    end
+
+    (fb.p_value_null, fb.p_value_alternative)
+
+end
+
+"""
+    function certify!(fb::FullBunching)
+
+Returns the p_value of the null and alternative hypothesis.
+"""
+function certify!(corr::Correlators)
+
+    events = corr.events
+    ev = corr.events[1]
+    input_modes = ev.input_state.r
+    interf = ev.interferometer
+
+    ib = Input{Bosonic}(input_modes)
+    id = Input{Distinguishable}(input_modes)
+
+    corr_b = correlators_nm_cv_s(interf, ib)
+    corr_d = correlators_nm_cv_s(interf, id)
+
+    @warn "to be implemented"
+    # corr_observed = n_bunched_events(events, fb.subset)/length(events)
+    #
+    # p_value_bosonic =  pvalue(OneSampleTTest([Int(is_fully_bunched(ev, fb.subset)) for ev in events], p_full_bos))
+    # p_value_dist =  pvalue(OneSampleTTest([Int(is_fully_bunched(ev, fb.subset)) for ev in events], p_full_dist))
+    #
+    # TNull = typeof(fb.null_hypothesis)
+    # TAlternative = typeof(fb.alternative_hypothesis)
+    #
+    # if TNull == Bosonic && TAlternative == Distinguishable
+    #     fb.p_value_null = p_value_bosonic
+    #     fb.p_value_alternative = p_value_dist
+    #
+    # elseif TNull == Distinguishable && TAlternative == Bosonic
+    #     fb.p_value_null = p_value_dist
+    #     fb.p_value_alternative = p_value_bosonic
+    # else
+    #     error("not implemented")
+    # end
+    #
+    # (fb.p_value_null, fb.p_value_alternative)
+
+end
+
+
 
 """
     p_B(event::Event{TIn, TOut}) where {TIn<:InputType, TOut <: FockDetection}

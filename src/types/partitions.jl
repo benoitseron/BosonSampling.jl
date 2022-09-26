@@ -1,6 +1,8 @@
 """
     ModeOccupation(state)
 
+A list of the size of the number of modes `m`, with entry `j` of `state` being the number of photons in mode `j`. See also [`ModeList`](@ref).
+
     fields:
          - n::Int
          - m::Int
@@ -43,6 +45,94 @@ Base.:+(s2::Vector{Int}, s1::ModeOccupation) = begin
     return s1 + s2
 end
 
+"""
+        Base.zeros(mo::ModeOccupation)
+
+Returns a `ModeOccupation` similar to the input but with a state made of zeros.
+"""
+function Base.zeros(mo::ModeOccupation)
+
+    physical_state = mo.state
+    state = zeros(eltype(physical_state), size(physical_state))
+    ModeOccupation(state)
+
+end
+
+"""
+        Base.cat(s1::ModeOccupation, s2::ModeOccupation)
+
+Concatenates two `ModeOccupation`.
+"""
+function Base.cat(s1::ModeOccupation, s2::ModeOccupation)
+
+    ModeOccupation(vcat(s1.state, s2.state))
+
+end
+
+"""
+    ModeList(state)
+
+Contrasting to [`ModeOccupation`](@ref) this list is of size `n`, the number of photons. Entry `j` is the index of the mode occupied by photon `j`.
+
+This can also be used just to select modes for instance.
+
+See also [`ModeOccupation`](@ref).
+
+    fields:
+        - n::Int
+        - m::Union{Int, Nothing}
+        - modes::Vector{Int}
+"""
+@auto_hash_equals struct ModeList
+    n::Int
+    m::Union{Int, Nothing}
+    modes::Vector{Int}
+
+    ModeList(modes::Vector{Int}) = all(modes[:] .>= 1) ? new(length(modes), nothing, modes) : error("modes start at one")
+
+        function ModeList(modes::Vector{Int}, m::Int)
+
+                if all(modes[:] .>= 1) && all(modes[:] .<= m)
+                    new(length(modes), m, modes)
+                else
+                    error("incoherent or invalid mode inputs")
+                end
+        end
+
+
+end
+
+"""
+        is_compatible(target_modes_in::ModeList, target_modes_out::ModeList)
+
+Checks compatibility of `ModeList`s.
+"""
+function is_compatible(target_modes_in::ModeList, target_modes_out::ModeList)
+
+        if target_modes_in == target_modes_out
+                return true
+        else
+                @argcheck target_modes_in.n == target_modes_out.n
+                @argcheck target_modes_in.m == target_modes_out.m
+                true
+        end
+
+end
+
+function Base.convert(::Type{ModeOccupation}, ml::ModeList)
+
+        if ml.m == nothing
+                error("need to give m")
+        else
+                state = zeros(Int, ml.m)
+
+                for mode in ml.modes
+                        state[mode] += 1
+                end
+
+                return ModeOccupation(state)
+        end
+end
 
 at_most_one_photon_per_bin(state) = all(state[:] .<= 1)
 at_most_one_photon_per_bin(r::ModeOccupation) = at_most_one_photon_per_bin(r.state)

@@ -149,3 +149,7 @@ function do_with_probability(p)
 	rand() < p ? true : false
 
 end
+
+function between_one_and_zero(a)
+	a >= 0 && a <=1
+end

@@ -251,6 +251,10 @@ struct Input{T<:InputType}
     G::GramMatrix
     distinguishability_param::Union{Real,Nothing}
 
+    function Input{T}(r::ModeOccupation, n::Int, m::Int, G::GramMatrix, distinguishability_param::Union{Real,Nothing}) where {T<:InputType}
+        new{T}(r,n,m,G, distinguishability_param)
+    end
+
     function Input{T}(r::ModeOccupation) where {T<:InputType}
         if T in [Bosonic, Distinguishable, Undef, RandomGramMatrix]
             return new{T}(r, r.n, r.m, GramMatrix{T}(r.n), nothing)
@@ -334,30 +338,38 @@ struct GaussianInput{T<:Gaussian}
 
         return new{CoherentState}(r, r.n, r.m, R, cov, displacement_parameters, nothing, nothing, nothing)
 
-    end
-
-    function GaussianInput{ThermalState}(r::ModeOccupation, mean_photon_numbers::Vector)
-
-        r.state[1] == 1 ? sq = ThermalState(mean_photon_numbers[1]) : sq = VacuumState()
-        cov = sq.covariance_matrix
-        R = sq.displacement
-
-        for i in 2:r.m
-            if r.state[i] == 1
-                sq = ThermalState[mean_photon_numbers[i]]
-                R = [R;sq.displacement]
-                sigma = sq.covariance_matrix
-            else
-                vacc = VacuumState()
-                R = [R;vacc.displacement]
-                sigma = vacc.covariance_matrix
-            end
-            cov = direct_sum(cov, sigma)
-        end
 
         return new{ThermalState}(r, r.n, r.m, R, cov, nothing, displacement_parameters, nothing, nothing)
 
     end
+
+
+    # function GaussianInput{T}(r::ModeOccupation, mean_photon_numbers::Vector) where {T<:Gaussian}
+    #
+    #     if T == ThermalState
+    #         r.state[1] == 1 ? sq = ThermalState(mean_photon_numbers[1]) : sq = VacuumState()
+    #         cov = sq.covariance_matrix
+    #         R = sq.displacement
+    #
+    #         for i in 2:r.m
+    #             if r.state[i] == 1
+    #                 sq = ThermalState[mean_photon_numbers[i]]
+    #                 R = [R;sq.displacement]
+    #                 sigma = sq.covariance_matrix
+    #             else
+    #                 vacc = VacuumState()
+    #                 R = [R;vacc.displacement]
+    #                 sigma = vacc.covariance_matrix
+    #             end
+    #             cov = direct_sum(cov, sigma)
+    #         end
+    #         return new{T}(r, r.n, r.m, R, cov, nothing, displacement_parameters, nothing, nothing)
+    #     else
+    #         error("type ", T, " not implemented")
+    #     end
+    #
+    # end
+
 
     function GaussianInput{SingleModeSqueezedVacuum}(r::ModeOccupation, squeezing_parameters::Vector)
 

@@ -1,3 +1,5 @@
+loss_amplitude_to_transmission_amplitude(loss::Real) = sqrt(1-loss^2)
+
 """
     virtual_interferometer_uniform_loss(real_interf::Matrix, η)
     virtual_interferometer_uniform_loss(real_interf::Interferometer, η)
@@ -27,7 +29,7 @@ function virtual_interferometer_uniform_loss(U::Matrix, η)
     #V = V[1:2m, 1:2m] # disregard virtual mode to connect second input branch of beam splitters
     ############ this must clearly not be good for unitarity
 
-    V = copy(transpose(V))
+    #V = copy(transpose(V))
 
     V
 
@@ -104,7 +106,81 @@ function to_lossy(part::Partition)
 
 end
 
-abstract type LossyInterferometer <: Interferometer end
+"""
+    to_lossy(mo::ModeOccupation)
+
+Transforms a `ModeOccupation` into the same with extra padding to account for the environment modes.
+"""
+function to_lossy(mo::ModeOccupation)
+
+    cat(mo,zeros(mo))
+
+end
+
+function to_lossy(state::Vector{Int})
+
+    vcat(state,zeros(eltype(state), length(state)))
+
+end
+
+function to_lossy(interf::Interferometer)
+
+    if (LossParameters(typeof(interf)) == IsLossy())
+        error("$interf is already a LossyInterferometer")
+    else
+
+        U = interf.U
+        m = interf.m
+        U_lossy = Matrix{eltype(U)}(I, 2 .* size(U))
+        U_lossy[1:m,1:m] = U
+
+        return UserDefinedLossyInterferometer(U_lossy)
+    end
+
+end
+
+function to_lossy(i::Input{T}) where {T<:InputType}
+
+    Input{T}(to_lossy(i.r), i.n, 2*i.m, i.G, i.distinguishability_param)
+
+end
+
+function to_lossy(o::OutputMeasurementType)
+
+    # if StateMeasurement(typeof(output_measurement)) == FockStateMeasurement
+    if typeof(o) == FockDetection
+        FockDetection(to_lossy(o.s))
+
+    else
+
+        error("not implemented")
+
+    end
+
+end
+
+"""
+    lossy_target_modes(target_modes::Vector{Int})
+
+Converts a vector of mode occupation into the same concatenated twice. This allows for modes occupied by circuit elements to have their loss mode attributed. For instance, a LossyLine targeting mode 1 with m=2 has
+
+    target_modes = [1,0]
+    lossy_target_modes(target_modes) = [1,0,1,0]
+
+"""
+function lossy_target_modes(target_modes::Vector{Int})::Vector{Int}
+
+    vcat(target_modes, target_modes)
+
+end
+
+function lossy_target_modes(target_modes::ModeList)
+
+    new_modes = vcat(target_modes.modes, target_modes.modes .+ target_modes.m)
+    ModeList(new_modes, 2*target_modes.m)
+
+end
+
 
 """
     isa_transmissitivity(η::Real)
@@ -128,12 +204,12 @@ Simulates a simple, uniformly lossy interferometer: take a 2m*2m interferometer 
 
 The last form, `UniformLossInterferometer(m::Int, η::Real)` samples from a Haar random unitary.
 """
-struct UniformLossInterferometer <: LossyInterferometer
+struct UniformLossInterferometer <: Interferometer
     m_real::Int
     m::Int
     η::Real #transmissivity of the upfront beamsplitters
-    U_physical::Matrix{Complex} # physical matrix
-    U::Matrix{Complex} # virtual 2m*2m interferometer
+    U_physical::Union{Matrix{Complex},Nothing} # physical matrix
+    U::Union{Matrix{Complex},Nothing} # virtual 2m*2m interferometer
 
     function UniformLossInterferometer(η::Real, U_physical::Matrix)
         if isa_transmissitivity(η)
@@ -150,10 +226,6 @@ struct UniformLossInterferometer <: LossyInterferometer
 
 end
 
-
-
-
-
 """
     GeneralLossInterferometer <: LossyInterferometer
 
@@ -162,14 +234,14 @@ physical matrix `U` = `V*W`. In between `V` and `W` are sandwiched a diagonal ar
 of beam splitters, with transmissivity `η` (`m`-dimensional vector corresponding
 to the transmissivity of each layer) : `U_total` = `V*Diag(η)*W`
 """
-struct GeneralLossInterferometer <: LossyInterferometer
+struct GeneralLossInterferometer <: Interferometer
     m_real::Int
     m::Int
     η::Vector{Real} #transmissivity of the upfront beamsplitters
-    U_physical::Matrix{Complex} # physical matrix
-    V::Matrix{Complex}
-    W::Matrix{Complex}
-    U::Matrix{Complex} # virtual 2m*2m interferometer
+    U_physical::Union{Matrix{Complex},Nothing} # physical matrix
+    V::Union{Matrix{Complex},Nothing}
+    W::Union{Matrix{Complex},Nothing}
+    U::Union{Matrix{Complex},Nothing} # virtual 2m*2m interferometer
 
     function GeneralLossInterferometer(η::Vector{Real}, V::Matrix, W::Matrix)
         if isa_transmissitivity(η)
@@ -178,6 +250,23 @@ struct GeneralLossInterferometer <: LossyInterferometer
         else
             error("invalid η")
         end
+    end
+
+end
+
+
+struct UserDefinedLossyInterferometer <: Interferometer
+    m_real::Int
+    m::Int
+    η::Union{Real, Vector{Real}, Nothing} #transmissivity of the upfront beamsplitters
+    U_physical::Union{Matrix{Complex},Nothing} # physical matrix
+    U::Union{Matrix{Complex},Nothing} # virtual 2m*2m interferometer
+
+    function UserDefinedLossyInterferometer(U::Matrix)
+
+        m_real = Int(size(U,1)/2)
+        new(m_real, 2*m_real, nothing, U[1:m_real,1:m_real], U)
+
     end
 
 end

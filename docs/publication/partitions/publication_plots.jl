@@ -57,60 +57,77 @@ end
 
 ### bosonic to distinguishable single subset ###
 
-begin
 
-    n = 16
-    m = n
+n = 14
+m = n
+n_iter = 1000
 
-    function labels(x)
+function labels(x)
 
-        if x == 1
-            "Bosonic"
+    if x == 1
+        "Bosonic"
 
-        elseif x == 0
-            "Distinguishable"
-        else
-            "x = $x"
-        end
-
+    elseif x == 0
+        "Distinguishable"
+    else
+        "x = $x"
     end
 
-    function add_this_x!(x)
+end
 
-        i = Input{OneParameterInterpolation}(first_modes(n,m),x)
 
-        subset = Subset(first_modes(Int(n/2), m))
+function add_this_x!(x)
+
+    results = []
+
+    i = Input{OneParameterInterpolation}(first_modes(n,m),x)
+
+    subset = Subset(first_modes(Int(n/2), m))
+
+    part = Partition(subset)
+    o = PartitionCountsAll(part)
+
+    for iter in 1:n_iter
+
         interf = RandHaar(m)
-        part = Partition(subset)
-        o = PartitionCountsAll(part)
         ev = Event(i,o,interf)
 
         compute_probability!(ev)
-
-        x_data = collect(0:n)
-        y_data = ev.proba_params.probability.proba
-
-        x_spl = range(0,n, length = 1000)
-        spl = Spline1D(x_data,y_data)
-        y_spl = spl(x_spl)
-
-        scatter!([0:n] , ev.proba_params.probability.proba, c = get(color_map, x), label = "", m = :cross)
-        plot!(x_spl , y_spl, c = get(color_map, x), label = labels(x))
-
+        push!(results, ev.proba_params.probability.proba)
 
     end
 
-    plt = plot()
+    x_data = collect(0:n)
+    y_data = [mean([results[iter][i] for iter in 1:n_iter]) for i in 1:n+1]
+    y_err_data = [sqrt(var([results[iter][i] for iter in 1:n_iter])) for i in 1:n+1]
 
-    for x in [0, 0.6, 0.8, 1]#range(0,1, length = 3)
-        add_this_x!(x)
+    x_spl = range(0,n, length = 1000)
+    spl = Spline1D(x_data,y_data)
+    y_spl = spl(x_spl)
 
+    # plot the error only on the extreme cases
+    y_err(x) = ((x == 0 || x == 1) ? y_err_data : nothing)
+    if x == 0 || x == 1
+        scatter!(x_data, y_data, yerr = y_err(x), c = get(color_map, x), label = "", m = :cross)
     end
+    plot!(x_spl , y_spl, c = get(color_map, x), label = labels(x), xticks = 0:n, grid = true)
 
-    display(plt)
-    savefig(plt,"./images/publication/bosonic_to_distinguishable.png")
 
 end
+
+plt = plot()
+
+for x in [0, 0.6, 0.8, 1]#range(0,1, length = 3)
+    add_this_x!(x)
+
+end
+
+display(plt)
+xlabel!(L"k")
+ylabel!(L"p(k)")
+savefig(plt,"./images/publication/bosonic_to_distinguishable.png")
+
+
 
 ### evolution of the TVD numbers of subsets ###
 begin
@@ -238,6 +255,9 @@ x_data = reverse(1 ./ invert_densities)
 y_data = reverse(tvd_array[1,:])
 
 get_power_law_log_log(x_data,y_data)
+
+
+
 
 ###### TVD with x-model ######
 
@@ -944,17 +964,20 @@ savefig(plt,"./images/publication/fourier.png")
 ###### plot of evolution with n,m ######
 
 n_max = 16
-n_array = collect(4:n_max)
+n_array = collect(6:n_max)
 m_no_coll(n) = n^2
+m_dense(n) = n
 m_sparse(n) = 5n
 n_iter = 100
-partition_sizes = 2:4
+partition_sizes = 2:3
 
-laws = [m_sparse, m_no_coll]
+laws = [m_dense, m_sparse, m_no_coll]
+
+y_max = zeros(length(laws))
 
 plots = []
 
-for m_law in laws
+for (pl, m_law) in enumerate(laws)
 
     plt = plot()
     m_array = m_law.(n_array)
@@ -974,11 +997,11 @@ for m_law in laws
 
     end
 
-    save("data/evolution_n_m_$(String(Symbol(m_law))).jld", "tvd_array", tvd_array, "var_array" ,var_array)
+    save("data/evolution_n_m_$(String(Symbol(m_law))).jld", "tvd_array", tvd_array, "var_array" ,var_array, "partition_sizes", partition_sizes, "n_array", n_array)
 
     tvd_array
 
-    partition_color(k, partition_sizes) = get(color_map, k / length(partition_sizes))
+    partition_color(k, partition_sizes) = get(color_map, (k-1) / (length(partition_sizes)-1))
 
     for (k,K) in enumerate(partition_sizes)
 
@@ -1009,11 +1032,11 @@ for m_law in laws
         #
         # scatter!(x_data , y_data, yerr = sqrt.(var_array[k,:]), c = partition_color(k,partition_sizes), label = "", m = :cross, xaxis=:log10, yaxis = :log10)
 
-        scatter!(x_data , y_data, yerr = sqrt.(var_array[k,:]), c = partition_color(k,partition_sizes), label = "", m = :cross)
+        scatter!(x_data , y_data, yerr = sqrt.(var_array[k,:]), c = partition_color(k,partition_sizes), label = "", m = :cross, xticks = x_data)
 
         # scatter!(x_data , y_data, yerr = sqrt.(var_array[k,:]), c = partition_color(k,partition_sizes), label = "", m = :cross, xaxis=:log10)
 
-        #ylims!((0.01,1))
+
 
 
 
@@ -1030,6 +1053,7 @@ for m_law in laws
     end
 
     plt = plot!(legend=:topright)
+    y_max[pl] = 1.2*(maximum(tvd_array + sqrt.(var_array)))
 
     xlabel!(L"n")
     ylabel!(L"TVD(B,D)")
@@ -1041,10 +1065,422 @@ for m_law in laws
 end
 
 
-plt = plot(plots[1],plots[2], layout = (2,1))
+plt = plot(plots[2],plots[3], layout = (2,1))
+ylims!((0, 0.18))
 
 savefig(plt, "images/publication/size.png")
 
+###### loss and its influence on validation time ######
+#
+# we want to plot the amount of time necessary for validation
+# should we plot it for different amount of lost photons considered and different loss regimes?
+# for this we should simply plot the inverse of the number of samples needed
+# compared to a reference to get a speedup factor
+
+# we sample bosonic events
+# we want to compare to distinguishable events
+
+# we look at the relative time taken to attain a threshold of certainty
+# if using up to lost_up_to photons
+
+begin
+
+    n = 10
+    m = n
+    n_subsets = 2
+    lost_photons = collect(0:n)
+
+    n_unitaries = 100 # number of unitaries on which averaged
+    n_trials_each_unitary = 1000
+    max_iter = 100000 # max number of samples taken for bayesian estimation
+    threshold = 0.95 # confidence to attain
+
+    η_array = collect(range(0.8,1,length = 5))
+    speed_up_array = zeros((length(η_array), length(lost_photons)))
+    speed_up_var_array = copy(speed_up_array)
+
+    alternative_hypothesis_x = 0.9
+
+
+    @showprogress for (η_index ,η) in enumerate(η_array)
+
+        n_sample_this_run = zeros((n_unitaries * n_trials_each_unitary, length(lost_photons)))
+        p_lost_this_run = copy(n_sample_this_run)
+        # to store data before averaging
+
+        for unitary in 1:n_unitaries
+
+            ib = Input{Bosonic}(first_modes(n,2m))
+            id = Input{Distinguishable}(first_modes(n,2m))
+
+            part = to_lossy(equilibrated_partition(m,n_subsets))
+
+            o = PartitionCountsAll(part)
+
+            interf = UniformLossInterferometer(η,m)
+
+            evb = Event(ib,o,interf)
+            evd = Event(id,o,interf)
+
+            pb = compute_probability!(evb)
+            pd = compute_probability!(evd)
+
+            pb_sorted = sort_by_lost_photons(pb)
+            pd_sorted = sort_by_lost_photons(pd)
+
+            p_lost = [sum(pb_sorted[i].proba) for i in 1:length(lost_photons)]
+            # in this simple model, this is the same for both kind of particles
+            #
+            # if η == 1
+            #     @show p_lost
+            # end
+
+            function n_samples_loss(lost_up_to)
+
+                χ = 1
+                n_sampled = 0
+
+                for iter in 1:max_iter
+                    n_sampled += 1
+
+                    lost = wsample(p_lost[1:lost_up_to+1]) - 1
+                    # @show lost
+                    event_sampled = wsample(pb_sorted[lost+1].proba)
+
+                    χ *= (pb_sorted[lost+1].proba)[event_sampled] / (pd_sorted[lost+1].proba)[event_sampled]
+
+                    if confidence(χ) >= threshold
+                        return n_sampled
+                    end
+                end
+
+                @warn "max_iter raised, need to raise it"
+                return nothing
+
+            end
+            #
+            # n_sample_this_run_array = zeros((n_trials_each_unitary, length(lost_photons)))
+            # time_factor_this_run_array = zeros((n_trials_each_unitary, length(lost_photons)))
+            # speed_up_this_run_array = zeros((n_trials_each_unitary, length(lost_photons)))
+
+            for trial_this_unitary in 1:n_trials_each_unitary
+
+                # n_sample_this_run = [n_samples_loss(i) for i in lost_photons]
+
+                # n_sample_this_run_array[trial_this_unitary, :] = n_sample_this_run
+
+                #
+                #
+                # time_factor(lost_up_to) = n_sample_this_run[lost_up_to + 1] / sum(p_lost[1:lost_up_to+1])
+                # speed_up(lost_up_to) = (time_factor(lost_up_to) / time_factor(0))^(-1)
+                #
+                # time_factor_this_run_array[trial_this_unitary, :] = [time_factor(lost_up_to) for lost_up_to in lost_photons]
+                # speed_up_this_run_array[trial_this_unitary, :] = [speed_up(lost_up_to) for lost_up_to in lost_photons]
+
+
+
+                #
+                # @show [time_factor(lost_up_to) for lost_up_to in lost_photons]
+                # @show [speed_up(lost_up_to) for lost_up_to in lost_photons]
+                #
+                n_sample_this_run[(unitary-1)*n_trials_each_unitary + trial_this_unitary, :] =  [n_samples_loss(i) for i in lost_photons]
+                p_lost_this_run[(unitary-1)*n_trials_each_unitary + trial_this_unitary, :] = p_lost
+            end
+
+
+            # @show [mean(time_factor_this_run_array[:, lost_up_to + 1]) for lost_up_to in lost_photons]
+            # @show [mean(speed_up_this_run_array[:, lost_up_to + 1]) for lost_up_to in lost_photons]
+
+        end
+
+        # @show "----"
+        # @show [mean(n_sample_this_run[:, lost_up_to + 1]) for lost_up_to in lost_photons]
+        #
+        # @show [mean(sum(p_lost_this_run[:, 1: lost_up_to + 1])) for lost_up_to in lost_photons]
+
+        time_factor_average = [mean(n_sample_this_run[:, lost_up_to + 1]) / mean(sum(p_lost_this_run[:, 1: lost_up_to + 1])) for lost_up_to in lost_photons]
+
+        speed_up_array[η_index,:] = [time_factor_average[1] / time_factor_average[lost_up_to + 1] for lost_up_to in lost_photons]
+
+        # @show speed_up_array[η_index,:] = speed_up_average
+        # speed_up_var_array[η_index,:] = [var(this_run_speed_up[:, lost+1]) for lost in lost_photons]
+
+    end
+
+    save("data/speed_up_loss_(n=$n m=$m n_subsets = $n_subsets alternative_x = $alternative_hypothesis_x).jld", "speed_up_array", speed_up_array, "η_array", η_array)
+
+end
+
+begin
+
+    # setting the number of lost photons to plot
+    lost_photons = collect(0:5)
+
+    begin
+
+        function lost_photon_color(k, lost_photons)
+
+            lost = k-1
+            x = lost / (length(lost_photons))
+            get(color_map, x)
+
+        end
+
+        plt = plot()
+
+        function add_line(k, lost, c, label)
+
+            x_data = η_array
+            y_data = speed_up_array[:, k]
+
+            x_spl = range(minimum(x_data),maximum(x_data), length = 1000)
+            spl = Spline1D(x_data,y_data)
+            y_spl = spl(x_spl)
+
+            #scatter!(x_data , y_data, yerr = sqrt.(var_η_array[k,:]), c = lost_photon_color(k,lost_photons), label = "", m = :cross)
+
+            # scatter!(x_data , y_data , yerr = sqrt.(speed_up_var_array[:, k]), c = lost_photon_color(k,lost_photons), label = "", m = :cross)
+
+            # scatter!(x_data , y_data, yaxis = :log10, yminorticks = 10, c = lost_photon_color(k,lost_photons), label = "", m = :cross)
+
+            # plot!(x_spl, y_spl, yaxis = :log10, yminorticks = 10, c = lost_photon_color(k,lost_photons), label = "l <= $lost")
+
+            plot!(x_spl, y_spl, c = c, label = label)
+
+
+
+            # plot!(η_array,tvd_η_array[k,:], label = "up to $lost lost", c = lost_photon_color(k,lost_photons))
+        end
+
+        add_line(1,0,lost_photon_color(0,1), L"reference")
+
+
+        for (k,lost) in enumerate(lost_photons) #Iterators.reverse(enumerate(lost_photons))
+
+                # if k>1
+                    add_line(k,lost,lost_photon_color(k,lost_photons), (k == 1 ? "" : L"l \leq %$lost"))
+                # end
+        end
+
+        add_line(n+1,n, :red, L"all")
+
+        ###
+
+        plt = plot!(legend=:topright)
+        # plot!(legend = false)
+        ylims!((0, 1.2 * maximum(speed_up_array)))
+
+        xlabel!(L"η")
+        ylabel!(L"speed up")
+
+        display(plt)
+        savefig(plt, "images/publication/speed_up_(n=$n m=$m n_subsets = $n_subsets alternative_x = $alternative_hypothesis_x).png")
+    end
+end
+
+
+###### density exponents ######
+
+n_array = collect(4:1:18)
+
+results = zeros((2, length(n_array)))
+
+function exponent_fit(n)
+
+    max_density = 1
+    min_density = 0.03
+    steps = 10
+    n_iter = 100
+
+    invert_densities = [max_density * (max_density/min_density)^((i-1)/(steps-1)) for i in 1:steps]
+
+    m_array = Int.(ceil.(n * invert_densities))
+    partition_sizes = 2
+
+    tvd_array = zeros((length(partition_sizes), length(m_array)))
+    var_array = copy(tvd_array)
+
+    for (k,n_subsets) in enumerate(partition_sizes)
+
+        @show n_subsets
+
+        @showprogress for i in 1:length(m_array)
+
+            this_tvd = tvd_equilibrated_partition_real_average(m_array[i], n_subsets, n, niter = n_iter)
+
+            tvd_array[k,i] = (n_subsets <= m_array[i] ? this_tvd[1] : missing)
+            var_array[k,i] = (n_subsets <= m_array[i] ? this_tvd[2] : missing)
+        end
+
+    end
+
+    x_data = reverse(1 ./ invert_densities)
+    y_data = reverse(tvd_array[1,:])
+
+    get_power_law_log_log(x_data,y_data)
+
+end
+
+for (k,n) in enumerate(n_array)
+
+    @show n
+    this_run = exponent_fit(n)
+
+    results[1, k] = this_run[3]
+    results[2, k] = this_run[2]
+end
+
+plt = plot()
+begin
+    col = [get(color_map, 0), get(color_map, 1)]
+
+    scatter!(n_array, results[2,:], label = L"r", c = col[1])
+    scatter!(n_array, results[1,:], label = L"c(2)", c = col[2])
+    ylims!((0,1.2))
+    hline!([mean(results[2,:])], c = col[1], linestyle = :dash, label = L"\langle r \rangle = %$(round(mean(results[2,:]), digits = 3))")
+    hline!([mean(results[1,:])], c = col[2], linestyle = :dash, label = L"\langle c(2) \rangle = %$(round(mean(results[1,:]), digits = 3))")
+    plot!(legend=:bottomright)
+    xlabel!(L"n")
+    xlims!((n_array[1]-1, n_array[end]+2))
+    display(plt)
+end
+savefig(plt, "images/publication/power_law_validity.png")
+
+
+###### plot of decay of error bars with size ######
+
+# we want to plot the decay of the sqrt(var)/mean of the TVD
+
+n_max = 16
+n_array = collect(8:n_max)
+m_no_coll(n) = n^2
+m_sparse(n) = 5n
+n_iter = 100
+partition_sizes = 2:3
+
+laws = [m_sparse, m_no_coll]
+# laws = [m_sparse]
+
+plots = []
+
+for m_law in laws
+
+
+    m_array = m_law.(n_array)
+
+    tvd_array = zeros((length(partition_sizes), length(m_array)))
+    var_array = copy(tvd_array)
+
+    for (k,n_subsets) in enumerate(partition_sizes)
+
+        @showprogress for (i,(n,m)) in enumerate(zip(n_array, m_array))
+
+            this_tvd = tvd_equilibrated_partition_real_average(m, n_subsets, n, niter = n_iter)
+
+            tvd_array[k,i] = (n_subsets <= m ? this_tvd[1] : missing)
+            var_array[k,i] = (n_subsets <= m ? this_tvd[2] : missing)
+        end
+
+    end
+
+    save("data/coefficient_variation$(String(Symbol(m_law))).jld", "tvd_array", tvd_array, "var_array" ,var_array)
+
+end
+
+begin
+
+    println("********")
+    for name in saved_names
+
+
+        plt = plot()
+        a = load(name)
+        partition_sizes = a["partition_sizes"]
+        n_array = a["n_array"]
+        tvd_array = a["tvd_array"]
+        var_array = a["var_array"]
+
+        # tvd_array
+
+        partition_color(k, partition_sizes) = get(color_map, (k-1) / (length(partition_sizes) -1))
+
+        for (k,K) in enumerate(partition_sizes)
+
+            x_data = n_array
+            y_data = sqrt.(var_array[k,:]) ./ tvd_array[k,:]
+
+            x_spl = collect(range(minimum(x_data),maximum(x_data), length = 1000))
+
+            spl = Spline1D(x_data,y_data)
+            y_spl = spl(x_spl)
+
+            legend_string = "K = $K"
+
+            # if m_law == m_sparse
+            #     lr_func(x) =  mean(y_data) # removed the slope
+            #
+            #     plot!(x_spl, lr_func.(x_spl), c = partition_color(k,partition_sizes), label = LaTeXString(legend_string))
+            #
+            # else
+                lr_func = get_power_law_log_log(x_data,y_data)[1]
+
+                plot!(x_spl, lr_func.(x_spl), c = partition_color(k,partition_sizes), label = LaTeXString(legend_string))
+            # end
+
+
+            #
+            # scatter!(x_data , y_data, yerr = sqrt.(var_array[k,:]), c = lost_photon_color(k,lost_photons), label = "", m = :cross, xaxis=:log10)
+            #
+            # scatter!(x_data , y_data, yerr = sqrt.(var_array[k,:]), c = partition_color(k,partition_sizes), label = "", m = :cross, xaxis=:log10, yaxis = :log10)
+
+            scatter!(x_data , y_data, c = partition_color(k,partition_sizes), label = "", m = :cross)
+            ylims!((0, 1.2*maximum(y_data)), xticks = x_data)
+
+            # scatter!(x_data , y_data, yerr = sqrt.(var_array[k,:]), c = partition_color(k,partition_sizes), label = "", m = :cross, xaxis=:log10)
+
+            #ylims!((0.01,1))
+
+
+
+
+
+
+            #
+            # plot!(x_spl, y_spl, c = partition_color(k,partition_sizes), label = "K = $K", xaxis=:log10, yaxis =:log10)
+
+
+
+            # plot!(η_array,tvd_η_array[k,:], label = "up to $lost lost", c = lost_photon_color(k,lost_photons))
+
+        end
+
+        plt = plot!(legend=:topright)
+
+        xlabel!(L"n")
+        ylabel!(L"\sqrt{\sigma}/TVD(B,D)")
+
+        display(plt)
+
+        push!(plots, plt)
+
+    end
+
+    plt = plot(plots[1],plots[2], layout = (2,1))
+    name = saved_names[1]
+    a = load(name)
+    partition_sizes = a["partition_sizes"]
+    n_array = a["n_array"]
+    tvd_array = a["tvd_array"]
+    var_array = a["var_array"]
+
+    plot!(xticks = n_array)
+    ylims!((0,0.3))
+
+    display(plt)
+    savefig(plt, "images/publication/coefficient_variation_size.png")
+
+
+end
 
 
 ############## end ###############

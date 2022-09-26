@@ -1,6 +1,21 @@
 using BosonSampling
+using Plots
+using ProgressMeter
+using Distributions
+using Random
 using Test
+using ArgCheck
+using StatsBase
+using ColorSchemes
+using Interpolations
+using Dierckx
 using LinearAlgebra
+using PrettyTables
+using LaTeXStrings
+using JLD
+using AutoHashEquals
+using LinearRegression
+using DataStructures
 
 @testset "BosonSampling.jl" begin
 
@@ -173,5 +188,8 @@ using LinearAlgebra
 	@testset "examples usage" begin
 		@test include("example_usage.jl")
 	end
+
+	include("circuits_and_loss.jl")
+	include("partitions.jl")
 
 end

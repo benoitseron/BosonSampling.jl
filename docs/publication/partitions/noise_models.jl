@@ -57,3 +57,40 @@ plot!(x_array, p_claim_array, label = "p_claim")
 title!("Fourier, n = $(n)")
 
 savefig(plt, "src/certification/images/check_dittel_approximation_fourier_n=$(n).png")
+
+
+###### checking if the prediction about partition expansion is right ######
+
+
+n = 8
+m = n
+n_subsets = 2
+count_index = Int(n/2) + 1 ### event we look at
+
+interf = RandHaar(m)
+
+ib = Input{OneParameterInterpolation}(first_modes(n,m),1)
+i(x) = Input{OneParameterInterpolation}(first_modes(n,m),x)
+
+part = equilibrated_partition(m, n_subsets)
+o = PartitionCountsAll(part)
+
+function proba_partition(x, count_index)
+
+    this_ev = Event(i(x), o, interf)
+    compute_probability!(this_ev)
+
+    this_ev.proba_params.probability.proba[count_index]
+
+end
+
+this_ev = Event(i(x), o, interf)
+compute_probability!(this_ev)
+
+this_ev.proba_params.probability.proba[count_index]
+
+
+
+x_array = collect(range(0.8, 1, length = 100))
+
+plot(x_array, proba_partition.(x_array, count_index))

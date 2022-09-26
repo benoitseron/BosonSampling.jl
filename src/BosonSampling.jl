@@ -27,10 +27,14 @@ using Distributions
 using Luxor
 using AutoHashEquals
 using LinearRegression
+using HypothesisTests
+using SimpleTraits
+
 # using Distributed
 # using SharedArrays
 
 const ATOL = 1e-10
+const SAFETY_FACTOR_FULL_BUNCHING = 10
 
 include("special_matrices.jl")
 include("matrix_tests.jl")
@@ -64,8 +68,9 @@ include("permanent_conjectures/counter_example_functions.jl")
 include("permanent_conjectures/counter_example_numerical_search.jl")
 include("permanent_conjectures/permanent_on_top.jl")
 
+include("certification/experimental_data_generation.jl")
 include("certification/bayesian.jl")
-
+include("certification/correlators.jl")
 
 include("visual.jl")
 

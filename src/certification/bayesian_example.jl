@@ -1,5 +1,6 @@
 using Revise
 
+using BosonSampling:sample!
 using BosonSampling
 using Plots
 using ProgressMeter
@@ -16,7 +17,7 @@ using PrettyTables
 using LaTeXStrings
 using JLD
 using AutoHashEquals
-
+using HypothesisTests
 
 
 ### tests with standard boson sampling ###
@@ -30,27 +31,32 @@ n_events = 200
 n = 3
 m = 8
 interf = RandHaar(m)
-input_state = Input{Bosonic}(first_modes(n,m))
+TIn = Bosonic
+input_state = Input{TIn}(first_modes(n,m))
 
 events = []
 
 for i in 1:n_events
 
-    # generate a random output pattern
-    output_state = FockDetection(random_mode_occupation(n,m))
-
     # note that we don't compute the event probability
     # as we would just have experimental observations
     # of counts
 
-    this_event = Event(input_state, output_state, interf)
-    push!(events, this_event)
+    ev = Event(input_state, FockSample(), interf)
+    sample!(ev)
+
+    ev = convert(Event{TIn, FockDetection}, ev)
+
+    push!(events, ev)
 
 end
+
 
 # now we have the vector of observed events with probabilities
 
 events
+
+events[1]
 
 # next, from events, recover the probabilities under both
 # hypothesis for instance
@@ -65,7 +71,7 @@ p_q = HypothesisFunction(p_B)
 p_a = HypothesisFunction(p_D)
 
 certif = Bayesian(events, p_q, p_a)
-compute_probability!(certif)
+BosonSampling.certify!(certif)
 certif.confidence
 
 scatter(certif.probabilities)
@@ -73,58 +79,28 @@ scatter(certif.probabilities)
 ###### Bayesian tests for partitions ######
 
 # need to provide the interferometer as well as some data to compute the probabilities
-# this can be extracted from experiemental if given it but here we have to generate it
+# this can be extracted from experimental if given it but here we have to generate it
 
-n_events = 100
-n = 5
+# generate what would be experimental data
 m = 14
-interf = RandHaar(m)
-
-# we generate the experimental data
-
-input_state = Input{Distinguishable}(first_modes(n,m))
-
-events = []
-
-for i in 1:n_events
-
-    # note that we don't compute the event probability
-    # as we would just have experimental observations
-    # of counts
-
-    ev = Event(input_state, FockSample(), interf)
-    sample!(ev)
-
-    push!(events, ev)
-
-end
+n = 5
+events = generate_experimental_data(n_events = 1000, n = n,m = m, interf = RandHaar(m), TIn = Bosonic)
 
 
-# we now compute the partition probabilities for the hypothesis of Bosonic and Distinguishable inputs
-
-ib = Input{Bosonic}(first_modes(n,m))
-id = Input{Distinguishable}(first_modes(n,m))
 n_subsets = 3
-
 part = equilibrated_partition(m,n_subsets)
-o = PartitionCountsAll(part)
+certif = BayesianPartition(events, Bosonic(), Distinguishable(), part)
 
-evb = Event(ib,o,interf)
-evd = Event(id,o,interf)
+certify!(certif)
+plot(certif.probabilities)
 
-pb = compute_probability!(evb)
-pd = compute_probability!(evd)
+part
 
-p_partition_B(ev) = p_partition(to_partition_count(ev, part), evb)
-p_partition_D(ev) = p_partition(to_partition_count(ev, part), evd)
+# full bunching
 
-p_q = HypothesisFunction(p_partition_B)
-p_a = HypothesisFunction(p_partition_D)
+subset_size = m-n
+subset = Subset(first_modes(subset_size, m))
 
-certif = Bayesian(events, p_q, p_a)
-compute_probability!(certif)
-certif.confidence
+fb = FullBunching(events, Bosonic(), Distinguishable(), subset_size)
 
-scatter(certif.probabilities)
-
-###### numbers of samples needed ######
+certify!(fb)

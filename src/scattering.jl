@@ -189,6 +189,9 @@ function scattering_matrix(U::Matrix, input_state::Vector{Int}, output_state::Ve
     n = sum(input_state)
 
     if length(input_state) != m || length(output_state) != m
+		@show m
+		@show length(input_state)
+		@show length(output_state)
         throw(DimensionMismatch())
     elseif sum(input_state) != sum(output_state)
         error("photon number not the same at input and output")

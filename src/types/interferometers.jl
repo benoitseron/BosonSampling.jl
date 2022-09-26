@@ -6,6 +6,17 @@ Supertype to any concrete interferomter type such as [`UserDefinedInterferometer
 abstract type Interferometer end
 
 """
+    IsLossy{T}
+    IsLossless{T}
+
+Trait to refer to quantities with inclusion of loss: the real `Interferometer` has dimension `m_real * m_real` while we model it by a `2m_real * 2m_real` one where the last `m_real` modes are environment modes containing the lost photons.
+"""
+abstract type LossParameters end
+
+struct IsLossy <: LossParameters end
+struct IsLossless <: LossParameters end
+
+"""
     UserDefinedInterferometer(U::Matrix)
 
 Creates an instance of [`Interferometer`](@ref) from a given unitary matrix `U`.
@@ -22,6 +33,8 @@ struct UserDefinedInterferometer <: Interferometer
     UserDefinedInterferometer(U) = is_unitary(U) ? new(size(U,1), U) : error("input matrix is non unitary")
 end
 
+LossParameters(::Type{UserDefinedInterferometer}) = IsLossless()
+
 """
     RandHaar(m::Int)
 
@@ -36,6 +49,8 @@ struct RandHaar <: Interferometer
     U::Matrix{ComplexF64}
     RandHaar(m) = new(m,rand_haar(m))
 end
+
+LossParameters(::Type{RandHaar}) = IsLossless()
 
 """
     Fourier(m::Int)
@@ -52,6 +67,8 @@ struct Fourier <: Interferometer
     Fourier(m::Int) = new(m,fourier_matrix(m))
 end
 
+LossParameters(::Type{Fourier}) = IsLossless()
+
 """
     Hadamard(m::Int)
 
@@ -67,110 +84,4 @@ struct Hadamard <: Interferometer
     Hadamard(m::Int) = new(m,hadamard_matrix(m))
 end
 
-"""
-    BeamSplitter(transmission_amplitude::Float64)
-
-Creates a beam-splitter with tunable transmissivity.
-
-    Fields:
-        - transmission_amplitude::Float64
-        - U::Matrix{ComplexF64}
-        - m::Int
-"""
-struct BeamSplitter <: Interferometer
-    transmission_amplitude::Real
-    U::Matrix
-    m::Int
-    BeamSplitter(transmission_amplitude::Real) = new(transmission_amplitude, beam_splitter(transmission_amplitude), 2)
-end
-
-"""
-    Rotation(angle::Float64)
-
-Creates a Rotation matrix with tunable angle.
-
-    Fields:
-        - angle::Float64
-        - U::Matrix{ComplexF64}
-        - m::Int
-"""
-struct Rotation <: Interferometer
-    angle::Real
-    U::Matrix
-    m::Int
-    Rotation(angle::Real) = new(angle, rotation_matrix(angle),2)
-end
-
-"""
-    PhaseShift(phase::Float64)
-
-Creates a phase-shifter with parameter `phase`.
-
-    Fields:
-        - phase::Float64
-        - m::Int
-        - U::Matrix{ComplexF64}
-"""
-struct PhaseShift <: Interferometer
-    phase::Real
-    U::Matrix
-    m::Int
-    PhaseShift(phase::Real) = new(phase, phase_shift(phase), 2)
-end
-
-"""
-    Circuit(m::Int)
-
-Creates an empty circuit with `m` input modes. The unitary representing the circuit
-is accessed via the field `.U`.
-
-    Fields:
-        - m::Int
-        - circuit_elements::Vector{Interferometer}
-        - U::Union{Matrix{ComplexF64}, Nothing}
-"""
-mutable struct Circuit <: Interferometer
-
-    m::Int
-    circuit_elements::Vector{Interferometer}
-    U::Union{Matrix{ComplexF64}, Nothing}
-
-    function Circuit(m::Int)
-        new(m, [], nothing)
-    end
-
-end
-
-"""
-    add_element!(circuit::Circuit, interf::Interferometer, target_modes::Vector{Int})
-
-Adds the circuit element `interf` that will be applied on `target_modes` to the `circuit`.
-Will automatically update the unitary representing the circuit.
-"""
-function add_element!(;circuit::Circuit, interf::Interferometer, target_modes::Vector{Int})
-
-    @argcheck interf.m == length(target_modes)
-
-    push!(circuit.circuit_elements, interf)
-    circuit.U == nothing ? circuit.U = Matrix{ComplexF64}(I, circuit.m, circuit.m) : nothing
-
-    if interf.m == circuit.m
-        circuit.U = interf.U * circuit.U
-    else
-        u = Matrix{ComplexF64}(I, circuit.m, circuit.m)
-        for i in 1:size(interf.U)[1]
-            for j in 1:size(interf.U)[2]
-                u[target_modes[i], target_modes[j]] = interf.U[i,j]
-            end
-        end
-        circuit.U = u * circuit.U
-    end
-
-end
-
-Base.show(io::IO, interf::Interferometer) = print(io, "Interferometer :\n\n", "Type : ", typeof(interf), "\n", "m : ", interf.m)
-
-Base.show(io::IO, interf::UserDefinedInterferometer) = begin
-     print(io, "Interferometer :\n\n", "Type : ", typeof(interf), "\n", "m : ", interf.m, "\nUnitary : \n")
-     pretty_table(io, interf.U)
-end
+LossParameters(::Type{Hadamard}) = IsLossless()

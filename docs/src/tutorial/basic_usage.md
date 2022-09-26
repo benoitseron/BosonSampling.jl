@@ -203,3 +203,19 @@ a random interferometer:
 
     julia> compute_probability!(ev)
      0.014458823860031098
+
+## Using the BosonSampling types
+
+Julia allows to define functions that act on new types, such as [`ModeOccupation`](@ref) defined in this package, through a syntax that would otherwise be reserved for core-objects such as `Float`, `Int`.
+
+This allows to intuitively act on custom types. For instance, two [`ModeOccupation`](@ref) can see their state summed by simply using `+`
+
+    n=3
+    m=4
+    s1 = ModeOccupation([1,2,3,4])
+    s2 = ModeOccupation([1,0,1,0])
+
+    julia> s1+s2
+    state = [2, 2, 4, 4]
+
+Some functions of interest are [`zeros(mo::ModeOccupation)`](@ref), [`Base.cat(s1::ModeOccupation, s2::ModeOccupation)`](@ref) for instance.

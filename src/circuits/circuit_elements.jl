@@ -9,7 +9,7 @@ function beam_splitter(transmission_amplitude = sqrt(0.5))
 	t = transmission_amplitude
 	r = sqrt(1-t^2)
 
-	bs = [[t -r]; [r t]]
+	bs = [[t -r]; [r t]]#[[t r]; [-r t]] 
 
 end
 
@@ -41,7 +41,7 @@ end
 
 function rotation_matrix(angle::Float64)
 	[cos(angle) -sin(angle);
-	 sin(angle) coss(angle)]
+	 sin(angle) cos(angle)]
  end
 
  function rotation_matrix_modes(;in_up, in_dow, out_up, out_down, angle, n)
