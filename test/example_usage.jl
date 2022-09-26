@@ -63,7 +63,7 @@ x = 0.8 # distinguishability
 input = Input{OneParameterInterpolation}(first_modes(n,m), x)
 interf = RandHaar(m)
 
-out = noisy_sampler(input=input, reflectivity=η, interf=interf)
+out = noisy_sampler(input=input, loss=η, interf=interf)
 
 ### MIS sampling ###
 
@@ -94,7 +94,7 @@ x = 0.8
 input = Input{OneParameterInterpolation}(first_modes(n,m), x)
 interf = RandHaar(m)
 
-output_statistics = noisy_distribution(input=input, reflectivity=η, interf=interf)
+output_statistics = noisy_distribution(input=input, loss=η, interf=interf)
 p_exact = output_statistics[1]
 p_approx = output_statistics[2]
 p_sampled = output_statistics[3]
@@ -297,6 +297,19 @@ o = PartitionCountsAll(part)
 ev = Event(i,o,interf)
 
 compute_probability!(ev)
+
+### Check Gaussian sampler ### 
+r = first_modes(4,4)
+s = ones(r.m)
+i = GaussianInput{SingleModeSqueezedVacuum}(r,s)
+o = FockSample()
+
+ev = GaussianEvent(i,o)
+
+gaussian_sampler(ev,nsamples=120,burn_in=20,thinning_rate=10)
+
+typeof(o)
+
 
 ans = true
 

@@ -13,6 +13,6 @@ is related to the permanent of ``U`` through
 ```
 
 Having an intensive usage of the [`Ryser's`](https://en.wikipedia.org/wiki/Computing_the_permanent#Ryser_formula) algorithm to compute such probabilities,
-we compare here the running time of the latter algorithm from different implementations to compute the permanent of Haar distributed random matrices of dimension `n`: 
+we compare here the running time of the latter algorithm from different implementations to compute the permanent of Haar distributed random matrices of dimension `n`:
 
-![perm](compute_perm.png)
+![perm](permanents_bench1.png)

@@ -1,5 +1,5 @@
 """
-    noisy_sampler(;input::Input, reflectivity::Real, interf::Interferometer)
+    noisy_sampler(;input::Input, loss::Real, interf::Interferometer)
 
 Sample partially-distinguishable photons through a lossy interferometer, which
 runs (at most) in ``O(n2^m + Poly(n,m))`` time.
@@ -7,10 +7,10 @@ runs (at most) in ``O(n2^m + Poly(n,m))`` time.
 !!! note "Reference"
     [https://arxiv.org/pdf/1907.00022.pdf](https://arxiv.org/pdf/1907.00022.pdf)
 """
-function noisy_sampler(;input::Input, reflectivity::Real, interf::Interferometer)
+function noisy_sampler(;input::Input, loss::Real, interf::Interferometer)
 
     list_assignement = fill_arrangement(input.r.state)
-    l = rand(Binomial(input.n, reflectivity))
+    l = rand(Binomial(input.n, loss))
     remaining_photons = Int.(zeros(input.m))
     remaining_subset = rand(collect(multiset_combinations(list_assignement, l)))
     remaining_photons[remaining_subset] .= 1
@@ -47,6 +47,6 @@ end
 Noisy sampler for en [`Event`](@ref).
 """
 function noisy_sampler(ev::Event{TIn,TOut}, loss::Real; occupancy_vector=true) where {TIn<:InputType, TOut<:FockSample}
-    s = noisy_sampler(input=ev.input_state, reflectivity=loss, interf=ev.interferometer)
+    s = noisy_sampler(input=ev.input_state, loss=loss, interf=ev.interferometer)
     occupancy_vector ? mode_occupancy_to_occupancy_vector(Vector{Int64}(s), ev.input_state.m) : s
 end

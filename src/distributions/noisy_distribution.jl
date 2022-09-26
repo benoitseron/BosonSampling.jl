@@ -1,5 +1,5 @@
 """
-    noisy_distribution(;input::Input, reflectivity::Real, interf::Interferometer, exact=true, approx=true, samp=true)
+    noisy_distribution(;input::Input, loss::Real, interf::Interferometer, exact=true, approx=true, samp=true, error=1e-4, failure_probability=1e-4)
 
 Compute the exact and/or approximated and/or sampled probability distribution of
 all possible output configurations of partially-distinguishable photons through a
@@ -13,11 +13,11 @@ returns an array containing the three distributions.
 !!! note "Reference"
     [https://arxiv.org/pdf/1809.01953.pdf](https://arxiv.org/pdf/1809.01953.pdf)
 """
-function noisy_distribution(;input::Input, reflectivity::Real, interf::Interferometer, exact=true, approx=true, samp=true)
+function noisy_distribution(;input::Input, loss::Real, interf::Interferometer, exact=true, approx=true, samp=true, error=1e-4, failure_probability=1e-4)
 
     output = []
-    ϵ = 1e-4
-    δ = 1e-4
+    ϵ = error
+    δ = failure_probability
 
     input_modes = input.r.state
     number_photons = input.n
@@ -30,14 +30,14 @@ function noisy_distribution(;input::Input, reflectivity::Real, interf::Interfero
         get_parametric_type(input)[1] == Bosonic ? distinguishability = 1.0 : distinguishability = 0.0
     end
 
-    number_output_photons = trunc(Int, number_photons*reflectivity)
+    number_output_photons = trunc(Int, number_photons*loss)
     input_occupancy_modes = fill_arrangement(input_modes)
 
-    if reflectivity == 1 ||distinguishability == 0
+    if loss == 1 ||distinguishability == 0
         throw(ArgumentError("invalid input parameters"))
     end
 
-    ki = (log(ϵ*δ*(1-reflectivity*distinguishability^2)/2))/log(reflectivity*distinguishability^2)
+    ki = (log(ϵ*δ*(1-loss*distinguishability^2)/2))/log(loss*distinguishability^2)
     ki = 10^(trunc(Int, log(10, ki)))
     ki < 10 ? k = number_photons : k = min(ki, number_photons)
     kmax = k-1

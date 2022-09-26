@@ -118,7 +118,7 @@ using DataStructures
 		occupation = random_mode_occupation_collisionless(n,n)
     	i = Input{OneParameterInterpolation}(occupation, 0.5)
 	    interf = Fourier(i.r.m)
-	    res = noisy_distribution(input=i, reflectivity=0.5, interf=interf)
+	    res = noisy_distribution(input=i, loss=0.5, interf=interf)
 
 		p_exact = res[1]
 		p_approx = res[2]
@@ -132,7 +132,7 @@ using DataStructures
 		@test all(p->p>=0, p_samp)
 
 		i = Input{Bosonic}(occupation)
-		res = noisy_distribution(input=i, reflectivity=0.999, interf=interf, approx=false, samp=false)
+		res = noisy_distribution(input=i, loss=0.999, interf=interf, approx=false, samp=false)
 		p_exact = res[1]
 		output_events = output_mode_occupation(n,n)
 		for i = 1:length(output_events)
@@ -152,7 +152,7 @@ using DataStructures
 	   	input_noisy_sampler = Input{OneParameterInterpolation}(first_modes(n,n), 1.0)
 
 	    out_clifford_sampler = cliffords_sampler(input=input_clifford_sampler, interf=interf)
-		out_noisy_sampler = noisy_sampler(input=input_noisy_sampler, reflectivity=1.0, interf=interf)
+		out_noisy_sampler = noisy_sampler(input=input_noisy_sampler, loss=1.0, interf=interf)
 
 	    @test !check_suppression_law(out_clifford_sampler)
 		@test !check_suppression_law(out_noisy_sampler)

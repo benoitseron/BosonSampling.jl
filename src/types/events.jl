@@ -40,6 +40,7 @@ Base.show(io::IO, pb::MultipleCounts) = begin
 			println(io, "--------------------------------------")
 		end
 	end
+
 end
 
 """
@@ -103,7 +104,7 @@ struct Event{TIn<:InputType, TOut<:OutputMeasurementType}
     proba_params::EventProbability
     interferometer::Interferometer
 
-    function Event{TIn, TOut}(input_state, output_measurement, interferometer::Interferometer, proba_params = nothing) where {TIn<:InputType, TOut<:OutputMeasurementType}
+    function Event{TIn,TOut}(input_state, output_measurement, interferometer::Interferometer, proba_params = nothing) where {TIn<:InputType, TOut<:OutputMeasurementType}
 
         if proba_params == nothing
             proba_params = EventProbability(nothing)
@@ -135,6 +136,36 @@ struct Event{TIn<:InputType, TOut<:OutputMeasurementType}
     Event(i,o,interf,p = nothing) = Event{get_parametric_type(i)[1], get_parametric_type(o)[1]}(i,o,interf,p)
 
 end
+
+Base.show(io::IO, ev::Event) = begin
+	println("Event:\n")
+	println("input state: ", ev.input_state.r, " (",get_parametric_type(ev.input_state)[1],")", "\n")
+	println("output measurement: ", ev.output_measurement, "\n")
+	println(ev.interferometer, "\n")
+	println("proba_params: ", ev.proba_params)
+end
+
+struct GaussianEvent{TIn<:Gaussian, TOut<:OutputMeasurementType}
+
+	input_state::GaussianInput{TIn}
+	output_measurement::TOut
+	interferometer::Union{Interferometer, Nothing}
+
+	function GaussianEvent{TIn,TOut}(input_state, output_measurement, interferometer=nothing) where {TIn<:Gaussian, TOut<:OutputMeasurementType}
+		new{TIn,TOut}(input_state, output_measurement, interferometer)
+	end
+
+	GaussianEvent(i,o,interf=nothing) = GaussianEvent{get_parametric_type(i)[1], get_parametric_type(o)[1]}(i,o,interf)
+
+end
+
+Base.show(io::IO, ev::GaussianEvent) = begin
+	println("Event:\n")
+	println("input state: ", ev.input_state.r, " (",get_parametric_type(ev.input_state)[1],")", "\n")
+	println("output measurement: ", ev.output_measurement, "\n")
+	println(ev.interferometer, "\n")
+end
+
 
 function check_probability_empty(ev::Event; resetting_message = true)
     if ev.proba_params.probability != nothing

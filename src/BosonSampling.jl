@@ -20,6 +20,7 @@ using Roots
 using BenchmarkTools
 using Optim
 using ProgressMeter
+using ProgressBars
 using Parameters
 using ArgCheck
 using Distributions
@@ -56,6 +57,8 @@ include("boson_samplers/methods.jl")
 include("boson_samplers/metropolis_sampler.jl")
 include("boson_samplers/noisy_sampler.jl")
 include("boson_samplers/sample.jl")
+include("boson_samplers/gaussian_sampler.jl")
+
 
 include("distributions/noisy_distribution.jl")
 include("distributions/theoretical_distribution.jl")

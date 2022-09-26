@@ -1,5 +1,3 @@
-### Inputs ###
-
 """
 Supertype to any concrete input type such as [`Bosonic`](@ref), [`PartDist`](@ref), [`Distinguishable`](@ref)
 and [`Undef`](@ref).
@@ -97,7 +95,7 @@ struct CoherentState <: Gaussian
 
     function CoherentState(displacement_parameter::Complex)
         new(displacement_parameter,
-            sqrt(2) * [displacement_parameter; conj(displacement_parameter)],
+            sqrt(2) * [real(displacement_parameter); imag(displacement_parameter)],
             [1/2 0; 0 1/2])
     end
 
@@ -128,30 +126,27 @@ struct ThermalState <: Gaussian
 end
 
 """
-    SingleModeSqueezedVacuum(squeezing_parameter::Real, source_transmission::Real)
+    SingleModeSqueezedVacuum(squeezing_parameter::Real)
 
 Type used to notify that the input is made of single mode squeezed state.
 
     Fields:
         - squeezing_parameter::Real
-        - source_transmission::Real
         - displacement::Vector{Complex}
         - covariance_matrix::Matrix{Complex}
 """
 struct SingleModeSqueezedVacuum <: Gaussian
 
     squeezing_parameter::Real
-    source_transmission::Real
     displacement::Vector{Float64}
     covariance_matrix::Matrix{Float64}
 
-    function SingleModeSqueezedVacuum(squeezing_parameter::Real, source_transmission::Real)
+    function SingleModeSqueezedVacuum(squeezing_parameter::Real)
 
         new(squeezing_parameter,
-            source_transmission,
             zeros(2),
-            [source_transmission*exp(2*squeezing_parameter)+1-source_transmission 0;
-            0 source_transmission*exp(-2*squeezing_parameter)+1-source_transmission])
+            [exp(-2*squeezing_parameter) 0;
+            0 exp(2*squeezing_parameter)])
     end
 
 end
@@ -311,11 +306,8 @@ struct GaussianInput{T<:Gaussian}
     covariance_matrix::Matrix{Float64}
 
     displacement_parameters::Union{Vector, Nothing}
-
     mean_photon_numbers::Union{Vector, Nothing}
-
     squeezing_parameters::Union{Vector, Nothing}
-    source_transmission::Union{Real, Nothing}
 
     function GaussianInput{T}() where {T<:Gaussian}
         if T == VacuumState
@@ -325,31 +317,29 @@ struct GaussianInput{T<:Gaussian}
         end
     end
 
-    function GaussianInput{T}(r::ModeOccupation, displacement_parameters::Vector) where {T<:Gaussian}
+    function GaussianInput{CoherentState}(r::ModeOccupation, displacement_parameters::Vector)
 
-        if T == Coherent
-            r.state[1] == 1 ? sq = CoherentState(displacement_parameters[1]) : sq = VacuumState()
-            cov = sq.covariance_matrix
-            R = sq.displacement
+        r.state[1] == 1 ? sq = CoherentState(displacement_parameters[1]) : sq = VacuumState()
+        cov = sq.covariance_matrix
+        R = sq.displacement
 
-            for i in 2:r.m
-                if r.state[i] == 1
-                    sq = CoherentState(displacement_parameters[i])
-                    R = [R;sq.displacement]
+        for i in 2:r.m
+            if r.state[i] == 1
+                sq = CoherentState(displacement_parameters[i])
+                R = [R;sq.displacement]
                     sigma = sq.covariance_matrix
-                else
-                    vacc = VacuumState()
-                    R = [R;vacc.displacement]
-                    sigma = vacc.covariance_matrix
-                end
-                cov = direct_sum(cov, sigma)
+            else
+                vacc = VacuumState()
+                R = [R;vacc.displacement]
+                sigma = vacc.covariance_matrix
             end
-            return new{T}(r, r.n, r.m, R, cov, displacement_parameters, nothing, nothing, nothing)
-        else
-            error("type ", T, " not implemented")
+            cov = direct_sum(cov, sigma)
         end
 
+        return new{CoherentState}(r, r.n, r.m, R, cov, displacement_parameters, nothing, nothing, nothing)
+
     end
+
 
     # function GaussianInput{T}(r::ModeOccupation, mean_photon_numbers::Vector) where {T<:Gaussian}
     #
@@ -377,36 +367,29 @@ struct GaussianInput{T<:Gaussian}
     #
     # end
 
-    function GaussianInput{T}(r::ModeOccupation, squeezing_parameters::Vector, source_transmission::Union{Real, Nothing}) where {T<:Gaussian}
 
-        source_transmission == nothing ? source_transmission = 1 : nothing
+    function GaussianInput{SingleModeSqueezedVacuum}(r::ModeOccupation, squeezing_parameters::Vector)
 
-        if T == SingleModeSqueezedVacuum
-            r.state[1] == 1 ? sq = SingleModeSqueezedVacuum(squeezing_parameters[1], source_transmission) : sq = VacuumState()
-            cov = sq.covariance_matrix
-            R = sq.displacement
+        r.state[1] == 1 ? sq = SingleModeSqueezedVacuum(squeezing_parameters[1]) : sq = VacuumState()
+        cov = sq.covariance_matrix
+        R = sq.displacement
 
-            for i in 2:r.m
-                if r.state[i] == 1
-                    sq = SingleModeSqueezedVacuum(squeezing_parameters[i], source_transmission)
-                    R = [R;sq.displacement]
-                    sigma = sq.covariance_matrix
-                else
-                    vacc = VacuumState()
-                    R = [R;vacc.displacement]
-                    sigma = vacc.covariance_matrix
-                end
-                cov = direct_sum(cov, sigma)
+        for i in 2:r.m
+            if r.state[i] == 1
+                sq = SingleModeSqueezedVacuum(squeezing_parameters[i])
+                R = [R;sq.displacement]
+                sigma = sq.covariance_matrix
+            else
+                vacc = VacuumState()
+                R = [R;vacc.displacement]
+                sigma = vacc.covariance_matrix
             end
-            return new{T}(r, r.n, r.m, R, cov, nothing, nothing, squeezing_parameters, source_transmission)
-        else
-            error("type ", T, " not implemented yet")
+            cov = direct_sum(cov, sigma)
         end
-
+        return new{SingleModeSqueezedVacuum}(r, r.n, r.m, R, cov, nothing, nothing, squeezing_parameters)
     end
 
 end
-
 
 """
     get_spectrum(state::Gaussian, k::Int)

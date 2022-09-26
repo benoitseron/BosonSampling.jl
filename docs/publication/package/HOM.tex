@@ -1,27 +1,38 @@
 \begin{Shaded}
 \begin{Highlighting}[]
 \ImportTok{using} \BuiltInTok{BosonSampling}
+\ImportTok{using} \BuiltInTok{Plots}
 
+\CommentTok{\# Set experimental parameters}
+\NormalTok{Δω }\OperatorTok{=} \FloatTok{1}
 \CommentTok{\# Set the model of partial distinguishability}
 \NormalTok{T }\OperatorTok{=}\NormalTok{ OneParameterInterpolation}
 \CommentTok{\# Define the unbalanced beams{-}plitter}
 \NormalTok{B }\OperatorTok{=} \FunctionTok{BeamSplitter}\NormalTok{(}\FloatTok{1}\OperatorTok{/}\FunctionTok{sqrt}\NormalTok{(}\FloatTok{2}\NormalTok{))}
 \CommentTok{\# Set each particle in a different mode}
-\NormalTok{r }\OperatorTok{=} \FunctionTok{ModeOccupation}\NormalTok{([}\FloatTok{1}\NormalTok{,}\FloatTok{1}\NormalTok{])}
+\NormalTok{r\_i }\OperatorTok{=} \FunctionTok{ModeOccupation}\NormalTok{([}\FloatTok{1}\NormalTok{,}\FloatTok{1}\NormalTok{])}
 
-\CommentTok{\# Will store the coincidence probability}
-\NormalTok{P\_coinc }\OperatorTok{=} \FunctionTok{Vector}\DataTypeTok{\{Float64\}}\NormalTok{(}\ConstantTok{undef}\NormalTok{,}\FloatTok{0}\NormalTok{)}
+\CommentTok{\# Define the output as detecting a coincidence}
+\NormalTok{r\_f }\OperatorTok{=} \FunctionTok{ModeOccupation}\NormalTok{([}\FloatTok{1}\NormalTok{,}\FloatTok{1}\NormalTok{])}
+\NormalTok{o }\OperatorTok{=} \FunctionTok{FockDetection}\NormalTok{(r\_f)}
 
-\ControlFlowTok{for}\NormalTok{ t }\KeywordTok{in} \OperatorTok{{-}}\FloatTok{4}\OperatorTok{:}\FloatTok{0.01}\OperatorTok{:}\FloatTok{4}
+\CommentTok{\# Will store the events probability}
+\NormalTok{events }\OperatorTok{=}\NormalTok{ []}
+
+\ControlFlowTok{for}\NormalTok{ Δt }\KeywordTok{in} \OperatorTok{{-}}\FloatTok{4}\OperatorTok{:}\FloatTok{0.01}\OperatorTok{:}\FloatTok{4}
     \CommentTok{\# distinguishability}
-\NormalTok{    dist }\OperatorTok{=} \FunctionTok{exp}\NormalTok{(}\OperatorTok{{-}}\NormalTok{t}\OperatorTok{\^{}}\FloatTok{2}\NormalTok{)}
-\NormalTok{    i }\OperatorTok{=} \FunctionTok{Input}\DataTypeTok{\{T\}}\NormalTok{(r,dist)}
-    \CommentTok{\# Compute the full output mode occupation}
-    \CommentTok{\# statistics}
-\NormalTok{    p\_ }\OperatorTok{=}
-    \FunctionTok{theoretical\_distribution}\NormalTok{(input}\OperatorTok{=}\NormalTok{i,interf}\OperatorTok{=}\NormalTok{B)}
-    \CommentTok{\# Store the probabiltiy to observe [1,1]}
-    \FunctionTok{push!}\NormalTok{(proba\_bunching, p\_[}\FloatTok{2}\NormalTok{]}\OperatorTok{+}\NormalTok{p\_[}\FloatTok{3}\NormalTok{])}
+\NormalTok{    dist }\OperatorTok{=} \FunctionTok{exp}\NormalTok{(}\FunctionTok{{-}}\NormalTok{(Δω }\OperatorTok{*}\NormalTok{ Δt)}\OperatorTok{\^{}}\FloatTok{2}\NormalTok{)}
+\NormalTok{    i }\OperatorTok{=} \FunctionTok{Input}\DataTypeTok{\{T\}}\NormalTok{(r\_i,dist)}
+
+    \CommentTok{\# Create the event}
+\NormalTok{    ev }\OperatorTok{=} \FunctionTok{Event}\NormalTok{(i,o,B)}
+    \CommentTok{\# Compute its probability to occur}
+    \FunctionTok{compute\_probability!}\NormalTok{(ev)}
+
+    \CommentTok{\# Store the event and its probability}
+    \FunctionTok{push!}\NormalTok{(events, ev)}
 \ControlFlowTok{end}
+
+\FunctionTok{plot!}\NormalTok{(P\_coinc)}
 \end{Highlighting}
 \end{Shaded}

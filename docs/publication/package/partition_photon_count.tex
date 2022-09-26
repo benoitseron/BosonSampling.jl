@@ -1,24 +1,29 @@
 \begin{Shaded}
 \begin{Highlighting}[]
-\NormalTok{n }\OperatorTok{=} \FloatTok{10}
-\NormalTok{m }\OperatorTok{=} \FloatTok{20}
+\NormalTok{n }\OperatorTok{=} \FloatTok{25}
+\NormalTok{m }\OperatorTok{=} \FloatTok{400}
 
-\CommentTok{\# experiment parameters}
+\CommentTok{\# Experiment parameters}
 \NormalTok{input\_state }\OperatorTok{=} \FunctionTok{first\_modes}\NormalTok{(n,m)}
 \NormalTok{interf }\OperatorTok{=} \FunctionTok{RandHaar}\NormalTok{(m)}
 \NormalTok{i }\OperatorTok{=} \FunctionTok{Input}\DataTypeTok{\{Bosonic\}}\NormalTok{(input\_state)}
 
-\CommentTok{\# subset selection}
+\CommentTok{\# Subset selection}
 \NormalTok{s }\OperatorTok{=} \FunctionTok{Subset}\NormalTok{(}\FunctionTok{first\_modes}\NormalTok{(}\FunctionTok{Int}\NormalTok{(m}\OperatorTok{/}\FloatTok{2}\NormalTok{),m))}
 \NormalTok{part }\OperatorTok{=} \FunctionTok{Partition}\NormalTok{(s)}
 
-\CommentTok{\# want to find all photon counting probabilities}
+\CommentTok{\# Want to find all photon counting probabilities}
 \NormalTok{o }\OperatorTok{=} \FunctionTok{PartitionCountsAll}\NormalTok{(part)}
 
-\CommentTok{\# define the event and compute probabilities}
+\CommentTok{\# Define the event and compute probabilities}
 \NormalTok{ev }\OperatorTok{=} \FunctionTok{Event}\NormalTok{(i,o,interf)}
 \FunctionTok{compute\_probability!}\NormalTok{(ev)}
-
-\CommentTok{\# ... add some output}
+\CommentTok{\# About 30s execution time on a single core}
+\CommentTok{\#}
+\CommentTok{\# output:}
+\CommentTok{\#}
+\CommentTok{\# 0 in subset = [1, 2,..., 200]}
+\CommentTok{\# p = 4.650035467008141e{-}8}
+\CommentTok{\# ...}
 \end{Highlighting}
 \end{Shaded}
