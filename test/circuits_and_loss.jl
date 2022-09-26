@@ -21,7 +21,7 @@ compute_probability!(ev)
 @test isapprox(ev.proba_params.probability, 0., atol = eps())
 
 
-### 2d HOM with loss example ###
+### 1d with loss example ###
 
 n = 1
 m = 1
@@ -30,7 +30,7 @@ function lossy_line_example(η_loss)
 
     circuit = LossyCircuit(1)
     interf = LossyLine(η_loss)
-    target_modes = [1]
+    target_modes = ModeList([1], m)
 
     add_element_lossy!(circuit, interf, target_modes)
     circuit
@@ -67,7 +67,7 @@ function lossy_bs_example(η_loss)
 
     circuit = LossyCircuit(2)
     interf = LossyBeamSplitter(1/sqrt(2), η_loss)
-    target_modes = [1,2]
+    target_modes = ModeList([1,2],m)
 
     add_element_lossy!(circuit, interf, target_modes)
     circuit
@@ -98,8 +98,8 @@ circuit = LosslessCircuit(m) #LossyCircuit(m)
 for mode in 1:m-1
 
     interf = BeamSplitter(η[mode]) #LossyBeamSplitter(reflectivities[mode], η_loss[mode])
-    target_modes_in = [mode, mode+1]
-    target_modes_out = [mode, mode+1]
+    target_modes_in = ModeList([mode, mode+1], m)
+    target_modes_out = target_modes_in
     add_element!(circuit, interf, target_modes_in, target_modes_out)
 
 end

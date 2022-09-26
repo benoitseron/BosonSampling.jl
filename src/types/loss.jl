@@ -168,13 +168,17 @@ Converts a vector of mode occupation into the same concatenated twice. This allo
     lossy_target_modes(target_modes) = [1,0,1,0]
 
 """
-function lossy_target_modes(target_modes::Vector{Int})
+function lossy_target_modes(target_modes::Vector{Int})::Vector{Int}
 
     vcat(target_modes, target_modes)
 
 end
 
+function lossy_target_modes(target_modes::ModeList)
 
+    ModeList(lossy_target_modes(target_modes.modes), 2*target_modes.m)
+
+end
 
 
 """

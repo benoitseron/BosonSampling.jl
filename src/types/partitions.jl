@@ -102,6 +102,23 @@ See also [`ModeOccupation`](@ref).
 
 end
 
+"""
+        is_compatible(target_modes_in::ModeList, target_modes_out::ModeList)
+
+Checks compatibility of `ModeList`s.
+"""
+function is_compatible(target_modes_in::ModeList, target_modes_out::ModeList)
+
+        if target_modes_in == target_modes_out
+                return true
+        else
+                @argcheck target_modes_in.n == target_modes_out.n
+                @argcheck target_modes_in.m == target_modes_out.m
+                true
+        end
+
+end
+
 function Base.convert(::Type{ModeOccupation}, ml::ModeList)
 
         if ml.m == nothing

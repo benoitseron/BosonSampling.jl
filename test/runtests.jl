@@ -190,5 +190,6 @@ using DataStructures
 	end
 
 	include("circuits_and_loss.jl")
+	include("partitions.jl")
 
 end
