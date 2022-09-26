@@ -1,34 +1,50 @@
 abstract type Loop <: Circuit end
 
 """
-    LosslessCircuit(m::Int)
+    LosslessLoop(m, η, ϕ)
 
-Creates an empty circuit with `m` input modes. The unitary representing the circuit
-is accessed via the field `.U`.
-
-    Fields:
-        - m::Int
-        - circuit_elements::Vector{Interferometer}
-        - U::Union{Matrix{ComplexF64}, Nothing}
+Creates a LosslessLoop, see [`build_loop`](@ref) for the fields.
 """
-mutable struct LosslessLoop <: Loop
+mutable struct LosslessLoop<: Loop
 
     m::Int
-    circuit_elements::Vector{Interferometer}
-    U::Union{Matrix, Nothing}
+    η::Union{T, Vector{T}}  where {T<:Real}
+    ϕ::Union{Nothing, T, Vector{T}}   where {T<:Real}
+    circuit::Circuit
+    U::Union{Nothing, Matrix}
 
-    function LosslessLoop(m::Int)
-        new(m, [], nothing)
+    function LosslessLoop(m, η, ϕ)
+        circuit = build_loop(m, η, nothing, nothing, ϕ)
+        new(m, η, ϕ, circuit, circuit.U)
+
     end
-
-    function LosslessLoop(circuit_elements::Vector{Interferometer})
-
-        new(length(circuit_elements) + 1, circuit_elements, nothing)
-    end
-
 end
 
 LossParameters(::Type{LosslessLoop}) = IsLossless()
+
+"""
+    LossyLoop(m::Int)
+
+Creates a LossyLoop, see [`build_loop`](@ref) for the fields.
+"""
+mutable struct LossyLoop<: Loop
+
+    m::Int
+    η::Union{T, Vector{T}}  where {T<:Real}
+    η_loss_bs::Union{Nothing, T, Vector{T}} where {T<:Real}
+    η_loss_lines::Union{Nothing, T, Vector{T}} where {T<:Real}
+    ϕ::Union{Nothing, T, Vector{T}}   where {T<:Real}
+    circuit::Circuit
+    U::Union{Nothing, Matrix}
+
+    function LossyLoop(m, η, η_loss_bs, η_loss_lines, ϕ)
+        circuit =  build_loop(m, η, η_loss_bs, η_loss_lines, ϕ)
+        new(m, η, η_loss_bs, η_loss_lines, ϕ, circuit, circuit.U)
+
+    end
+end
+
+LossParameters(::Type{LossyLoop}) = IsLossy()
 
 """
     build_loop(m::Int, η::Union{T, Vector{T}}, η_loss_bs::Union{Nothing, T, Vector{T}} = nothing, η_loss_lines::Union{Nothing, T, Vector{T}} = nothing, ϕ::Union{Nothing, T, Vector{T}} = nothing) where {T<:Real}

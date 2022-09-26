@@ -313,7 +313,7 @@ function add_element_lossy!(circuit::LossyCircuit, interf::Interferometer, targe
     if !(LossParameters(typeof(interf)) == IsLossy())
         # convert to a LossyInterferometer any lossless element just for size requirements and consistency
 
-        println("converting to lossy")
+        #println("converting to lossy")
         interf = to_lossy(interf)
 
     end

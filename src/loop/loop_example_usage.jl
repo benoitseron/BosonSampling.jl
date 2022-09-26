@@ -171,7 +171,7 @@ o3 = FockDetection(ModeOccupation([3,0,0]))
 ev = Event(i,o3, circuit)
 @show compute_probability!(ev)
 
-### building the loop with loss ###
+### loop with loss and types ###
 
 begin
     n = 3
@@ -185,12 +185,9 @@ begin
     d = Uniform(0, 2pi)
     ϕ = rand(d, m)
 
-    circuit = build_loop(m, η, η_loss_bs, η_loss_lines, ϕ)
 end
 
-
-
-circuit.U
+circuit = LossyLoop(m, η, η_loss_bs, η_loss_lines, ϕ).circuit
 
 o1 = FockDetection(ModeOccupation([2,1,0]))
 o2 = FockDetection(ModeOccupation([2,0,1]))
@@ -210,18 +207,3 @@ p_two_photon_first_mode
 o3 = FockDetection(ModeOccupation([3,0,0]))
 ev = Event(i,o3, circuit)
 @show compute_probability!(ev)
-
-### adding a phase ###
-
-
-
-### random phase shifter ###
-
-d = Uniform(0, 2pi)
-
-RandomPhaseShifter(d)
-abs(RandomPhaseShifter(d).U[1,1])
-
-RandomPhaseShifter(0.3)
-
-### loop ###
