@@ -122,9 +122,13 @@ struct Event{TIn<:InputType, TOut<:OutputMeasurementType}
 
 			if StateMeasurement(typeof(output_measurement)) == FockStateMeasurement()
 
-				if output_measurement.s.m != 2*interferometer.m_real
+				if output_measurement.s == nothing
+
+					output_measurement.s = ModeOccupation(zeros(2*interferometer.m))
+
+				elseif output_measurement.s.m != 2*interferometer.m_real
 					#println("converting Output to lossy")
-					output_measurement = to_lossy(output_measurement)
+					to_lossy!(output_measurement)
 				end
 			end
 

@@ -145,12 +145,11 @@ function to_lossy(i::Input{T}) where {T<:InputType}
 
 end
 
-function to_lossy(o::OutputMeasurementType)
+function to_lossy!(o::OutputMeasurementType)
 
     # if StateMeasurement(typeof(output_measurement)) == FockStateMeasurement
-    if typeof(o) == FockDetection
-        FockDetection(to_lossy(o.s))
-
+    if StateMeasurement(typeof(o)) == FockStateMeasurement()
+        o.s = to_lossy(o.s)
     else
 
         error("not implemented")
