@@ -17,6 +17,8 @@ using AutoHashEquals
 using LinearRegression
 using DataStructures
 
+include("tools.jl")
+
 @testset "BosonSampling.jl" begin
 
     @testset "scattering matrix" begin

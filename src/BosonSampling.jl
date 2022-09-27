@@ -29,12 +29,16 @@ using AutoHashEquals
 using LinearRegression
 using HypothesisTests
 using SimpleTraits
+using Parameters
+using UnPack
 
 # using Distributed
 # using SharedArrays
 
-const ATOL = 1e-10
-const SAFETY_FACTOR_FULL_BUNCHING = 10
+@consts begin
+    ATOL = 1e-10
+    SAFETY_FACTOR_FULL_BUNCHING = 10
+end
 
 include("special_matrices.jl")
 include("matrix_tests.jl")

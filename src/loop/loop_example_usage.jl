@@ -19,8 +19,12 @@ begin
     using AutoHashEquals
     using LinearRegression
     using DataStructures
+    using Parameters
+    using UnPack
 
 end
+
+# note: just go to the bottom for a minimum usage, the first two blocks are kept as intermediary building blocks to this abstract usage for debugging purposes
 
 begin
     ### 2d HOM without loss but with ModeList example ###
@@ -214,39 +218,47 @@ begin
 
 end
 
-### sampling ###
-
 begin
-    n = 3
-    m = n
 
-    i = Input{Bosonic}(first_modes(n,m))
+    ### sampling ###
+    begin
+        n = 3
+        m = n
 
-    η = 1/sqrt(2) .* ones(m-1)
-    η_loss_bs = 0.9 .* ones(m-1)
-    η_loss_lines = 0.9 .* ones(m)
-    d = Uniform(0, 2pi)
-    ϕ = rand(d, m)
+        i = Input{Bosonic}(first_modes(n,m))
+
+        η = 1/sqrt(2) .* ones(m-1)
+        η_loss_bs = 0.9 .* ones(m-1)
+        η_loss_lines = 0.9 .* ones(m)
+        d = Uniform(0, 2pi)
+        ϕ = rand(d, m)
+
+    end
+
+    circuit = LossyLoop(m, η, η_loss_bs, η_loss_lines, ϕ).circuit
+
+
+    p_dark = 0.01
+    p_no_count = 0.1
+
+    o = FockSample()
+    ev = Event(i,o, circuit)
+
+    BosonSampling.sample!(ev)
+
+    o = DarkCountFockSample(p_dark)
+    ev = Event(i,o, circuit)
+
+    BosonSampling.sample!(ev)
+
+    o = RealisticDetectorsFockSample(p_dark, p_no_count)
+    ev = Event(i,o, circuit)
+
+    BosonSampling.sample!(ev)
 
 end
 
-circuit = LossyLoop(m, η, η_loss_bs, η_loss_lines, ϕ).circuit
+###### sample with a new circuit each time ######
 
-
-p_dark = 0.01
-p_no_count = 0.1
-
-o = FockSample()
-ev = Event(i,o, circuit)
-
-BosonSampling.sample!(ev)
-
-o = DarkCountFockSample(p_dark)
-ev = Event(i,o, circuit)
-
-BosonSampling.sample!(ev)
-
-o = RealisticDetectorsFockSample(p_dark, p_no_count)
-ev = Event(i,o, circuit)
-
-BosonSampling.sample!(ev)
+# have a look at the documentation for the parameters and functions
+get_sample_loop(LoopSamplingParameters(n = 10, input_type = Distinguishable))
