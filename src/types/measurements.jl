@@ -20,7 +20,7 @@ Measuring the probability of getting the [`ModeOccupation`](@ref) `s` at the out
     Fields:
         - s::ModeOccupation
 """
-struct FockDetection <: OutputMeasurementType
+mutable struct FockDetection <: OutputMeasurementType
     s::ModeOccupation
     FockDetection(s::ModeOccupation) = new(s) #at_most_one_photon_per_bin(s) ? new(s) : error("more than one detector per more")
 end
@@ -165,4 +165,3 @@ mutable struct TresholdDetection <: OutputMeasurementType
     TresholdDetection() = new(nothing)
     TresholdDetection(s::Vector{Int64}) = new(s)
 end
-
