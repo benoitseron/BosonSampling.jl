@@ -46,6 +46,20 @@
 
             get_sample_loop(LoopSamplingParameters(n = 10 ,input_type = Distinguishable))
 
+            ### method specialisation according to the type of lossy input ###
+
+            n = 6
+            m = n
+
+            get_sample_loop(LoopSamplingParameters(n=n, input_type = Distinguishable, η_loss_bs   = nothing, η_loss_lines = 0.9 .* ones(m)))
+
+            get_sample_loop(LoopSamplingParameters(n=n, input_type = Distinguishable, η_loss_bs = 0.9 .* ones(m-1), η_loss_lines = nothing))
+
+            smpl = get_sample_loop(LoopSamplingParameters(n=n, input_type = Distinguishable, η_loss_bs = nothing, η_loss_lines = nothing))
+
+            @test length(smpl.state) == n
+
+
         end
 
         runs_without_errors(loop_tests)

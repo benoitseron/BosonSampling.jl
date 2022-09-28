@@ -119,7 +119,12 @@ function build_loop(m::Int, η::Union{T, Vector{T}}, η_loss_bs::Union{Nothing, 
         if ϕ == nothing
             error("not implemented")
         else
-            interf = LossyLineWithRandomPhase(η_loss_lines[mode], ϕ[mode])
+            if η_loss_lines == nothing
+                interf = RandomPhaseShifter(ϕ[mode])
+            else
+                interf = LossyLineWithRandomPhase(η_loss_lines[mode], ϕ[mode])
+            end
+
             target_modes_in = ModeList([mode], circuit.m_real)
             target_modes_out = target_modes_in
 
@@ -141,7 +146,12 @@ function build_loop(m::Int, η::Union{T, Vector{T}}, η_loss_bs::Union{Nothing, 
 
             add_line!(mode, lossy)
 
-            interf = LossyBeamSplitter(η[mode], η_loss_bs[mode])
+            if η_loss_bs != nothing
+                interf = LossyBeamSplitter(η[mode], η_loss_bs[mode])
+            else
+                interf = LossyBeamSplitter(η[mode], 1.)
+            end
+
             target_modes_in = ModeList([mode, mode+1], circuit.m_real)
             target_modes_out = target_modes_in
             add_element_lossy!(circuit, interf, target_modes_in, target_modes_out)

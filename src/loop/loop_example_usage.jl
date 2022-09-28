@@ -265,21 +265,5 @@ end
 
 get_sample_loop(LoopSamplingParameters(n = 10, input_type = Distinguishable))
 
-# now need to produce samples, put them into a partition form, and see if there is a big difference with Bosonic or Distinguishable
-
-function get_sample_time(n)
-
-    m = n
-
-    @elapsed get_sample_loop(LoopSamplingParameters(n=n, input_type = Distinguishable, η_loss_bs = 0.9 .* ones(m-1), η_loss_lines = 0.9 .* ones(m)))
-
-end
-
-n_array = collect(3:12)
-time_array = [get_sample_time(n) for n in n_array]
-
-plot(n_array, time_array, yaxis = :log10, label = false)
-xaxis!("n_photons (with loss)")
-yaxis!("time one sample (s)")
 
 build_loop(LoopSamplingParameters(n = 10, input_type = Distinguishable))
