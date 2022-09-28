@@ -12,45 +12,13 @@ Defines the transmissivities required for the thermalization scheme.
 η_thermalization(n) = [(i-1)/i for i in 2:n]
 
 
-"""
-partition_thermalization(m)
 
-Defines the last mode, single mode subset for thermalization. This corresponds to the first mode of the interferometer with spatial bins (to be checked).
-"""
-partition_thermalization(m) = begin
 
-s1 = Subset(ModeList(m,m))
-s2 = Subset(first_modes(m-1,m))
-Partition([s1,s2])
 
-end
 
-@with_kw mutable struct PartitionSamplingParameters
-    interf::Interferometer = RandHaar(m)
-    T1::Type{T} where {T<:InputType} = Bosonic
-    T2::Type{T} where {T<:InputType} = Distinguishable
-    mode_occ_1::ModeOccupation = first_modes(n,m)
-    mode_occ_2::ModeOccupation = first_modes(n,m)
+PartitionSamplingParameters(n = 10, m = 10)
 
-    i1::Input = Input{T1}(mode_occ_1)
-    i2::Input = Input{T1}(mode_occ_2)
-
-    n_subsets::Int = 2
-    part::Partition = equilibrated_partition(m, n_subsets)
-
-    o::OutputMeasurementType = PartitionCountsAll(part)
-    evb::Event = Event(ib,o,interf)
-    evd::Event = Event(id,o,interf)
-
-    ############## finish this below:
-
-    pb = compute_probability!(evb)
-    pd = compute_probability!(evd)
-
-    pdf_dist::Union{Nothing, Vector{Float}} = pd.proba
-    pdf_bos::Union{Nothing, Vector{Float}} = pb.proba
-
-end
+n, m, interf, T1, T2, mode_occ_1, mode_occ_2, i1, i2, n_subsets, part, o, ev1, ev2
 
 PartitionCountsAll<:OutputMeasurementType
 
@@ -67,16 +35,16 @@ PartitionCountsAll<:OutputMeasurementType
 
 end
 
+
 ### no phase ###
+
+begin
 
     n = 10
     m = n
 
-    d = Uniform(0,2pi)
-    ϕ = nothing # rand(d,m)
 
-
-    params = LoopSamplingParameters(n=n, η = η_thermalization(n), η_loss_bs = nothing, η_loss_lines = nothing, ϕ = ϕ)
+    params = LoopSamplingParameters(n=n, η = η_thermalization(n), η_loss_bs = nothing, η_loss_lines = nothing, ϕ = nothing)
 
     @show params
 
@@ -104,3 +72,7 @@ end
     plot(n_in, pdf_bos, label = "B", xticks = n_in)
     plot!(n_in, pdf_dist, label = "D")
     ylims!((0,1))
+
+end
+
+typeof(pb)

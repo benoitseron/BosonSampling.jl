@@ -47,38 +47,6 @@ end
 LossParameters(::Type{LossyLoop}) = IsLossy()
 
 
-"""
-    LoopSamplingParameters(...)
-
-Container for sampling parameters with a LoopSampler. Parameters are set by default as defined, and you can change only the ones needed, for instance to sample `Distinguishable` particles instead, just do
-
-    LoopSamplingParameters(input_type = Distinguishable)
-
-and to change the number of photons with it
-
-    LoopSamplingParameters(n = 10 ,input_type = Distinguishable)
-
-To be used with [`get_sample_loop`](@ref).
-
-By default it applies a random phase at each optical line.
-"""
-@with_kw mutable struct LoopSamplingParameters
-
-    n::Int = 4
-    m::Int = n
-    input_type::Type{T} where {T<:InputType} = Bosonic
-    i::Input = Input{input_type}(first_modes(n,m))
-
-    η::Union{T, Vector{T}}  where {T<:Real} = 1/sqrt(2) .* ones(m-1)
-    η_loss_bs::Union{Nothing, T, Vector{T}}   where {T<:Real} = 1 .* ones(m-1)
-    η_loss_lines::Union{Nothing, T, Vector{T}}   where {T<:Real} = 1 .* ones(m)
-    d::Union{Nothing, Real, Distribution} = Uniform(0, 2pi)
-    ϕ::Union{Nothing, T, Vector{T}}   where {T<:Real} = rand(d, m)
-
-    p_dark::Real = 0.0
-    p_no_count::Real = 0.0
-
-end
 
 """
     build_loop(m::Int, η::Union{T, Vector{T}}, η_loss_bs::Union{Nothing, T, Vector{T}} = nothing, η_loss_lines::Union{Nothing, T, Vector{T}} = nothing, ϕ::Union{Nothing, T, Vector{T}} = nothing) where {T<:Real}

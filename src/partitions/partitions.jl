@@ -404,3 +404,25 @@ function p_partition(ev::Event{TIn1, TOut1}, ev_theory::Event{TIn2, TOut2}) wher
     proba_this_count
 
 end
+
+function compute_probability!(params::PartitionSamplingParameters)
+
+    @unpack n, m, interf, T1, T2, mode_occ_1, mode_occ_2, i1, i2, n_subsets, part, o, ev1, ev2 = params
+
+    compute_probability!(ev1)
+    compute_probability!(ev2)
+
+end
+
+"""
+partition_thermalization(m)
+
+Defines the last mode, single mode subset for thermalization. This corresponds to the first mode of the interferometer with spatial bins (to be checked).
+"""
+partition_thermalization(m) = begin
+
+s1 = Subset(ModeList(m,m))
+s2 = Subset(first_modes(m-1,m))
+Partition([s1,s2])
+
+end
