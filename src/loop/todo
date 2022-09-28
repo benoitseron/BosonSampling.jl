@@ -6,3 +6,4 @@ separate the lossy part when outputting and event of a ModeOccupation, at least 
 update tutorials?
 can we get estimates about loss without lossy simulations?
 can I accelerate stuff by multiprocessing?
+! fix the print of Events at definition

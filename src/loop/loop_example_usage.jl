@@ -1,28 +1,5 @@
-begin
-    using Revise
+include("packages_loop.jl")
 
-    using BosonSampling
-    using Plots
-    using ProgressMeter
-    using Distributions
-    using Random
-    using Test
-    using ArgCheck
-    using StatsBase
-    using ColorSchemes
-    using Interpolations
-    using Dierckx
-    using LinearAlgebra
-    using PrettyTables
-    using LaTeXStrings
-    using JLD
-    using AutoHashEquals
-    using LinearRegression
-    using DataStructures
-    using Parameters
-    using UnPack
-
-end
 
 # note: just go to the bottom for a minimum usage, the first two blocks are kept as intermediary building blocks to this abstract usage for debugging purposes
 

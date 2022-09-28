@@ -59,6 +59,8 @@ and to change the number of photons with it
     LoopSamplingParameters(n = 10 ,input_type = Distinguishable)
 
 To be used with [`get_sample_loop`](@ref).
+
+By default it applies a random phase at each optical line.
 """
 @with_kw mutable struct LoopSamplingParameters
 
