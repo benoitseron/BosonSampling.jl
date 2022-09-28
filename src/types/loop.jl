@@ -119,7 +119,11 @@ function build_loop(m::Int, η::Union{T, Vector{T}}, η_loss_bs::Union{Nothing, 
     function add_line!(mode, lossy)
 
         if ϕ == nothing
-            error("not implemented")
+            if lossy && η_loss_lines != nothing
+                interf = LossyLine(η_loss_lines[mode])
+            else
+                interf = RandomPhaseShifter(0.)
+            end
         else
             if η_loss_lines == nothing
                 interf = RandomPhaseShifter(ϕ[mode])

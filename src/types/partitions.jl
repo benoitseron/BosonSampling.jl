@@ -71,6 +71,7 @@ end
 
 """
     ModeList(state)
+    ModeList(state,m)
 
 Contrasting to [`ModeOccupation`](@ref) this list is of size `n`, the number of photons. Entry `j` is the index of the mode occupied by photon `j`.
 
@@ -88,17 +89,20 @@ See also [`ModeOccupation`](@ref).
     m::Union{Int, Nothing}
     modes::Vector{Int}
 
-    ModeList(modes::Vector{Int}) = all(modes[:] .>= 1) ? new(length(modes), nothing, modes) : error("modes start at one")
+    ModeList(modes::Vector{Int}) = ModeList(modes, nothing)
 
-        function ModeList(modes::Vector{Int}, m::Int)
+    # all(modes[:] .>= 1) ? new(length(modes), nothing, modes) : error("modes start at one")
 
-                if all(modes[:] .>= 1) && all(modes[:] .<= m)
+        function ModeList(modes::Vector{Int}, m)
+
+                if all(modes[:] .>= 1) && (m == nothing ? true : all(modes[:] .<= m))
                     new(length(modes), m, modes)
                 else
                     error("incoherent or invalid mode inputs")
                 end
         end
 
+        ModeList(mode::Int, m = nothing) = ModeList([mode],m)
 
 end
 
@@ -182,6 +186,10 @@ Create a mode occupation list with at most one count per mode.
 
                 state = modeocc.state
                 isa_subset(state) ? new(sum(state), length(state), state) : error("invalid subset")
+        end
+
+        function Subset(ml::ModeList)
+                Subset(convert(ModeOccupation, ml))
         end
 end
 
