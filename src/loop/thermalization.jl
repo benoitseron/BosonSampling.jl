@@ -18,7 +18,6 @@ Defines the transmissivities required for the thermalization scheme.
 
 PartitionSamplingParameters(n = 10, m = 10)
 
-n, m, interf, T1, T2, mode_occ_1, mode_occ_2, i1, i2, n_subsets, part, o, ev1, ev2
 
 PartitionCountsAll<:OutputMeasurementType
 
@@ -44,7 +43,7 @@ begin
     m = n
 
 
-    params = LoopSamplingParameters(n=n, η = η_thermalization(n), η_loss_bs = nothing, η_loss_lines = nothing, ϕ = nothing)
+    params = LoopSamplingParameters(n=n, η = η_thermalization(n), η_loss_bs = nothing, η_loss_lines = nothing) #, ϕ = nothing
 
     @show params
 
@@ -63,6 +62,9 @@ begin
 
     pb = compute_probability!(evb)
     pd = compute_probability!(evd)
+
+    println("##############################################")
+    @show pdf_dist
 
     pdf_dist = pd.proba
     pdf_bos = pb.proba

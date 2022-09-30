@@ -34,7 +34,7 @@ function loop_partition_tvd(params::LoopSamplingParameters, n_subsets::Int = 2)
 end
 
 begin
-    n = 10
+    n = 6
     m = n
     niter = 1000
     n_subsets = 2

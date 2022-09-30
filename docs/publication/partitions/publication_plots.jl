@@ -20,10 +20,10 @@ using LinearRegression
 
 using DataStructures
 
-
+color_map = ColorSchemes.rainbow
 cd("docs/publication/partitions/")
 
-color_map = ColorSchemes.rainbow
+### preludes ###
 
 function tvd_equilibrated_partition_real_average(m, n_subsets, n; niter = 100)
 
