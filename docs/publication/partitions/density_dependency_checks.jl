@@ -146,7 +146,7 @@ function power_law_with_n(n,k,x1,x2)
 
     pw = get_power_law_log_log(x_data,y_data)
 
-    println("power law: y = $(exp((pw[3]))) * x^$(pw[2])")
+    #println("power law: y = $(exp((pw[3]))) * x^$(pw[2])")
     pw
 
 end
@@ -154,3 +154,26 @@ end
 x1 = 0.95
 x2 = 1
 power_law_with_n(8,2, x1,x2)
+
+for x1 in 0:0.1:0.9
+    @show x1
+    power_law_with_n(8,2, x1,x2)
+end
+
+# power law: y = 0.4255501939319418 * x^0.9544422903731435
+# x1 = 0.2
+# power law: y = 0.412435170994033 * x^0.9586765280506229
+# x1 = 0.3
+# power law: y = 0.3847821931515173 * x^0.95136263045717
+# x1 = 0.4
+# power law: y = 0.3480553311932919 * x^0.9448014560980827
+# x1 = 0.5
+# power law: y = 0.30545075876388483 * x^0.9369041670040945
+# x1 = 0.6
+# power law: y = 0.25594645413311284 * x^0.93214011275294
+# x1 = 0.7
+# power law: y = 0.19842509628821695 * x^0.9228609093664767
+# x1 = 0.8
+# power law: y = 0.13609099850609438 * x^0.9142275360704729
+# x1 = 0.9
+# power law: y = 0.06974770770257517 * x^0.9052904889824115
