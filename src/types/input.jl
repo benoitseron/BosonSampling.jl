@@ -5,6 +5,12 @@ and [`Undef`](@ref).
 abstract type InputType end
 
 """
+Type used to express that we don't know what partial distinguishability experimental samples have.
+"""
+struct UnknownInput <: InputType
+end
+
+"""
 Type used to notify that the input is made of FockState indistiguishable photons.
 """
 struct Bosonic <: InputType

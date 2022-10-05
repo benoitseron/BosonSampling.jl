@@ -141,13 +141,13 @@ struct Event{TIn<:InputType, TOut<:OutputMeasurementType}
 
 end
 
-Base.show(io::IO, ev::Event) = begin
-	println("Event:\n")
-	println("input state: ", ev.input_state.r, " (",get_parametric_type(ev.input_state)[1],")", "\n")
-	println("output measurement: ", ev.output_measurement, "\n")
-	println(ev.interferometer, "\n")
-	println("proba_params: ", ev.proba_params)
-end
+# Base.show(io::IO, ev::Event) = begin
+# 	println("Event:\n")
+# 	println("input state: ", ev.input_state.r, " (",get_parametric_type(ev.input_state)[1],")", "\n")
+# 	println("output measurement: ", ev.output_measurement, "\n")
+# 	println(ev.interferometer, "\n")
+# 	println("proba_params: ", ev.proba_params)
+# end
 
 struct GaussianEvent{TIn<:Gaussian, TOut<:OutputMeasurementType}
 
@@ -163,12 +163,12 @@ struct GaussianEvent{TIn<:Gaussian, TOut<:OutputMeasurementType}
 
 end
 
-Base.show(io::IO, ev::GaussianEvent) = begin
-	println("Event:\n")
-	println("input state: ", ev.input_state.r, " (",get_parametric_type(ev.input_state)[1],")", "\n")
-	println("output measurement: ", ev.output_measurement, "\n")
-	println(ev.interferometer, "\n")
-end
+# Base.show(io::IO, ev::GaussianEvent) = begin
+# 	println("Event:\n")
+# 	println("input state: ", ev.input_state.r, " (",get_parametric_type(ev.input_state)[1],")", "\n")
+# 	println("output measurement: ", ev.output_measurement, "\n")
+# 	println(ev.interferometer, "\n")
+# end
 
 
 function check_probability_empty(ev::Event; resetting_message = true)

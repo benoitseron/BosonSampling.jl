@@ -34,7 +34,7 @@ function loop_partition_tvd(params::LoopSamplingParameters, n_subsets::Int = 2)
 end
 
 begin
-    n = 6
+    n = 10
     m = n
     niter = 1000
     n_subsets = 2
@@ -43,12 +43,24 @@ begin
 
     for i in 1:niter
 
-        params = LoopSamplingParameters(n=n, η = rand(m-1), η_loss_bs = nothing, η_loss_lines = nothing)
+        params = LoopSamplingParameters(n=n, η_loss_bs = nothing, η_loss_lines = nothing)
 
         tvd_array[i] = loop_partition_tvd(params, n_subsets)
     end
 
-    mean(tvd_array), var(tvd_array)
+    mean(tvd_array), sqrt.(var(tvd_array))
 
 end
 # end
+
+params = LoopSamplingParameters(n = n, input_type = Distinguishable, η_loss_lines = 0.3 * ones(m))
+
+params.η_loss_lines
+
+build_loop(params).U
+
+pretty_table(build_loop(params).U)
+
+n = 2
+m = n
+get_sample_loop(LoopSamplingParameters(n = n, input_type = Distinguishable, η_loss_lines = 0.3 * ones(m)))

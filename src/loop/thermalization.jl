@@ -63,7 +63,6 @@ begin
     pb = compute_probability!(evb)
     pd = compute_probability!(evd)
 
-    println("##############################################")
     @show pdf_dist
 
     pdf_dist = pd.proba
