@@ -36,4 +36,4 @@ in your file.
 
 ## Authors
 
-This package is written by Benoit Seron and Antoine Restivo. The original research presented in the package is done in collaboration with Dr. Leonardo Novo, Prof. Nicolas Cerf.
+This package is written by Benoit Seron and Antoine Restivo. The original research presented in the package is done in collaboration with Dr. Leonardo , Prof. Nicolas Cerf.
