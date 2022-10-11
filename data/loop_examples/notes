@@ -1,0 +1,10 @@
+The current experiment is with
+n = 3
+m = 6
+
+In the distinguishable case:
+
+In the first file you have the counts in each output mode when sending photons in the input mode #1,
+in the second the counts in each output mode when sending photons in the input mode #3,
+and in the third  the same when sending photons in the input mode #5.
+I kept them separated because I don't know how you plan to sum up single photon events to find an equivalent n-photon one.

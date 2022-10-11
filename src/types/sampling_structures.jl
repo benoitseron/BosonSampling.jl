@@ -67,8 +67,20 @@ By default it applies a random phase at each optical line.
 
     n::Int = 4
     m::Int = n
+    x::Union{Real, Nothing} = nothing
     input_type::Type{T} where {T<:InputType} = Bosonic
-    i::Input = Input{input_type}(first_modes(n,m))
+    i::Input = begin
+        if input_type in [Bosonic, Distinguishable]
+            i =  Input{input_type}(first_modes(n,m))
+        elseif input_type == OneParameterInterpolation
+            if x == nothing
+                error("x not given")
+            else
+                i = Input{input_type}(first_modes(n,m), x)
+            end
+        end
+    end
+
 
     η::Union{T, Vector{T}}  where {T<:Real} = 1/sqrt(2) .* ones(m-1)
     η_loss_bs::Union{Nothing, T, Vector{T}}   where {T<:Real} = 1 .* ones(m-1)
