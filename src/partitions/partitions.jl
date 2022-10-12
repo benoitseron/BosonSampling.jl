@@ -146,7 +146,13 @@ function compute_probabilities_partition(physical_interferometer::Interferometer
         @argcheck at_most_one_photon_per_bin(input_state.r) "more than one input per mode is not implemented"
 
         n = input_state.n
+
+        # if LossParameters(typeof(physical_interferometer)) == IsLossy()
+        #         m = physical_interferometer.m_real
+        # else
         m = input_state.m
+        # end
+
         mode_occupation_list = fill_arrangement(input_state)
         S = input_state.G.S
 
@@ -294,11 +300,23 @@ function compute_probability!(ev::Event{TIn,TOut}) where {TIn<:InputType, TOut<:
 
         check_probability_empty(ev)
 
+
+
         ev.proba_params.precision = eps()
         ev.proba_params.failure_probability = 0
 
         i = ev.input_state
         part = ev.output_measurement.part
+
+        if i.m != part.m
+                if i.m == 2*part.m
+                        @warn "converting the partition to a lossy one"
+                        part = to_lossy(part)
+                        ev.output_measurement = PartitionCountsAll(part)
+                else
+                        error("incompatible i, part")
+                end
+        end
 
         (part_occ,  pdf) = compute_probabilities_partition(ev.interferometer, ev.output_measurement.part, i)
 

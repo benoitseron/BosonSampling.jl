@@ -97,7 +97,7 @@ Event linking an input to an output.
 		- proba_params::EventProbability
 		- interferometer::Interferometer
 """
-struct Event{TIn<:InputType, TOut<:OutputMeasurementType}
+mutable struct Event{TIn<:InputType, TOut<:OutputMeasurementType}
 
     input_state::Input{TIn}
     output_measurement::TOut
