@@ -4,6 +4,8 @@
 
 Type holding info on a numerical experiment simulating the probability distributions of photon counting in partitions, used for comparing two input types `T1`,`T2`.
 
+By default the interferometer is set at nothing - you need to use `set_interferometer!`.
+
         Fields:
                 n::Int
                 m::Int
@@ -27,8 +29,15 @@ Type holding info on a numerical experiment simulating the probability distribut
 @with_kw mutable struct PartitionSamplingParameters
 
     n::Int
-    m::Int = m
-    interf::Interferometer = RandHaar(m)
+    m::Int = n
+    m_real::Int = m
+    interf::Union{Interferometer, Nothing} = nothing
+
+    # begin
+    #     if interf != nothing
+    #         @warn "use set_interferometer! to update the events as well as everything in a lossy form (if it is a lossy interferometer)"
+    #     end
+    # end
 
     T1::Type{T} where {T<:InputType} = Bosonic
     T2::Type{T} where {T<:InputType} = Distinguishable
@@ -36,18 +45,76 @@ Type holding info on a numerical experiment simulating the probability distribut
     mode_occ_2::ModeOccupation = first_modes(n,m)
 
     i1::Input = Input{T1}(mode_occ_1)
-    i2::Input = Input{T1}(mode_occ_2)
+    i2::Input = Input{T2}(mode_occ_2)
 
     n_subsets::Int = 2
+
     part::Partition = equilibrated_partition(m, n_subsets)
 
     o::OutputMeasurementType = PartitionCountsAll(part)
-    ev1::Event = Event(i1,o,interf)
-    ev2::Event = Event(i2,o,interf)
+    ev1::Union{Event, Nothing} = nothing
+    ev2::Union{Event, Nothing} = nothing
+
+
 
 end
 
 
+# @with_kw mutable struct PartitionSamplingParameters
+#
+#     n::Int
+#     m::Int = n
+#     m_real::Int = m
+#     interf::Union{Interferometer, Nothing} = nothing
+#
+#     # begin
+#     #     if interf != nothing
+#     #         @warn "use set_interferometer! to update the events as well as everything in a lossy form (if it is a lossy interferometer)"
+#     #     end
+#     # end
+#
+#     T::Type{T} where {T<:InputType} = Bosonic
+#     mode_occ_1::ModeOccupation = first_modes(n,m)
+#
+#     i::Input = Input{T1}(mode_occ_1)
+#
+#     n_subsets::Int = 2
+#
+#     part::Partition = equilibrated_partition(m, n_subsets)
+#
+#     o::OutputMeasurementType = PartitionCountsAll(part)
+#     ev::Union{Event, Nothing} = nothing
+#
+#
+#
+# end
+
+"""
+    set_interferometer!(interf::Interferometer, params::PartitionSamplingParameters)
+
+Updates the interferometer in a PartitionSamplingParameters, including the definition of the events and upgrade to lossy if needed of other quantities.
+"""
+function set_interferometer!(interf::Interferometer, params::PartitionSamplingParameters)
+
+    params.interf = interf
+
+    if LossParameters(typeof(interf)) == IsLossy()
+
+        @argcheck interf.m == 2*params.m
+
+        for field in [:mode_occ_1, :mode_occ_2, :i1, :i2,:part, :o]
+            getfield(params, field) = to_lossy(getfield(params, field))
+        end
+
+        params.n_subsets += 1
+    else
+        @argcheck interf.m == params.m
+    end
+
+    params.ev1 =  Event(params.i1,params.o,params.interf)
+    params.ev2 =  Event(params.i2,params.o,params.interf)
+
+end
 """
     LoopSamplingParameters(...)
 

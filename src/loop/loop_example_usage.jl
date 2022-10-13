@@ -244,3 +244,9 @@ get_sample_loop(LoopSamplingParameters(n = 10, input_type = Distinguishable))
 
 
 build_loop(LoopSamplingParameters(n = 10, input_type = Distinguishable))
+
+### partitions ###
+
+params = PartitionSamplingParameters(n = 10, m = 10)
+
+compute_probability!(params)
