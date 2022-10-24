@@ -115,6 +115,7 @@ end
 
 """
     set_interferometer!(interf::Interferometer, params::PartitionSamplingParameters)
+    function set_interferometer!(params::PartitionSamplingParameters)
 
 Updates the interferometer in a PartitionSamplingParameters, including the definition of the events and upgrade to lossy if needed of other quantities.
 
@@ -144,6 +145,11 @@ function set_interferometer!(interf::Interferometer, params::PartitionSamplingPa
     params.ev =  Event(params.i,params.o,params.interf)
 
 end
+
+set_interferometer!(params::PartitionSamplingParameters) = set_interferometer!(params.interf, params)
+
+
+
 """
     LoopSamplingParameters(...)
 
