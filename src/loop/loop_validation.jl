@@ -61,37 +61,8 @@ build_loop(params).U
 
 pretty_table(build_loop(params).U)
 
-n = 2
-m = n
-get_sample_loop(LoopSamplingParameters(n = n, input_type = Distinguishable, η_loss_lines = 0.3 * ones(m)))
 
-###### development ######
 
-params = PartitionSamplingParameters(n = 10, m = 10)
-
-n = 12
-
-PartitionSamplingParameters(n)
-
-set_interferometer!(build_loop(LoopSamplingParameters(m=10)), params)
-
-params = LoopSamplingParameters(m=10)
-
-get_parametric_type(params.i)[1]
-
-LoopSamplingParameters(m=10).i
-"""
-    get_partition_sampling_parameters(params::LoopSamplingParameters, T2::Type{T} where {T<:InputType} = Distinguishable)
-
-Unpacks the `params` to obtain a `PartitionSamplingParameters` compatible with as interferometer the circuit induced by `params`.
-"""
-function get_partition_sampling_parameters(params::LoopSamplingParameters, T2::Type{T} where {T<:InputType} = Distinguishable)
-
-    @unpack n, m, input_type, i, η, η_loss_bs, η_loss_lines, d, ϕ, p_dark, p_no_count = params
-
-    PartitionSamplingParameters(n=n,m=m,T1 = get_parametric_type(params.i)[1],)
-
-end
 
 ###############s need to make the both compatible
 
