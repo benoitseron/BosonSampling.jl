@@ -40,9 +40,6 @@ d = Uniform(0,2pi)
 
 params = LoopSamplingParameters(n=n, η = η_thermalization(n), η_loss_bs = nothing, η_loss_lines = nothing, ϕ = ϕ)
 
-pretty_table(build_loop(params).U)
-
-pretty_table(fourier_matrix(3))
 
 psp_b = convert(PartitionSamplingParameters, params)
 psp_d = convert(PartitionSamplingParameters, params) # a way to act as copy
@@ -105,8 +102,11 @@ m = n
 d = Uniform(0,2pi)
 ϕ = nothing # rand(d,m)
 η_loss_lines = 0.9 * ones(m)
+η_loss_bs = 1. * ones(m-1)
 
-params = LoopSamplingParameters(n=n, η = η_thermalization(n), η_loss_bs = nothing, η_loss_lines = η_loss_lines, ϕ = ϕ)
+###################### loss doesn't seem to work, I don't get if I am asking something correct
+
+params = LoopSamplingParameters(n=n, η = η_thermalization(n), η_loss_bs = η_loss_bs, η_loss_lines = η_loss_lines, ϕ = ϕ)
 
 
 psp_b = convert(PartitionSamplingParameters, params)
@@ -114,10 +114,13 @@ psp_d = convert(PartitionSamplingParameters, params) # a way to act as copy
 
 psp_b.part = partition_thermalization_loss(m)
 psp_d.part = partition_thermalization_loss(m)
+# psp_b.part = partition_thermalization(m)
+# psp_d.part = partition_thermalization(m)
+#
 
 
 psp_b.T = OneParameterInterpolation
-psp_b.x = 0.9
+psp_b.x = 0.8
 set_parameters!(psp_b)
 
 psp_d.T = Distinguishable
@@ -127,6 +130,7 @@ compute_probability!(psp_b)
 compute_probability!(psp_d)
 
 ########## need to copy psp, it doesn't make the difference
+######### lossy events have nearly zero probability, how come?
 
 pdf_bos = psp_b.ev.proba_params.probability.proba
 pdf_dist = psp_d.ev.proba_params.probability.proba
