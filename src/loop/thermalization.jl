@@ -1,7 +1,13 @@
 include("packages_loop.jl")
 
-# looking at the special interferometer of the work of antoine, with reflectivities set as below
-# also tried with the random phases to see if it is affected
+# an interesting experiment to run
+
+# use η_thermalization for the reflectivities
+# we look at the number of photons in the last bin
+# this would require pseudo-photon number resolution, but as you see, not up to
+# many photons
+# if we can recover the plot, it is one of the ways to show a difference between
+# bosonic (giving a thermal distribution) versus distinguishable
 
 
 """
@@ -71,3 +77,6 @@ pdf_bos_theory(k) = sum((-1)^(k+a) * binomial(a,k) * binomial(n,a) * factorial(a
 
 plot!(n_in, pdf_dist_theory.(n_in), label = "D theory")
 plot!(n_in, pdf_bos_theory.(n_in), label = "B theory")
+
+xlabel!("number of photons in last bin")
+ylabel!("probability")
