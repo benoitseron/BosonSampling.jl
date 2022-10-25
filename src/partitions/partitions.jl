@@ -425,10 +425,9 @@ end
 
 function compute_probability!(params::PartitionSamplingParameters)
 
-    @unpack n, m, interf, T1, T2, mode_occ_1, mode_occ_2, i1, i2, n_subsets, part, o, ev1, ev2 = params
+    @unpack n, m, interf, T, mode_occ, i, n_subsets, part, o, ev = params
 
-    compute_probability!(ev1)
-    compute_probability!(ev2)
+    compute_probability!(ev)
 
 end
 

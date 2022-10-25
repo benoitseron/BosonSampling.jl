@@ -11,29 +11,26 @@ include("packages_loop.jl")
 
 ###### development ######
 
-params = PartitionSamplingParameters(n = 10, m = 10)
-
-# set_input!(params)
-set_interferometer!(build_loop(LoopSamplingParameters(m=10)), params)
-
 
 
 params = LoopSamplingParameters(m=10)
 
-get_parametric_type(params.i)[1]
 
-LoopSamplingParameters(m=10).i
+
 """
     get_partition_sampling_parameters(params::LoopSamplingParameters, T2::Type{T} where {T<:InputType} = Distinguishable)
 
 Unpacks the `params` to obtain a `PartitionSamplingParameters` compatible with as interferometer the circuit induced by `params`.
 """
-function get_partition_sampling_parameters(params::LoopSamplingParameters, T2::Type{T} where {T<:InputType} = Distinguishable)
+function get_partition_sampling_parameters(params::LoopSamplingParameters)
 
     @unpack n, m, input_type, i, η, η_loss_bs, η_loss_lines, d, ϕ, p_dark, p_no_count = params
 
-    PartitionSamplingParameters(n=n,m=m,T1 = get_parametric_type(params.i)[1],)
+    PartitionSamplingParameters(n=n, m=m, T= get_parametric_type(params.i)[1], )
 
 end
 
 
+psp = convert(PartitionSamplingParameters, params)
+
+compute_probability!(psp)

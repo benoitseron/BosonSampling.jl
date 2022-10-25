@@ -148,6 +148,20 @@ end
 
 set_interferometer!(params::PartitionSamplingParameters) = set_interferometer!(params.interf, params)
 
+function set_partition!(params::PartitionSamplingParameters)
+
+    params.o = PartitionCountsAll(params.part)
+    params.ev =  Event(params.i,params.o,params.interf)
+
+end
+
+function set_parameters!(params::PartitionSamplingParameters)
+
+    set_input!(params)
+    set_partition!(params)
+    set_interferometer!(params)
+
+end
 
 
 """
@@ -192,5 +206,20 @@ By default it applies a random phase at each optical line.
 
     p_dark::Real = 0.0
     p_no_count::Real = 0.0
+
+end
+
+
+function Base.convert(::Type{PartitionSamplingParameters}, params::LoopSamplingParameters)
+
+    @unpack n, m, input_type, i, η, η_loss_bs, η_loss_lines, d, ϕ, p_dark, p_no_count = params
+
+    interf = build_loop(params)
+
+    ps = PartitionSamplingParameters(n=n, m=m, T= get_parametric_type(i)[1], interf = interf, mode_occ = i.r, x = i.distinguishability_param,i=i)
+
+    set_interferometer!(ps)
+
+    ps
 
 end
