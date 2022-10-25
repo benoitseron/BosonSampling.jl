@@ -1,4 +1,6 @@
 include("packages_loop.jl")
+include("pseudo_photon_number_resolution.jl")
+
 
 # an interesting experiment to run
 
@@ -104,7 +106,6 @@ d = Uniform(0,2pi)
 η_loss_lines = 0.9 * ones(m)
 η_loss_bs = 1. * ones(m-1)
 
-###################### loss doesn't seem to work, I don't get if I am asking something correct
 
 params = LoopSamplingParameters(n=n, η = η_thermalization(n), η_loss_bs = η_loss_bs, η_loss_lines = η_loss_lines, ϕ = ϕ)
 
@@ -129,9 +130,6 @@ set_parameters!(psp_d)
 compute_probability!(psp_b)
 compute_probability!(psp_d)
 
-########## need to copy psp, it doesn't make the difference
-######### lossy events have nearly zero probability, how come?
-
 pdf_bos = psp_b.ev.proba_params.probability.proba
 pdf_dist = psp_d.ev.proba_params.probability.proba
 
@@ -152,3 +150,74 @@ plot!(n_in, pdf_bos_theory.(n_in), label = "B theory")
 
 xlabel!("number of photons in last bin")
 ylabel!("probability")
+
+
+###### with pseudo photon number resolution ######
+
+
+
+n = 10
+steps_pnr = 3 # number of bins for pseudo pnr
+steps_pnr > 2 ? (@warn "may be slow") : nothing
+m = n + steps_pnr
+
+d = Uniform(0,2pi)
+ϕ = nothing # rand(d,m)
+η_loss_lines = 0.9 * ones(m)
+η_loss_bs = 1. * ones(m-1)
+
+η = vcat(η_thermalization(n), η_pnr(steps_pnr))
+
+params = LoopSamplingParameters(n=n, m=m,η = η, η_loss_bs = η_loss_bs, η_loss_lines = η_loss_lines, ϕ = ϕ)
+
+
+
+"""
+    partition_thermalization_pnr(m)
+
+Defines the modes corresponding to the pseudo number resolution as subsets for thermalization. This corresponds to the first mode of the interferometer with spatial bins. Loss modes included in the last subset.
+"""
+partition_thermalization_pnr(m) = begin
+
+    subsets = [Subset(ModeList(i,2m)) for i in n:m]
+
+    Partition(subsets)
+
+end
+
+psp_b = convert(PartitionSamplingParameters, params)
+psp_d = convert(PartitionSamplingParameters, params) # a way to act as copy
+
+psp_b.part = partition_thermalization_pnr(m)
+psp_d.part = partition_thermalization_pnr(m)
+
+
+
+psp_b.T = OneParameterInterpolation
+psp_b.x = 0.8
+set_parameters!(psp_b)
+
+psp_d.T = Distinguishable
+set_parameters!(psp_d)
+
+compute_probability!(psp_b)
+compute_probability!(psp_d)
+
+################################ it looks like loss is not taken into account !
+
+################################ need to convert to threshold detection
+
+pdf_bos = psp_b.ev.proba_params.probability.proba
+pdf_dist = psp_d.ev.proba_params.probability.proba
+
+n_config = length(pdf_bos)
+config = 1:n_config
+
+bar(config,pdf_bos, label = "partial dist", alpha = 0.5)
+bar!(config, pdf_dist, label = "D", alpha = 0.5)
+xlabel!("output configuration")
+ylabel!("p")
+
+
+
+sum(pdf_dist) ############ this shouldn't be the case !
