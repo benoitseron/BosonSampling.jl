@@ -34,30 +34,26 @@ d = Uniform(0,2pi)
 
 params = LoopSamplingParameters(n=n, η = η_thermalization(n), η_loss_bs = nothing, η_loss_lines = nothing, ϕ = ϕ)
 
-psp = convert(PartitionSamplingParameters, params)
-psp.part = partition_thermalization(m)
+psp_b = convert(PartitionSamplingParameters, params)
+psp_d = convert(PartitionSamplingParameters, params)
 
+psp_b.part = partition_thermalization(m)
+psp_d.part = partition_thermalization(m)
 
-set_parameters!(psp)
-
-
-psp.part
-psp.ev
-
-psp_b = psp
-psp_d = psp
-
-compute_probability!(psp)
-
-########## why doesn't it take into account the correct partition???
-psp_b.ev.proba_params.probability
-
+set_parameters!(psp_b)
 
 psp_d.T = Distinguishable
-set_input!(psp_d)
+set_parameters!(psp_d)
 
-
+compute_probability!(psp_b)
 compute_probability!(psp_d)
+
+########## need to copy psp, it doesn't make the difference
+
+pdf_bos = psp_b.ev.proba_params.probability.proba
+pdf_dist = psp_d.ev.proba_params.probability.proba
+
+n_in = [i for i in 0:n]
 
 plot(n_in, pdf_bos, label = "B", xticks = n_in)
 plot!(n_in, pdf_dist, label = "D")
