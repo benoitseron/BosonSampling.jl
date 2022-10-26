@@ -221,3 +221,21 @@ ylabel!("p")
 
 
 sum(pdf_dist) ############ this shouldn't be the case !
+
+
+
+
+
+mo = ModeOccupation([2,1,0])
+
+ModeOccupation([(mode >= 1 ? 1 : 0) for mode in mo.state])
+
+part = partition_thermalization_pnr(m)
+
+
+
+[(length(subset)) for subset in part.subsets] == ones(length(part.subsets))
+
+to_threshold(psp_b.ev.proba_params.probability.counts[10])
+
+length(part.subsets[1])

@@ -58,6 +58,19 @@ function Base.zeros(mo::ModeOccupation)
 
 end
 
+
+"""
+    to_threshold(mo::ModeOccupation)
+
+Converts a `ModeOccupation` into threshold detection.
+"""
+function to_threshold(mo::ModeOccupation)
+
+    ModeOccupation([(mode >= 1 ? 1 : 0) for mode in mo.state])
+
+end
+
+
 """
         Base.cat(s1::ModeOccupation, s2::ModeOccupation)
 
@@ -195,6 +208,7 @@ end
 
 Base.show(io::IO, s::Subset) = print(io, "subset = ", convert(Vector{Int},occupancy_vector_to_partition(s.subset)))
 
+Base.length(subset::Subset) = sum(subset.subset)
 
 function check_disjoint_subsets(s1::Subset, s2::Subset)
         @argcheck s1.m == s2.m "subsets do not have the same dimension"
@@ -364,6 +378,18 @@ Base.show(io::IO, part_occ::PartitionOccupancy) = begin
         for (i, count) in enumerate(part_occ.counts.state)
                 println(io, count," in ", part_occ.partition.subsets[i])
         end
+
+end
+
+function to_threshold(part_occ::PartitionOccupancy)
+
+    if [(length(subset)) for subset in part_occ.partition.subsets] == ones(length(part_occ.partition.subsets))
+
+        return PartitionOccupancy(to_threshold(part_occ.counts),part_occ.n, part_occ.partition)
+
+    else
+        error("subsets span multiple mode and threshold action is not clear")
+    end
 
 end
 
