@@ -71,3 +71,14 @@ begin
     ylabel!("η_i")
     xlabel!("loop pass")
 end
+
+
+### identical ###
+
+
+tvd_one_reflectivity(η) = tvd_reflectivities(η[1] * ones(m-1))
+η_0 = [0.5]
+
+sol = optimize(tvd_one_reflectivity, η_0, Optim.Options(time_limit = 15.0))
+
+@show sol.minimizer
