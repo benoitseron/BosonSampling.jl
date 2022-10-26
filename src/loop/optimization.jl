@@ -1,7 +1,7 @@
 include("packages_loop.jl")
 
-n = 6
-m = 2n
+n = 4
+m = 3n
 n_subsets = 3
 n_subsets > 3 && m > 12 ? (@warn "may be slow") : nothing
 
@@ -64,9 +64,10 @@ sol = optimize(tvd_reflectivities, η_0, Optim.Options(time_limit = 15.0))
 @show sol.minimizer
 
 begin
-    plot(sol.minimizer, label = "optim")
-    plot!(η_thermalization(m), label = "thermalization")
-    plot!(η_0, label = "initial")
-    ylims!((0,1))
-    ylabel!("η")
+    plot(sol.minimizer, label = "optim : $(-tvd_reflectivities(sol.minimizer))")
+    plot!(η_thermalization(m), label = "thermalization : $(-tvd_reflectivities(η_thermalization(m)))")
+    plot!(η_0, label = "initial : $(-tvd_reflectivities(η_0))")
+    ylims!((0,1.3))
+    ylabel!("η_i")
+    xlabel!("loop pass")
 end
