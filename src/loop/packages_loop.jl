@@ -21,5 +21,6 @@ begin
     using DataStructures
     using Parameters
     using UnPack
+    using Optim
 
 end

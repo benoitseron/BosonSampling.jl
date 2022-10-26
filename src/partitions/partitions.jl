@@ -310,7 +310,7 @@ function compute_probability!(ev::Event{TIn,TOut}) where {TIn<:InputType, TOut<:
 
         if i.m != part.m
                 if i.m == 2*part.m
-                        @warn "converting the partition to a lossy one"
+                        # @warn "converting the partition to a lossy one"
                         part = to_lossy(part)
                         ev.output_measurement = PartitionCountsAll(part)
                 else

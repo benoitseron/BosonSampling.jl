@@ -1,35 +1,72 @@
 include("packages_loop.jl")
 
+n = 6
+m = 2n
+n_subsets = 3
+n_subsets > 3 && m > 12 ? (@warn "may be slow") : nothing
 
-
-n = 10
-m = n
 
 d = Uniform(0,2pi)
 ϕ = nothing # rand(d,m)
 
-η_loss_lines = 0.9 * ones(m)
-η = 1/sqrt(2) * ones(m-1)
+η_loss_lines =1. * ones(m)
+η_loss_bs = 1. * ones(m-1)
 
-params = LoopSamplingParameters(n=n, η = η, η_loss_bs = nothing, η_loss_lines = η_loss_lines, ϕ = ϕ)
+function tvd_reflectivities(η)
 
-psp_b = convert(PartitionSamplingParameters, params)
-psp_d = convert(PartitionSamplingParameters, params) # a way to act as copy
+    if all(between_one_and_zero.(η))
 
-# psp_b.part = partition_thermalization(m)
-# psp_d.part = partition_thermalization(m)
+        params = LoopSamplingParameters(n=n, m=m, η = η, η_loss_bs = η_loss_bs, η_loss_lines = η_loss_lines, ϕ = ϕ)
 
-psp_b.T = OneParameterInterpolation
-psp_b.x = 0.9
-set_parameters!(psp_b)
+        psp_b = convert(PartitionSamplingParameters, params)
+        psp_d = convert(PartitionSamplingParameters, params) # a way to act as copy
 
-psp_d.T = Distinguishable
-set_parameters!(psp_d)
+        part = equilibrated_partition(m, n_subsets)
 
-compute_probability!(psp_b)
-compute_probability!(psp_d)
+        psp_b.part = part
+        psp_d.part = part
 
-# need to change to threshold detectors
-# and forget about the loss?
-# compute the TVD
-# the optimize on η
+        psp_b.T = OneParameterInterpolation
+        psp_b.x = 0.9
+        set_parameters!(psp_b)
+
+        psp_d.T = Distinguishable
+        set_parameters!(psp_d)
+
+        compute_probability!(psp_b)
+        compute_probability!(psp_d)
+
+        pdf_bos = psp_b.ev.proba_params.probability.proba
+        pdf_dist = psp_d.ev.proba_params.probability.proba
+
+        @show tvd(pdf_bos,pdf_dist)
+        return -tvd(pdf_bos,pdf_dist)
+    else
+        println("invalid reflectivity")
+        return 100
+    end
+
+end
+
+
+# η_0 = rand(m-1)
+η_0 = 1/sqrt(2) * ones(m-1)
+# η_0 = η_thermalization(m)
+
+
+lower = zeros(length(η_0))
+upper = ones(length(η_0))
+
+#optimize(tvd_reflectivities, lower, upper, η_0)
+
+sol = optimize(tvd_reflectivities, η_0, Optim.Options(time_limit = 15.0))
+
+@show sol.minimizer
+
+begin
+    plot(sol.minimizer, label = "optim")
+    plot!(η_thermalization(m), label = "thermalization")
+    plot!(η_0, label = "initial")
+    ylims!((0,1))
+    ylabel!("η")
+end
