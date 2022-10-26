@@ -156,10 +156,12 @@ ylabel!("probability")
 
 
 
-n = 10
-steps_pnr = 3 # number of bins for pseudo pnr
-steps_pnr > 2 ? (@warn "may be slow") : nothing
+n = 2
+steps_pnr = 1 # number of bins for pseudo pnr
+steps_pnr > 2 && n > 6 ? (@warn "may be slow") : nothing
 m = n + steps_pnr
+
+x = 0.8
 
 d = Uniform(0,2pi)
 ϕ = nothing # rand(d,m)
@@ -180,6 +182,7 @@ Defines the modes corresponding to the pseudo number resolution as subsets for t
 partition_thermalization_pnr(m) = begin
 
     subsets = [Subset(ModeList(i,2m)) for i in n:m]
+    #push!(subsets, Subset(last_modes(m,2m))) # loss subset
 
     Partition(subsets)
 
@@ -194,7 +197,7 @@ psp_d.part = partition_thermalization_pnr(m)
 
 
 psp_b.T = OneParameterInterpolation
-psp_b.x = 0.8
+psp_b.x = x
 set_parameters!(psp_b)
 
 psp_d.T = Distinguishable
@@ -207,13 +210,19 @@ compute_probability!(psp_d)
 
 ################################ need to convert to threshold detection
 
-pdf_bos = psp_b.ev.proba_params.probability.proba
-pdf_dist = psp_d.ev.proba_params.probability.proba
+mc_b = psp_b.ev.proba_params.probability
+mc_d = psp_d.ev.proba_params.probability
+
+mc_b = to_threshold(mc_b)
+mc_d = to_threshold(mc_d)
+
+pdf_bos = mc_b.proba
+pdf_dist = mc_d.proba
 
 n_config = length(pdf_bos)
 config = 1:n_config
 
-bar(config,pdf_bos, label = "partial dist", alpha = 0.5)
+bar(config,pdf_bos, label = "x=$x", alpha = 0.5)
 bar!(config, pdf_dist, label = "D", alpha = 0.5)
 xlabel!("output configuration")
 ylabel!("p")
@@ -221,21 +230,3 @@ ylabel!("p")
 
 
 sum(pdf_dist) ############ this shouldn't be the case !
-
-
-
-
-
-mo = ModeOccupation([2,1,0])
-
-ModeOccupation([(mode >= 1 ? 1 : 0) for mode in mo.state])
-
-part = partition_thermalization_pnr(m)
-
-
-
-[(length(subset)) for subset in part.subsets] == ones(length(part.subsets))
-
-to_threshold(psp_b.ev.proba_params.probability.counts[10])
-
-length(part.subsets[1])
