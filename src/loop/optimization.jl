@@ -1,19 +1,23 @@
 include("packages_loop.jl")
 
-n = 10
-sparsity = 2
+n = 2
+sparsity = 3
 m = sparsity * n
 n_subsets = 2
 n_subsets > 3 && m > 12 ? (@warn "may be slow") : nothing
 
+x = 0.9
+
 equilibrated_input(sparsity, m) = ModeOccupation([((i-1) % sparsity) == 0 ? 1 : 0 for i in 1:m])
+
+equilibrated_input(sparsity, m)
 
 # photons are homogeneously distributed
 
 d = Uniform(0,2pi)
 ϕ = nothing # rand(d,m)
 
-η_loss_lines =1. * ones(m)
+η_loss_lines = 1. * ones(m)
 η_loss_bs = 1. * ones(m-1)
 
 function tvd_reflectivities(η)
@@ -34,7 +38,7 @@ function tvd_reflectivities(η)
         psp_d.part = part
 
         psp_b.T = OneParameterInterpolation
-        psp_b.x = 0.9
+        psp_b.x = x
         set_parameters!(psp_b)
 
         psp_d.T = Distinguishable
@@ -58,8 +62,8 @@ end
 
 
 # η_0 = rand(m-1)
-# η_0 = 1/sqrt(2) * ones(m-1)
-η_0 = η_thermalization(m)
+η_0 = 1/sqrt(2) * ones(m-1)
+#η_0 = η_thermalization(m)
 
 
 lower = zeros(length(η_0))
