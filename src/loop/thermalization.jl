@@ -155,7 +155,6 @@ ylabel!("probability")
 ###### with pseudo photon number resolution ######
 
 
-
 n = 10
 steps_pnr = 2 # number of bins for pseudo pnr
 steps_pnr > 2 && n > 6 ? (@warn "may be slow") : nothing
@@ -230,6 +229,6 @@ bar!(config, pdf_dist, label = "D", alpha = 0.5)
 xlabel!("output configuration")
 ylabel!("p")
 
-
+params.i
 
 sum(pdf_dist) ############ this shouldn't be the case !

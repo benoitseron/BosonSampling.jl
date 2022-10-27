@@ -3,7 +3,7 @@ include("packages_loop.jl")
 n = 2
 sparsity = 3
 m = sparsity * n
-n_subsets = 2
+n_subsets = 3
 n_subsets > 3 && m > 12 ? (@warn "may be slow") : nothing
 
 x = 0.9
@@ -94,3 +94,11 @@ tvd_one_reflectivity(η) = tvd_reflectivities(η[1] * ones(m-1))
 sol = optimize(tvd_one_reflectivity, η_0, Optim.Options(time_limit = 15.0))
 
 @show sol.minimizer
+
+
+### what happens with the thermalization pattern ###
+
+
+(-tvd_reflectivities(η_thermalization(m)))
+
+part = equilibrated_partition(m, n_subsets)
