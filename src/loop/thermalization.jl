@@ -156,8 +156,8 @@ ylabel!("probability")
 
 
 
-n = 2
-steps_pnr = 1 # number of bins for pseudo pnr
+n = 10
+steps_pnr = 2 # number of bins for pseudo pnr
 steps_pnr > 2 && n > 6 ? (@warn "may be slow") : nothing
 m = n + steps_pnr
 
@@ -169,6 +169,9 @@ d = Uniform(0,2pi)
 η_loss_bs = 1. * ones(m-1)
 
 η = vcat(η_thermalization(n), η_pnr(steps_pnr))
+
+### LORENZO these are the transmissivities
+@show η
 
 params = LoopSamplingParameters(n=n, m=m,η = η, η_loss_bs = η_loss_bs, η_loss_lines = η_loss_lines, ϕ = ϕ)
 

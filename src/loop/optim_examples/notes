@@ -1,0 +1,6 @@
+n = 4
+sparsity = 3
+m = sparsity * n
+n_subsets = 4
+
+beginning to see a peak structure

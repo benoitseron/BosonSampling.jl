@@ -1,10 +1,14 @@
 include("packages_loop.jl")
 
-n = 4
-m = 3n
-n_subsets = 3
+n = 10
+sparsity = 2
+m = sparsity * n
+n_subsets = 2
 n_subsets > 3 && m > 12 ? (@warn "may be slow") : nothing
 
+equilibrated_input(sparsity, m) = ModeOccupation([((i-1) % sparsity) == 0 ? 1 : 0 for i in 1:m])
+
+# photons are homogeneously distributed
 
 d = Uniform(0,2pi)
 ϕ = nothing # rand(d,m)
@@ -20,6 +24,9 @@ function tvd_reflectivities(η)
 
         psp_b = convert(PartitionSamplingParameters, params)
         psp_d = convert(PartitionSamplingParameters, params) # a way to act as copy
+
+        psp_b.mode_occ = equilibrated_input(sparsity, m)
+        psp_d.mode_occ = equilibrated_input(sparsity, m)
 
         part = equilibrated_partition(m, n_subsets)
 
@@ -40,6 +47,7 @@ function tvd_reflectivities(η)
         pdf_dist = psp_d.ev.proba_params.probability.proba
 
         @show tvd(pdf_bos,pdf_dist)
+        #display(plot(η))
         return -tvd(pdf_bos,pdf_dist)
     else
         println("invalid reflectivity")
@@ -50,8 +58,8 @@ end
 
 
 # η_0 = rand(m-1)
-η_0 = 1/sqrt(2) * ones(m-1)
-# η_0 = η_thermalization(m)
+# η_0 = 1/sqrt(2) * ones(m-1)
+η_0 = η_thermalization(m)
 
 
 lower = zeros(length(η_0))
@@ -59,7 +67,7 @@ upper = ones(length(η_0))
 
 #optimize(tvd_reflectivities, lower, upper, η_0)
 
-sol = optimize(tvd_reflectivities, η_0, Optim.Options(time_limit = 15.0))
+sol = optimize(tvd_reflectivities, η_0, Optim.Options(time_limit = 60.0))
 
 @show sol.minimizer
 
