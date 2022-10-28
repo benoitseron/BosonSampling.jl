@@ -8,7 +8,6 @@ n_subsets > 3 && m > 12 ? (@warn "may be slow") : nothing
 
 x = 0.9
 
-equilibrated_input(sparsity, m) = ModeOccupation([((i-1) % sparsity) == 0 ? 1 : 0 for i in 1:m])
 
 equilibrated_input(sparsity, m)
 

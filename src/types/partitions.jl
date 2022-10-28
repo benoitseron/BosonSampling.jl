@@ -175,6 +175,7 @@ last_modes(n::Int,m::Int) = n<=m ? ModeOccupation([i > m-n ? 1 : 0 for i in 1:m]
 
 last_modes_array(n::Int,m::Int) = last_modes(n,m).state
 
+equilibrated_input(sparsity, m) = ModeOccupation([((i-1) % sparsity) == 0 ? 1 : 0 for i in 1:m])
 
 """
     Subset(state::Vector{Int})
