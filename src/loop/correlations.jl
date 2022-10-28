@@ -1,5 +1,7 @@
 include("packages_loop.jl")
 
+color_map = ColorSchemes.rainbow1
+
 partition_correlator(i,j,m) = begin
 
     subsets = [Subset(ModeList(i,m)), Subset(ModeList(j,m))]
@@ -19,8 +21,11 @@ partition_mean(i,m) = begin
 end
 
 
-n = 16
-m = 2n
+n = 10
+scarcity = 2
+m = scarcity * n
+
+equilibrated_input(sparsity, m) = ModeOccupation([((i-1) % sparsity) == 0 ? 1 : 0 for i in 1:m])
 
 # x = 0.9
 
@@ -34,7 +39,7 @@ d = Uniform(0,2pi)
 params = LoopSamplingParameters(n=n, m=m, η = η, η_loss_bs = η_loss_bs, η_loss_lines = η_loss_lines, ϕ = ϕ)
 
 psp = convert(PartitionSamplingParameters, params)
-
+psp.mode_occ = equilibrated_input(sparsity, m)
 
 """
     correlator(i,j, psp::PartitionSamplingParameters)
@@ -45,7 +50,7 @@ function correlator(i,j, psp::PartitionSamplingParameters)
 
     # @argcheck length(mc.counts[1].counts.state) == 2 "only implemented two correlators"
 
-    psp = convert(PartitionSamplingParameters, params)
+    # psp = convert(PartitionSamplingParameters, params)
 
     ### compute cross term ###
 
@@ -78,14 +83,16 @@ function correlator(i,j, psp::PartitionSamplingParameters)
 
 end
 
-min_i = 9
-max_i = 14
+min_i = 1
+max_i = 5
 begin
     plt = plot()
 
     for i in min_i:max_i
         @show i
-            plot!([correlator(i,j,psp) for j in i+1:m], label = "i = $i")
+
+        col_frac = (i-min_i) / (max_i - min_i - 1)
+        plot!([correlator(i,j,psp) for j in i+1:m], label = "i = $i", c = get(color_map, col_frac))
     end
     xlabel!("offset r")
     ylabel!("c(i,i+r)")
