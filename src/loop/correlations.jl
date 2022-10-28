@@ -22,8 +22,8 @@ end
 
 
 n = 10
-scarcity = 2
-m = scarcity * n
+sparsity = 3
+m = sparsity * n
 
 equilibrated_input(sparsity, m) = ModeOccupation([((i-1) % sparsity) == 0 ? 1 : 0 for i in 1:m])
 
@@ -40,6 +40,9 @@ params = LoopSamplingParameters(n=n, m=m, η = η, η_loss_bs = η_loss_bs, η_l
 
 psp = convert(PartitionSamplingParameters, params)
 psp.mode_occ = equilibrated_input(sparsity, m)
+
+
+
 
 """
     correlator(i,j, psp::PartitionSamplingParameters)
@@ -59,7 +62,7 @@ function correlator(i,j, psp::PartitionSamplingParameters)
     compute_probability!(psp)
     mc = psp.ev.proba_params.probability
 
-    cross_term = mean([mc.proba[k] * prod(mc.counts[k].counts.state) for k in 1:length(mc.counts)])
+    cross_term = sum([mc.proba[k] * prod(mc.counts[k].counts.state) for k in 1:length(mc.counts)])
 
     ### compute average i ###
 
@@ -68,7 +71,7 @@ function correlator(i,j, psp::PartitionSamplingParameters)
     compute_probability!(psp)
     mc = psp.ev.proba_params.probability
 
-    avg_i = mean([mc.proba[k] * mc.counts[k].counts.state[1] for k in 1:length(mc.counts)])
+    avg_i = sum([mc.proba[k] * mc.counts[k].counts.state[1] for k in 1:length(mc.counts)])
 
     ### compute average i ###
 
@@ -77,14 +80,14 @@ function correlator(i,j, psp::PartitionSamplingParameters)
     compute_probability!(psp)
     mc = psp.ev.proba_params.probability
 
-    avg_j = mean([mc.proba[k] * mc.counts[k].counts.state[1] for k in 1:length(mc.counts)])
+    avg_j = sum([mc.proba[k] * mc.counts[k].counts.state[1] for k in 1:length(mc.counts)])
 
     cross_term - avg_i * avg_j
 
 end
 
 min_i = 1
-max_i = 5
+max_i = 8
 begin
     plt = plot()
 
