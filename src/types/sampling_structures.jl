@@ -177,7 +177,7 @@ end
 function set_measurement!(o::OutputMeasurementType, params::SamplingParameters)
 
 
-    if StateMeasurement(typeof(interf)) == FockStateMeasurement()
+    if StateMeasurement(typeof(o)) == FockStateMeasurement()
         params.o = o
         params.ev =  Event(params.i,params.o,params.interf)
     else

@@ -70,6 +70,11 @@ function sample!(ev::Event{TIn, TOut}) where {TIn<:InputType, TOut <: RealisticD
     ev.output_measurement.s = sample_dark
 end
 
+function sample!(params::SamplingParameters)
+    sample!(params.ev)
+end
+
+
 """
     scattershot_sampling(n::Int, m::Int; N=1000, interf=nothing)
 
