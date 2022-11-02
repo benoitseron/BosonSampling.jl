@@ -59,6 +59,24 @@
 #
 # end
 
+@with_kw mutable struct SamplingParameters
+
+    n::Int
+    m::Int = n
+    m_real::Int = m
+    interf::Union{Interferometer, Nothing} = nothing
+
+    T::Type{T} where {T<:InputType} = Bosonic
+    mode_occ::ModeOccupation = first_modes(n,m)
+    x::Union{Nothing, Real} = nothing
+
+    i::Union{Input, Nothing} = nothing
+
+    o::Union{OutputMeasurementType, Nothing} = nothing
+    ev::Union{Event, Nothing} = nothing
+
+end
+
 
 @with_kw mutable struct PartitionSamplingParameters
 
@@ -98,10 +116,11 @@ end
 
 """
     set_input!(params::PartitionSamplingParameters)
+    set_input!(params::SamplingParameters)
 
 `PartitionSamplingParameters` is initially defined with a nothing input, this function acts as an outer constructor to make it compatible with peculiarities of the `@with_kw` used in the type definition.
 """
-function set_input!(params::PartitionSamplingParameters)
+function set_input!(params::Union{PartitionSamplingParameters, SamplingParameters})
 
     if params.T in [Bosonic, Distinguishable]
         params.i = Input{params.T}(params.mode_occ)
@@ -121,7 +140,7 @@ Updates the interferometer in a PartitionSamplingParameters, including the defin
 
 This function acts as an outer constructor to make it compatible with peculiarities of the `@with_kw` used in the type definition.
 """
-function set_interferometer!(interf::Interferometer, params::PartitionSamplingParameters)
+function set_interferometer!(interf::Interferometer, params::Union{PartitionSamplingParameters, SamplingParameters})
 
     if params.i == nothing
         set_input!(params)
@@ -146,7 +165,7 @@ function set_interferometer!(interf::Interferometer, params::PartitionSamplingPa
 
 end
 
-set_interferometer!(params::PartitionSamplingParameters) = set_interferometer!(params.interf, params)
+set_interferometer!(params::Union{PartitionSamplingParameters, SamplingParameters}) = set_interferometer!(params.interf, params)
 
 function set_partition!(params::PartitionSamplingParameters)
 
@@ -155,10 +174,31 @@ function set_partition!(params::PartitionSamplingParameters)
 
 end
 
-function set_parameters!(params::PartitionSamplingParameters)
+function set_measurement!(o::OutputMeasurementType, params::SamplingParameters)
+
+
+    if StateMeasurement(typeof(interf)) == FockStateMeasurement()
+        params.o = o
+        params.ev =  Event(params.i,params.o,params.interf)
+    else
+        error("invalid measurement")
+
+    end
+
+end
+
+set_measurement!(params::SamplingParameters) = set_measurement!(params.o, params)
+
+function set_parameters!(params::Union{PartitionSamplingParameters, SamplingParameters})
 
     set_input!(params)
-    set_partition!(params)
+
+    if typeof(params) == PartitionSamplingParameters
+        set_partition!(params)
+    elseif typeof(params) == SamplingParameters
+        set_measurement!(params)
+    end
+
     set_interferometer!(params)
 
 end
