@@ -18,6 +18,14 @@ end
 Base.show(io::IO, i::ModeOccupation) = print(io, "state = ", i.state)
 
 """
+        number_modes_occupied(mo::ModeOccupation)
+
+Number of modes having at least a photon.
+"""
+number_modes_occupied(mo::ModeOccupation) = sum(to_threshold(mo).state)
+
+
+"""
 
     :+(s1::ModeOccupation, s2::ModeOccupation)
     :+(s1::ModeOccupation, s2::Vector{Int})

@@ -1,14 +1,32 @@
 include("packages_loop.jl")
 
-n = 3
-m = n
-interf = Fourier(m)
-T = OneParameterInterpolation
-x = 1.
-o = FockSample()
+n_samples = 1000
 
-params = SamplingParameters(n=n,m=m,interf = interf, T=T,x=x, o=o)
+begin
+    n = 5
+    m = n
+    interf = Fourier(m)
+    T = OneParameterInterpolation
+    x = 1.
+    o = FockSample()
+end
 
-set_parameters!(params)
 
-BosonSampling.sample!(params)
+
+
+sample_number_modes_occupied(params::SamplingParameters) = number_modes_occupied(BosonSampling.sample!(params))
+
+mean_number_modes_occupied(params::SamplingParameters, n_samples::Int) =  mean([sample_number_modes_occupied(params) for i in 1:n_samples])
+
+mean_number_modes_occupied(params, n_samples)
+
+x_array = 0:0.1:1
+n_occ = []
+
+for x in x_array
+    params = SamplingParameters(n=n,m=m,interf = interf, T=T,x=x, o=o)
+    set_parameters!(params)
+    push!(n_occ,mean_number_modes_occupied(params, n_samples))
+end
+
+plot(x_array, n_occ)

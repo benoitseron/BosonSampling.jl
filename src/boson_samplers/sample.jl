@@ -12,6 +12,8 @@ function sample!(ev::Event{TIn, TOut}) where {TIn<:InputType, TOut <: FockSample
         ev.output_measurement.s = ModeOccupation(classical_sampler(ev))
     elseif TIn == Bosonic
         ev.output_measurement.s = ModeOccupation(cliffords_sampler(ev))
+    elseif TIn == OneParameterInterpolation
+        ev.output_measurement.s = ModeOccupation(noisy_sampler(ev,1))
     else
         error("not implemented")
     end
