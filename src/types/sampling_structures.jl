@@ -242,7 +242,7 @@ By default it applies a random phase at each optical line.
     η_loss_bs::Union{Nothing, T, Vector{T}}   where {T<:Real} = 1 .* ones(m-1)
     η_loss_lines::Union{Nothing, T, Vector{T}}   where {T<:Real} = 1 .* ones(m)
     d::Union{Nothing, Real, Distribution} = Uniform(0, 2pi)
-    ϕ::Union{Nothing, T, Vector{T}}   where {T<:Real} = rand(d, m)
+    ϕ::Union{Nothing, T, Vector{T}} where {T<:Real} = rand(d, m)
 
     p_dark::Real = 0.0
     p_no_count::Real = 0.0

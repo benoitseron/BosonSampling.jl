@@ -159,6 +159,22 @@ function Base.convert(::Type{ModeOccupation}, ml::ModeList)
         end
 end
 
+function Base.convert(::Type{ModeList}, mo::ModeOccupation)
+
+        mode_list = Vector{Int}()
+
+        for (mode, n_in) in enumerate(mo.state)
+            if n_in > 0
+                for photon in 1:n_in
+                    push!(mode_list, mode)
+                end
+            end
+        end
+
+        ModeList(mode_list, mo.m)
+
+end
+
 at_most_one_photon_per_bin(state) = all(state[:] .<= 1)
 at_most_one_photon_per_bin(r::ModeOccupation) = at_most_one_photon_per_bin(r.state)
 

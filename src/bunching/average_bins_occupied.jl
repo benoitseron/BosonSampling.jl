@@ -5,14 +5,11 @@ n_samples = 1000
 begin
     n = 5
     m = n
-    interf = Fourier(m)
+    interf = RandHaar(m)
     T = OneParameterInterpolation
     x = 1.
     o = FockSample()
 end
-
-
-
 
 sample_number_modes_occupied(params::SamplingParameters) = number_modes_occupied(BosonSampling.sample!(params))
 
