@@ -6,6 +6,7 @@ include("packages_loop.jl")
 # the CSV file needs to have the same number of columns - make different files if using a different m
 
 using DelimitedFiles
+using Dates
 
 ### working with csv ###
 
@@ -65,17 +66,15 @@ extra_info = "this experiment was realised on... we faced various problems..."
 
 ### compiling everything in a single type structure ###
 
-this_experiment = OneLoopData(params = params, samples = samples, extra_info = extra_info)
+this_experiment = OneLoopData(params = params, samples = samples, extra_info = extra_info, name = "example")
 
 ### saving as a Julia format ###
 
-save("data/loop_examples/example_experimental_save.jld", "this_experiment", this_experiment)
+save(this_experiment)
 
-pwd()
+d = load("data/one_loop/example.jld")
 
-d = load("data/loop_examples/example_experimental_save.jld")
-
-loaded_experiment = d["this_experiment"]
+loaded_experiment = d["data"]
 
 loaded_experiment.samples
 loaded_experiment.extra_info
