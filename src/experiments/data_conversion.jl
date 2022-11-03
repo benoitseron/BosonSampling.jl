@@ -1,43 +1,81 @@
+include("packages_loop.jl")
+
 # convert CSV data into a vector of events
 
 # conventions:
 # the CSV file needs to have the same number of columns - make different files if using a different m
 
 using DelimitedFiles
-data = readdlm("data/loop_examples/indistinguishable/3-fold coincidences (2).csv", ',')
 
-s = data[1,3]
+### working with csv ###
 
-replace(s, "(" => "")
-replace(s, ")" => "")
-replace(s, "\t" => "")
+data = readdlm("data/loop_examples/indistinguishable/6-folds.csv", ',')
+
+# needs to be in the form:
+# 49, 1, 4, 5, 6, 7, 8, 10
+# for finding 49 occurences of the mode list (1, 4, 5, 6, 7, 8, 10)
+
+# conversion to be coded
+
+# data
+#
+# s = data[1,:]
+#
+# replace(s, "(" => "")
+# replace(s, ")" => "")
+# replace(s, "\t" => "")
+#
 
 
+### run info ###
 
-@withkw struct ExperimentalData
-    data::Matrix{Int}
-    n::Int
-    m::Int
-    n_samples::Union{Int, Nothing}
+n = 4
+sparsity = 2
+m = sparsity * n
+
+# x = 0.9
+
+d = Uniform(0,2pi)
+ϕ = nothing # rand(d,m)
+η_loss_lines = nothing # 0.9 * ones(m)
+η_loss_bs = nothing # 1. * ones(m-1)
+
+η = 0.5 * ones(m-1)
+
+params = LoopSamplingParameters(n=n, m=m, η = η, η_loss_bs = η_loss_bs, η_loss_lines = η_loss_lines, ϕ = ϕ)
+
+### samples ###
+
+# this is an example with fake samples, you will need to convert yours in the right format using a ModeList
+
+samples = Vector{ThresholdModeOccupation}()
+n_samples = 10
+
+for i in 1:n_samples
+
+    push!(samples, ThresholdModeOccupation(random_mode_list_collisionless(n,m)))
+
 end
 
+samples
 
+### extra info on the run ###
 
-for line in 1:size(data)[1]
+extra_info = "this experiment was realised on... we faced various problems..."
 
-"""
+### compiling everything in a single type structure ###
 
-"""
-get_m(data::Matrix) = size(data)[2]
-get_n_max(data::Matrix) = begin
-    n_max = 0
-    for line in 1:size(data)[1]
-        n_max = maximum(n_max, sum(data[line]))
-    end
-    n_max
-end
+this_experiment = OneLoopData(params = params, samples = samples, extra_info = extra_info)
 
-m = get_m(data)
+### saving as a Julia format ###
 
-n_subsets = 2
-part = equilibrated_partition(m, n_subsets)
+save("data/loop_examples/example_experimental_save.jld", "this_experiment", this_experiment)
+
+pwd()
+
+d = load("data/loop_examples/example_experimental_save.jld")
+
+loaded_experiment = d["this_experiment"]
+
+loaded_experiment.samples
+loaded_experiment.extra_info

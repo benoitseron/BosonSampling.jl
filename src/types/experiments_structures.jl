@@ -27,36 +27,3 @@ end
     extra_info
 
 end
-
-extra_info = "this experiment was realised on... we faced various problems..."
-
-typeof(extra_info)
-
-OneLoopData()
-
-
-n = 10
-sparsity = 2
-m = sparsity * n
-
-# x = 0.9
-
-d = Uniform(0,2pi)
-ϕ = nothing # rand(d,m)
-η_loss_lines = nothing # 0.9 * ones(m)
-η_loss_bs = nothing # 1. * ones(m-1)
-
-η = 0.5 * ones(m-1)
-
-params = LoopSamplingParameters(n=n, m=m, η = η, η_loss_bs = η_loss_bs, η_loss_lines = η_loss_lines, ϕ = ϕ)
-
-samples = Vector{ThresholdModeOccupation}()
-n_samples = 10
-
-for i in 1:n_samples
-
-    push!(samples, ThresholdModeOccupation(random_mode_list_collisionless(n,m)))
-
-end
-
-samples
