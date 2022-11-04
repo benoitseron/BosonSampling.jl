@@ -1,5 +1,4 @@
 include("packages_loop.jl")
-include("pseudo_photon_number_resolution.jl")
 
 
 # an interesting experiment to run
@@ -11,25 +10,6 @@ include("pseudo_photon_number_resolution.jl")
 # if we can recover the plot, it is one of the ways to show a difference between
 # bosonic (giving a thermal distribution) versus distinguishable
 
-
-"""
-η_thermalization(n)
-
-Defines the transmissivities required for the thermalization scheme.
-"""
-η_thermalization(n) = [1-((i-1)/i)^2 for i in 2:n]
-
-"""
-partition_thermalization(m)
-Defines the last mode, single mode subset for thermalization. This corresponds to the first mode of the interferometer with spatial bins (to be checked).
-"""
-partition_thermalization(m) = begin
-
-    s1 = Subset(ModeList(m,m))
-    s2 = Subset(first_modes(m-1,m))
-    Partition([s1,s2])
-
-end
 
 ### no phase ###
 
@@ -83,20 +63,6 @@ ylabel!("probability")
 
 ### with loss and partial distinguishability ###
 
-"""
-    partition_thermalization_loss(m)
-
-Defines the last mode, single mode subset for thermalization. This corresponds to the first mode of the interferometer with spatial bins (to be checked). Loss modes included in the second subset
-"""
-partition_thermalization_loss(m) = begin
-
-    s1 = Subset(ModeList(m,2m))
-    s2 = Subset(first_modes(m-1,2m)+last_modes(m,2m))
-
-
-    Partition([s1,s2])
-
-end
 
 n = 10
 m = n
@@ -176,19 +142,7 @@ params = LoopSamplingParameters(n=n, m=m,η = η, η_loss_bs = η_loss_bs, η_lo
 
 
 
-"""
-    partition_thermalization_pnr(m)
 
-Defines the modes corresponding to the pseudo number resolution as subsets for thermalization. This corresponds to the first mode of the interferometer with spatial bins. Loss modes included in the last subset.
-"""
-partition_thermalization_pnr(m) = begin
-
-    subsets = [Subset(ModeList(i,2m)) for i in n:m]
-    #push!(subsets, Subset(last_modes(m,2m))) # loss subset
-
-    Partition(subsets)
-
-end
 
 psp_b = convert(PartitionSamplingParameters, params)
 psp_d = convert(PartitionSamplingParameters, params) # a way to act as copy

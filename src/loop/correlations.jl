@@ -21,8 +21,8 @@ partition_mean(i,m) = begin
 end
 
 
-n = 10
-sparsity = 1
+n = 6
+sparsity = 3
 m = sparsity * n
 
 # x = 0.9
@@ -112,7 +112,7 @@ function correlation_length(psp::PartitionSamplingParameters)
     i_1 = 1 # use the first input for the correlator first index, then look at the slope given by varying the index j
 
     x_data = [j for j in i_1+1:m-1]
-    y_data = log.([abs(correlator(i,j,psp)) for j in i+1:m-1])
+    y_data = log.([abs(correlator(i_1,j,psp)) for j in i_1+1:m-1])
 
     lr = linregress(x_data,y_data)
 
@@ -141,7 +141,7 @@ function correlation_length(θ)
     correlation_length(get_psp(θ))
 end
 
-θ = 0.01:0.01:0.99
+θ = 0.01:0.1:0.99
 
 plot(θ, correlation_length.(θ), yaxis = :log10)
 ylabel!("corr length")

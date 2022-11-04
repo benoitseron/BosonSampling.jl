@@ -80,6 +80,10 @@ include("certification/correlators.jl")
 
 include("visual.jl")
 
+include("loop/loop_functions.jl")
+
+
+
 permanent = ryser
 
 for n in names(@__MODULE__; all=true)

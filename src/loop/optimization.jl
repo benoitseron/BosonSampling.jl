@@ -19,45 +19,6 @@ d = Uniform(0,2pi)
 η_loss_lines = 1. * ones(m)
 η_loss_bs = 1. * ones(m-1)
 
-function tvd_reflectivities(η)
-
-    if all(between_one_and_zero.(η))
-
-        params = LoopSamplingParameters(n=n, m=m, η = η, η_loss_bs = η_loss_bs, η_loss_lines = η_loss_lines, ϕ = ϕ)
-
-        psp_b = convert(PartitionSamplingParameters, params)
-        psp_d = convert(PartitionSamplingParameters, params) # a way to act as copy
-
-        psp_b.mode_occ = equilibrated_input(sparsity, m)
-        psp_d.mode_occ = equilibrated_input(sparsity, m)
-
-        part = equilibrated_partition(m, n_subsets)
-
-        psp_b.part = part
-        psp_d.part = part
-
-        psp_b.T = OneParameterInterpolation
-        psp_b.x = x
-        set_parameters!(psp_b)
-
-        psp_d.T = Distinguishable
-        set_parameters!(psp_d)
-
-        compute_probability!(psp_b)
-        compute_probability!(psp_d)
-
-        pdf_bos = psp_b.ev.proba_params.probability.proba
-        pdf_dist = psp_d.ev.proba_params.probability.proba
-
-        @show tvd(pdf_bos,pdf_dist)
-        #display(plot(η))
-        return -tvd(pdf_bos,pdf_dist)
-    else
-        println("invalid reflectivity")
-        return 100
-    end
-
-end
 
 
 # η_0 = rand(m-1)
