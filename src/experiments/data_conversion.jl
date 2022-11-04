@@ -1,80 +1,32 @@
-include("packages_loop.jl")
+"""
+    convert_csv_to_samples(path_to_file::String, m::Int, input_type = ThresholdModeOccupation, input_format = (input_data) -> ModeList(input_data, m))
 
-# convert CSV data into a vector of events
+Reads a CSV file containing experimental data. Converts it into a collection of samples of type `input_type` following the type of detectors available. `input_format` holds how the data is encoded, for instance as a `ModeList` or `ModeOccupation`.
 
-# conventions:
-# the CSV file needs to have the same number of columns - make different files if using a different m
+Defaults work for files written as follow: each line is of form
 
-using DelimitedFiles
-using Dates
+    # 49, 1, 4, 5, 6, 7, 8, 10
+    # for finding 49 occurences of the mode list (1, 4, 5, 6, 7, 8, 10)
 
-### working with csv ###
+For this line, the function will output 49 identical samples. This is not the most efficient use of memory but allows for an easier conversion with existing functions.
 
-data = readdlm("data/loop_examples/indistinguishable/6-folds.csv", ',')
+Example usage:
 
-# needs to be in the form:
-# 49, 1, 4, 5, 6, 7, 8, 10
-# for finding 49 occurences of the mode list (1, 4, 5, 6, 7, 8, 10)
+    convert_csv_to_samples("data/loop_examples/test.csv", 10)
 
-# conversion to be coded
+"""
+function convert_csv_to_samples(path_to_file::String, m::Int, input_type = ThresholdModeOccupation, input_format = (input_data) -> ModeList(input_data, m))
 
-# data
-#
-# s = data[1,:]
-#
-# replace(s, "(" => "")
-# replace(s, ")" => "")
-# replace(s, "\t" => "")
-#
+    data = readdlm(path_to_file, ',', Int)
 
+    samples = Vector{input_type}()
 
-### run info ###
+    for (output_number, output_pattern) in enumerate(eachrow(data[:,2:end]))
+        for count in 1:data[output_number,1]
+            push!(samples, input_type(input_format(convert(Array{Int},output_pattern))))
+        end
+    end
 
-n = 4
-sparsity = 2
-m = sparsity * n
-
-# x = 0.9
-
-d = Uniform(0,2pi)
-ϕ = nothing # rand(d,m)
-η_loss_lines = nothing # 0.9 * ones(m)
-η_loss_bs = nothing # 1. * ones(m-1)
-
-η = 0.5 * ones(m-1)
-
-params = LoopSamplingParameters(n=n, m=m, η = η, η_loss_bs = η_loss_bs, η_loss_lines = η_loss_lines, ϕ = ϕ)
-
-### samples ###
-
-# this is an example with fake samples, you will need to convert yours in the right format using a ModeList
-
-samples = Vector{ThresholdModeOccupation}()
-n_samples = 10
-
-for i in 1:n_samples
-
-    push!(samples, ThresholdModeOccupation(random_mode_list_collisionless(n,m)))
+    samples
 
 end
-
-samples
-
-### extra info on the run ###
-
-extra_info = "this experiment was realised on... we faced various problems..."
-
-### compiling everything in a single type structure ###
-
-this_experiment = OneLoopData(params = params, samples = samples, extra_info = extra_info, name = "example")
-
-### saving as a Julia format ###
-
-save(this_experiment)
-
-d = load("data/one_loop/example.jld")
-
-loaded_experiment = d["data"]
-
-loaded_experiment.samples
-loaded_experiment.extra_info

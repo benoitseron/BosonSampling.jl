@@ -430,16 +430,3 @@ function compute_probability!(params::PartitionSamplingParameters)
     compute_probability!(ev)
 
 end
-
-"""
-partition_thermalization(m)
-
-Defines the last mode, single mode subset for thermalization. This corresponds to the first mode of the interferometer with spatial bins (to be checked).
-"""
-partition_thermalization(m) = begin
-
-s1 = Subset(ModeList(m,m))
-s2 = Subset(first_modes(m-1,m))
-Partition([s1,s2])
-
-end
