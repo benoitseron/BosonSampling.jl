@@ -90,6 +90,8 @@ function Base.cat(s1::ModeOccupation, s2::ModeOccupation)
 
 end
 
+
+
 """
     ModeList(state)
     ModeList(state,m)
@@ -200,6 +202,37 @@ last_modes(n::Int,m::Int) = n<=m ? ModeOccupation([i > m-n ? 1 : 0 for i in 1:m]
 last_modes_array(n::Int,m::Int) = last_modes(n,m).state
 
 equilibrated_input(sparsity, m) = ModeOccupation([((i-1) % sparsity) == 0 ? 1 : 0 for i in 1:m])
+
+"""
+    mutable struct ThresholdModeOccupation
+
+Holds threshold detector clicks. Example
+
+    ThresholdModeOccupation(ModeList([1,2,4], 4))
+
+"""
+@auto_hash_equals mutable struct ThresholdModeOccupation
+
+    m::Int
+    clicks::Vector{Int}
+
+    function ThresholdModeOccupation(ml::ModeList)
+
+        clicks = convert(ModeOccupation, ml).state
+
+        if !all(clicks[:] .>= 0)
+            error("negative mode clicks")
+        elseif !all(clicks[:] .<= 1)
+            error("clicks can be at most one")
+        else
+            new(ml.m, clicks)
+        end
+    end
+
+end
+
+# example ThresholdModeOccupation(ModeList([1,2,4], 4))
+
 
 """
     Subset(state::Vector{Int})

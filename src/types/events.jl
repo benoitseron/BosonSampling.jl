@@ -12,7 +12,7 @@ empty as a placeholder.
 """
 mutable struct MultipleCounts
 
-	counts::Union{Nothing, Vector{ModeOccupation}, Vector{PartitionOccupancy}}
+	counts::Union{Nothing, Vector{ModeOccupation}, Vector{PartitionOccupancy}, Vector{ThresholdModeOccupation}}
 	proba::Union{Nothing,Vector{Real}}
 
 	MultipleCounts() = new(nothing,nothing)
@@ -47,7 +47,7 @@ end
 """
 	to_threshold(mc::MultipleCounts)
 
-Transforms a `MultipleCounts` into the equivalent for threshold detectors. 
+Transforms a `MultipleCounts` into the equivalent for threshold detectors.
 """
 function to_threshold(mc::MultipleCounts)
 
