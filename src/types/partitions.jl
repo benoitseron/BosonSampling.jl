@@ -229,6 +229,19 @@ Holds threshold detector clicks. Example
         end
     end
 
+    function ThresholdModeOccupation(mo::ModeOccupation)
+
+            clicks = mo.state
+            if !all(clicks[:] .>= 0)
+                error("negative mode clicks")
+            elseif !all(clicks[:] .<= 1)
+                error("clicks can be at most one")
+            else
+                new(mo.m, clicks)
+            end
+
+    end
+
 end
 
 # example ThresholdModeOccupation(ModeList([1,2,4], 4))

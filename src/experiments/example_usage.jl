@@ -8,7 +8,11 @@ using Dates
 
 ### working with csv ###
 
-samples = convert_csv_to_samples("data/loop_examples/test.csv", 10)
+# mode occupation
+samples = convert_csv_to_samples("data/loop_examples/test_mode_occupation.csv", 4)
+
+# mode list:
+samples = convert_csv_to_samples("data/loop_examples/test_mode_list.csv", 10, (input_data) -> ModeList(input_data, m))
 
 ### run info ###
 

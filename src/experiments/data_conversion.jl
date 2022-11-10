@@ -5,19 +5,32 @@ Reads a CSV file containing experimental data. Converts it into a collection of 
 
 You can choose the encoding of the samples to be either a Vector of observed events (like detector readings) or a `MultipleCounts` if there are many events.
 
-Defaults work for files written as follow: each line is of form
+If using `ModeOccupation`, defaults work for files written as follow: each line is of form
+
+    # 45, 1,1,0
+    # for finding 45 occurences of the mode occupation 1,1,0
+
+and you should use
+
+    input_format = (input_data) -> ModeOccupation(input_data)
+
+If using `ModeList`, defaults work for files written as follow: each line is of form
 
     # 49, 1, 4, 5, 6, 7, 8, 10
     # for finding 49 occurences of the mode list (1, 4, 5, 6, 7, 8, 10)
 
-For this line, the function will output 49 identical samples. This is not the most efficient use of memory but allows for an easier conversion with existing functions.
+and you should use
+
+    input_format = (input_data) -> ModeList(input_data, m)
+
+For this line, the function will output 49 identical samples, or a `MultipleCounts`. This is not the most efficient use of memory but allows for an easier conversion with existing functions.
 
 Example usage:
 
     convert_csv_to_samples("data/loop_examples/test.csv", 10)
 
 """
-function convert_csv_to_samples(path_to_file::String, m::Int, input_type = ThresholdModeOccupation, input_format = (input_data) -> ModeList(input_data, m), samples_type = MultipleCounts)
+function convert_csv_to_samples(path_to_file::String, m::Int, input_type = ThresholdModeOccupation, input_format = (input_data) -> ModeOccupation(input_data), samples_type = MultipleCounts)
 
     data = readdlm(path_to_file, ',', Int)
 
