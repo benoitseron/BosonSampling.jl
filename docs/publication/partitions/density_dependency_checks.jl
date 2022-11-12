@@ -147,18 +147,29 @@ function power_law_with_n(n,k,x1,x2)
     pw = get_power_law_log_log(x_data,y_data)
 
     #println("power law: y = $(exp((pw[3]))) * x^$(pw[2])")
-    pw
+    (pw[3],pw[2])
 
 end
 
-x1 = 0.95
+x1 = 0.9
 x2 = 1
-power_law_with_n(8,2, x1,x2)
 
-for x1 in 0:0.1:0.9
+n = 8
+n_subsets = 2
+
+x_array = collect(range(0,0.99, length = 10))
+coeff_array = zeros(size(x_array))
+pow_array = similar(coeff_array)
+
+for (i,x1) in enumerate(x_array)
     @show x1
-    power_law_with_n(8,2, x1,x2)
+    coeff_array[i], pow_array[i] = power_law_with_n(n,n_subsets, x1,x2)
 end
+
+plt = plot()
+scatter!(x_array, coeff_array, label = L"c(2,x)")
+scatter!(x_array, pow_array, label = L"r")
+xlabel!(L"x")
 
 # power law: y = 0.4255501939319418 * x^0.9544422903731435
 # x1 = 0.2
