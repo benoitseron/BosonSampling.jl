@@ -157,7 +157,7 @@ x2 = 1
 n = 8
 n_subsets = 2
 
-x_array = collect(range(0,0.99, length = 10))
+x_array = collect(range(0,0.99, length = 5))
 coeff_array = zeros(size(x_array))
 pow_array = similar(coeff_array)
 
@@ -170,7 +170,12 @@ plt = plot()
 scatter!(x_array, coeff_array, label = L"c(2,x)")
 scatter!(x_array, pow_array, label = L"r")
 xlabel!(L"x")
+plot!(legend=:bottomleft)
+ylims!((0,1))
 
+
+
+savefig("docs/publication/partitions/images/publication/coefficient_power_law_x.png")
 # power law: y = 0.4255501939319418 * x^0.9544422903731435
 # x1 = 0.2
 # power law: y = 0.412435170994033 * x^0.9586765280506229
