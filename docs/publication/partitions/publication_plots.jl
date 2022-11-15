@@ -20,10 +20,10 @@ using LinearRegression
 
 using DataStructures
 
-
+color_map = ColorSchemes.rainbow
 cd("docs/publication/partitions/")
 
-color_map = ColorSchemes.rainbow
+### preludes ###
 
 function tvd_equilibrated_partition_real_average(m, n_subsets, n; niter = 100)
 
@@ -54,6 +54,34 @@ function tvd_equilibrated_partition_real_average(m, n_subsets, n; niter = 100)
 end
 
 
+
+function tvd_equilibrated_partition_real_average_x(x, m, n_subsets, n; niter = 100)
+
+    tvd_array = zeros(niter)
+
+    for i in 1:niter
+
+        ib = Input{Bosonic}(first_modes(n,m))
+        id = Input{OneParameterInterpolation}(first_modes(n,m), x)
+
+        interf = RandHaar(m)
+        part = equilibrated_partition(m,n_subsets)
+        o = PartitionCountsAll(part)
+        evb = Event(ib,o,interf)
+        evd = Event(id,o,interf)
+
+        pb = compute_probability!(evb)
+        pd = compute_probability!(evd)
+
+        pdf_dist = pd.proba
+        pdf_bos = pb.proba
+
+        tvd_array[i] = tvd(pdf_bos,pdf_dist)
+    end
+
+    mean(tvd_array), var(tvd_array)
+
+end
 
 ### bosonic to distinguishable single subset ###
 
@@ -963,112 +991,133 @@ savefig(plt,"./images/publication/fourier.png")
 
 ###### plot of evolution with n,m ######
 
-n_max = 16
-n_array = collect(6:n_max)
-m_no_coll(n) = n^2
-m_dense(n) = n
-m_sparse(n) = 5n
-n_iter = 100
-partition_sizes = 2:3
+x_array = [0,0.5,0.8,0.9,0.95,0.99] # we compare x = 1 to this x
 
-laws = [m_dense, m_sparse, m_no_coll]
+function plot_evolution_n_m_x(x)
 
-y_max = zeros(length(laws))
+    n_max = 16
+    n_array = collect(6:n_max)
+    m_no_coll(n) = n^2
+    m_dense(n) = n
+    m_sparse(n) = 5n
+    n_iter = 100
+    partition_sizes = 2:3
 
-plots = []
+    laws = [m_sparse, m_no_coll]#[m_dense, m_sparse, m_no_coll]
 
-for (pl, m_law) in enumerate(laws)
+    y_max = zeros(length(laws))
 
-    plt = plot()
-    m_array = m_law.(n_array)
+    plots = []
 
-    tvd_array = zeros((length(partition_sizes), length(m_array)))
-    var_array = copy(tvd_array)
+    for (pl, m_law) in enumerate(laws)
 
-    for (k,n_subsets) in enumerate(partition_sizes)
+        plt = plot()
+        m_array = m_law.(n_array)
 
-        @showprogress for (i,(n,m)) in enumerate(zip(n_array, m_array))
+        tvd_array = zeros((length(partition_sizes), length(m_array)))
+        var_array = copy(tvd_array)
 
-            this_tvd = tvd_equilibrated_partition_real_average(m, n_subsets, n, niter = n_iter)
+        for (k,n_subsets) in enumerate(partition_sizes)
 
-            tvd_array[k,i] = (n_subsets <= m ? this_tvd[1] : missing)
-            var_array[k,i] = (n_subsets <= m ? this_tvd[2] : missing)
+            @showprogress for (i,(n,m)) in enumerate(zip(n_array, m_array))
+
+                this_tvd = tvd_equilibrated_partition_real_average_x(x, m, n_subsets, n, niter = n_iter)
+
+                tvd_array[k,i] = (n_subsets <= m ? this_tvd[1] : missing)
+                var_array[k,i] = (n_subsets <= m ? this_tvd[2] : missing)
+            end
+
         end
+
+        save("data/evolution_n_m_$(String(Symbol(m_law)))_x=$x.jld", "tvd_array", tvd_array, "var_array" ,var_array, "partition_sizes", partition_sizes, "n_array", n_array, "x",x)
+
+        tvd_array
+
+        function partition_color(k, partition_sizes)
+            if length(partition_sizes) > 1
+                return get(color_map, (k-1) / (length(partition_sizes)-1))
+            else
+                return get(color_map, 0.5)
+            end
+
+         end
+
+        for (k,K) in enumerate(partition_sizes)
+
+            x_data = n_array
+            y_data = tvd_array[k,:]
+
+            x_spl = collect(range(minimum(x_data),maximum(x_data), length = 1000))
+
+            spl = Spline1D(x_data,y_data)
+            y_spl = spl(x_spl)
+
+            legend_string = "K = $K"
+
+            if m_law == m_sparse
+                lr_func(x) =  mean(y_data) # removed the slope
+
+                plot!(x_spl, lr_func.(x_spl), c = partition_color(k,partition_sizes), label = LaTeXString(legend_string))
+
+            else
+                lr_func = get_power_law_log_log(x_data,y_data)[1]
+
+                plot!(x_spl, lr_func.(x_spl), c = partition_color(k,partition_sizes), label = LaTeXString(legend_string))
+            end
+
+
+            #
+            # scatter!(x_data , y_data, yerr = sqrt.(var_array[k,:]), c = lost_photon_color(k,lost_photons), label = "", m = :cross, xaxis=:log10)
+            #
+            # scatter!(x_data , y_data, yerr = sqrt.(var_array[k,:]), c = partition_color(k,partition_sizes), label = "", m = :cross, xaxis=:log10, yaxis = :log10)
+
+            scatter!(x_data , y_data, yerr = sqrt.(var_array[k,:]), c = partition_color(k,partition_sizes), label = "", m = :cross, xticks = x_data)
+
+            # scatter!(x_data , y_data, yerr = sqrt.(var_array[k,:]), c = partition_color(k,partition_sizes), label = "", m = :cross, xaxis=:log10)
+
+
+
+
+
+
+
+
+            #
+            # plot!(x_spl, y_spl, c = partition_color(k,partition_sizes), label = "K = $K", xaxis=:log10, yaxis =:log10)
+
+
+
+            # plot!(η_array,tvd_η_array[k,:], label = "up to $lost lost", c = lost_photon_color(k,lost_photons))
+
+        end
+
+        plt = plot!(legend=:topright)
+        y_max[pl] = 1.3*(maximum(tvd_array + sqrt.(var_array)))
+
+        xlabel!(L"n")
+        ylabel!(L"TVD(B,x=%$x)")
+
+        display(plt)
+
+        push!(plots, plt)
 
     end
 
-    save("data/evolution_n_m_$(String(Symbol(m_law))).jld", "tvd_array", tvd_array, "var_array" ,var_array, "partition_sizes", partition_sizes, "n_array", n_array)
 
-    tvd_array
-
-    partition_color(k, partition_sizes) = get(color_map, (k-1) / (length(partition_sizes)-1))
-
-    for (k,K) in enumerate(partition_sizes)
-
-        x_data = n_array
-        y_data = tvd_array[k,:]
-
-        x_spl = collect(range(minimum(x_data),maximum(x_data), length = 1000))
-
-        spl = Spline1D(x_data,y_data)
-        y_spl = spl(x_spl)
-
-        legend_string = "K = $K"
-
-        if m_law == m_sparse
-            lr_func(x) =  mean(y_data) # removed the slope
-
-            plot!(x_spl, lr_func.(x_spl), c = partition_color(k,partition_sizes), label = LaTeXString(legend_string))
-
-        else
-            lr_func = get_power_law_log_log(x_data,y_data)[1]
-
-            plot!(x_spl, lr_func.(x_spl), c = partition_color(k,partition_sizes), label = LaTeXString(legend_string))
-        end
-
-
-        #
-        # scatter!(x_data , y_data, yerr = sqrt.(var_array[k,:]), c = lost_photon_color(k,lost_photons), label = "", m = :cross, xaxis=:log10)
-        #
-        # scatter!(x_data , y_data, yerr = sqrt.(var_array[k,:]), c = partition_color(k,partition_sizes), label = "", m = :cross, xaxis=:log10, yaxis = :log10)
-
-        scatter!(x_data , y_data, yerr = sqrt.(var_array[k,:]), c = partition_color(k,partition_sizes), label = "", m = :cross, xticks = x_data)
-
-        # scatter!(x_data , y_data, yerr = sqrt.(var_array[k,:]), c = partition_color(k,partition_sizes), label = "", m = :cross, xaxis=:log10)
-
-
-
-
-
-
-
-
-        #
-        # plot!(x_spl, y_spl, c = partition_color(k,partition_sizes), label = "K = $K", xaxis=:log10, yaxis =:log10)
-
-
-
-        # plot!(η_array,tvd_η_array[k,:], label = "up to $lost lost", c = lost_photon_color(k,lost_photons))
-
-    end
-
-    plt = plot!(legend=:topright)
-    y_max[pl] = 1.2*(maximum(tvd_array + sqrt.(var_array)))
-
-    xlabel!(L"n")
-    ylabel!(L"TVD(B,D)")
+    plt = plot(plots[1],plots[2], layout = (2,1))
+    # ylims!((0, 0.18))
+    ylims!((0, maximum(y_max)))
 
     display(plt)
 
-    push!(plots, plt)
+    savefig(plt, "images/publication/size_x=$x.png")
 
 end
 
-
-plt = plot(plots[2],plots[3], layout = (2,1))
-ylims!((0, 0.18))
-
-savefig(plt, "images/publication/size.png")
+for x in x_array
+    @show x
+    plot_evolution_n_m_x(x)
+end
 
 ###### loss and its influence on validation time ######
 #

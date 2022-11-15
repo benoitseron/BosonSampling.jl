@@ -31,6 +31,9 @@ using HypothesisTests
 using SimpleTraits
 using Parameters
 using UnPack
+using Dates
+using JLD
+using DelimitedFiles
 
 # using Distributed
 # using SharedArrays
@@ -77,6 +80,12 @@ include("certification/bayesian.jl")
 include("certification/correlators.jl")
 
 include("visual.jl")
+
+include("loop/loop_functions.jl")
+
+include("experiments/data_conversion.jl")
+
+
 
 permanent = ryser
 

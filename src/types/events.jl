@@ -12,7 +12,7 @@ empty as a placeholder.
 """
 mutable struct MultipleCounts
 
-	counts::Union{Nothing, Vector{ModeOccupation}, Vector{PartitionOccupancy}}
+	counts::Union{Nothing, Vector{ModeOccupation}, Vector{PartitionOccupancy}, Vector{ThresholdModeOccupation}}
 	proba::Union{Nothing,Vector{Real}}
 
 	MultipleCounts() = new(nothing,nothing)
@@ -40,6 +40,47 @@ Base.show(io::IO, pb::MultipleCounts) = begin
 			println(io, "--------------------------------------")
 		end
 	end
+
+end
+
+
+"""
+	to_threshold(mc::MultipleCounts)
+
+Transforms a `MultipleCounts` into the equivalent for threshold detectors.
+"""
+function to_threshold(mc::MultipleCounts)
+
+    count_proba = Dict()
+
+    for (count, proba) in zip(mc.counts, mc.proba)
+        new_count = to_threshold(count)
+
+        if new_count in keys(count_proba)
+            count_proba[new_count] += proba
+        else
+            count_proba[new_count] = proba
+        end
+
+    end
+
+    # println("######")
+    # @show count_proba
+
+    counts = Vector{typeof(mc.counts[1])}()
+    probas = Vector{typeof(mc.proba[1])}()
+
+    for key in keys(count_proba)
+
+        push!(counts, key)
+        push!(probas, count_proba[key])
+
+    end
+
+    # @show counts
+    # @show probas
+
+    MultipleCounts(counts, probas)
 
 end
 
@@ -97,7 +138,7 @@ Event linking an input to an output.
 		- proba_params::EventProbability
 		- interferometer::Interferometer
 """
-struct Event{TIn<:InputType, TOut<:OutputMeasurementType}
+mutable struct Event{TIn<:InputType, TOut<:OutputMeasurementType}
 
     input_state::Input{TIn}
     output_measurement::TOut
@@ -141,13 +182,13 @@ struct Event{TIn<:InputType, TOut<:OutputMeasurementType}
 
 end
 
-Base.show(io::IO, ev::Event) = begin
-	println("Event:\n")
-	println("input state: ", ev.input_state.r, " (",get_parametric_type(ev.input_state)[1],")", "\n")
-	println("output measurement: ", ev.output_measurement, "\n")
-	println(ev.interferometer, "\n")
-	println("proba_params: ", ev.proba_params)
-end
+# Base.show(io::IO, ev::Event) = begin
+# 	println("Event:\n")
+# 	println("input state: ", ev.input_state.r, " (",get_parametric_type(ev.input_state)[1],")", "\n")
+# 	println("output measurement: ", ev.output_measurement, "\n")
+# 	println(ev.interferometer, "\n")
+# 	println("proba_params: ", ev.proba_params)
+# end
 
 struct GaussianEvent{TIn<:Gaussian, TOut<:OutputMeasurementType}
 
@@ -163,12 +204,12 @@ struct GaussianEvent{TIn<:Gaussian, TOut<:OutputMeasurementType}
 
 end
 
-Base.show(io::IO, ev::GaussianEvent) = begin
-	println("Event:\n")
-	println("input state: ", ev.input_state.r, " (",get_parametric_type(ev.input_state)[1],")", "\n")
-	println("output measurement: ", ev.output_measurement, "\n")
-	println(ev.interferometer, "\n")
-end
+# Base.show(io::IO, ev::GaussianEvent) = begin
+# 	println("Event:\n")
+# 	println("input state: ", ev.input_state.r, " (",get_parametric_type(ev.input_state)[1],")", "\n")
+# 	println("output measurement: ", ev.output_measurement, "\n")
+# 	println(ev.interferometer, "\n")
+# end
 
 
 function check_probability_empty(ev::Event; resetting_message = true)

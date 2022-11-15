@@ -46,8 +46,12 @@ end
 
 LossParameters(::Type{LossyLoop}) = IsLossy()
 
+
+
 """
     build_loop(m::Int, η::Union{T, Vector{T}}, η_loss_bs::Union{Nothing, T, Vector{T}} = nothing, η_loss_lines::Union{Nothing, T, Vector{T}} = nothing, ϕ::Union{Nothing, T, Vector{T}} = nothing) where {T<:Real}
+
+    build_loop(params::LoopSamplingParameters)
 
 Outputs a `Circuit` corresponding to the experiment discussed with the Walther group.
 
@@ -83,9 +87,18 @@ function build_loop(m::Int, η::Union{T, Vector{T}}, η_loss_bs::Union{Nothing, 
     function add_line!(mode, lossy)
 
         if ϕ == nothing
-            error("not implemented")
+            if lossy && η_loss_lines != nothing
+                interf = LossyLine(η_loss_lines[mode])
+            else
+                interf = RandomPhaseShifter(0.)
+            end
         else
-            interf = LossyLineWithRandomPhase(η_loss_lines[mode], ϕ[mode])
+            if η_loss_lines == nothing
+                interf = RandomPhaseShifter(ϕ[mode])
+            else
+                interf = LossyLineWithRandomPhase(η_loss_lines[mode], ϕ[mode])
+            end
+
             target_modes_in = ModeList([mode], circuit.m_real)
             target_modes_out = target_modes_in
 
@@ -107,7 +120,12 @@ function build_loop(m::Int, η::Union{T, Vector{T}}, η_loss_bs::Union{Nothing, 
 
             add_line!(mode, lossy)
 
-            interf = LossyBeamSplitter(η[mode], η_loss_bs[mode])
+            if η_loss_bs != nothing
+                interf = LossyBeamSplitter(η[mode], η_loss_bs[mode])
+            else
+                interf = LossyBeamSplitter(η[mode], 1.)
+            end
+
             target_modes_in = ModeList([mode, mode+1], circuit.m_real)
             target_modes_out = target_modes_in
             add_element_lossy!(circuit, interf, target_modes_in, target_modes_out)
@@ -143,36 +161,15 @@ function build_loop(m::Int, η::Union{T, Vector{T}}, η_loss_bs::Union{Nothing, 
 
 end
 
-"""
-    LoopSamplingParameters(...)
+function build_loop(params::LoopSamplingParameters)
 
-Container for sampling parameters with a LoopSampler. Parameters are set by default as defined, and you can change only the ones needed, for instance to sample `Distinguishable` particles instead, just do
+    @unpack n, m, input_type, i, η, η_loss_bs, η_loss_lines, d, ϕ, p_dark, p_no_count = params
 
-    LoopSamplingParameters(input_type = Distinguishable)
-
-and to change the number of photons with it
-
-    LoopSamplingParameters(n = 10 ,input_type = Distinguishable)
-
-To be used with [`get_sample_loop`](@ref).
-"""
-@with_kw mutable struct LoopSamplingParameters
-
-    n::Int = 4
-    m::Int = n
-    input_type::Type{T} where {T<:InputType} = Bosonic
-    i::Input = Input{input_type}(first_modes(n,m))
-
-    η::Union{T, Vector{T}}  where {T<:Real} = 1/sqrt(2) .* ones(m-1)
-    η_loss_bs::Union{Nothing, T, Vector{T}}   where {T<:Real} = 1 .* ones(m-1)
-    η_loss_lines::Union{Nothing, T, Vector{T}}   where {T<:Real} = 1 .* ones(m)
-    d::Union{Nothing, Real, Distribution} = Uniform(0, 2pi)
-    ϕ::Union{Nothing, T, Vector{T}}   where {T<:Real} = rand(d, m)
-
-    p_dark::Real = 0.0
-    p_no_count::Real = 0.0
+    build_loop(m, η, η_loss_bs, η_loss_lines, ϕ)
 
 end
+
+
 
 """
     get_sample_loop(params::LoopSamplingParameters)

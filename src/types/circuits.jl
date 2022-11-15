@@ -16,11 +16,12 @@ is accessed via the field `.U`.
 mutable struct LosslessCircuit <: Circuit
 
     m::Int
+    m_real::Int
     circuit_elements::Vector{Interferometer}
     U::Union{Matrix, Nothing}
 
     function LosslessCircuit(m::Int)
-        new(m, [], nothing)
+        new(m, m, [], nothing)
     end
 
 end

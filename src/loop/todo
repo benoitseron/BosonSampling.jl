@@ -1,1 +1,10 @@
-upgrade target_modes to a ModeOccupation
+fix lossless cases (to improve speed)
+repartition in partition of experimental samples
+go in a new branch
+find some theoretical partition TVD (fixing the unitary)
+separate the lossy part when outputting and event of a ModeOccupation, at least for the printing and count for the TVD
+update tutorials?
+can we get estimates about loss without lossy simulations?
+can I accelerate stuff by multiprocessing?
+! fix the print of Events at definition
+check thermalization reflectivities to see if this or sqr

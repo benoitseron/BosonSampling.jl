@@ -18,6 +18,14 @@ end
 Base.show(io::IO, i::ModeOccupation) = print(io, "state = ", i.state)
 
 """
+        number_modes_occupied(mo::ModeOccupation)
+
+Number of modes having at least a photon.
+"""
+number_modes_occupied(mo::ModeOccupation) = sum(to_threshold(mo).state)
+
+
+"""
 
     :+(s1::ModeOccupation, s2::ModeOccupation)
     :+(s1::ModeOccupation, s2::Vector{Int})
@@ -58,6 +66,19 @@ function Base.zeros(mo::ModeOccupation)
 
 end
 
+
+"""
+    to_threshold(mo::ModeOccupation)
+
+Converts a `ModeOccupation` into threshold detection.
+"""
+function to_threshold(mo::ModeOccupation)
+
+    ModeOccupation([(mode >= 1 ? 1 : 0) for mode in mo.state])
+
+end
+
+
 """
         Base.cat(s1::ModeOccupation, s2::ModeOccupation)
 
@@ -69,8 +90,11 @@ function Base.cat(s1::ModeOccupation, s2::ModeOccupation)
 
 end
 
+
+
 """
     ModeList(state)
+    ModeList(state,m)
 
 Contrasting to [`ModeOccupation`](@ref) this list is of size `n`, the number of photons. Entry `j` is the index of the mode occupied by photon `j`.
 
@@ -88,17 +112,20 @@ See also [`ModeOccupation`](@ref).
     m::Union{Int, Nothing}
     modes::Vector{Int}
 
-    ModeList(modes::Vector{Int}) = all(modes[:] .>= 1) ? new(length(modes), nothing, modes) : error("modes start at one")
+    ModeList(modes::Vector{Int}) = ModeList(modes, nothing)
 
-        function ModeList(modes::Vector{Int}, m::Int)
+    # all(modes[:] .>= 1) ? new(length(modes), nothing, modes) : error("modes start at one")
 
-                if all(modes[:] .>= 1) && all(modes[:] .<= m)
+        function ModeList(modes::Vector{Int}, m)
+
+                if all(modes[:] .>= 1) && (m == nothing ? true : all(modes[:] .<= m))
                     new(length(modes), m, modes)
                 else
                     error("incoherent or invalid mode inputs")
                 end
         end
 
+        ModeList(mode::Int, m = nothing) = ModeList([mode],m)
 
 end
 
@@ -134,6 +161,22 @@ function Base.convert(::Type{ModeOccupation}, ml::ModeList)
         end
 end
 
+function Base.convert(::Type{ModeList}, mo::ModeOccupation)
+
+        mode_list = Vector{Int}()
+
+        for (mode, n_in) in enumerate(mo.state)
+            if n_in > 0
+                for photon in 1:n_in
+                    push!(mode_list, mode)
+                end
+            end
+        end
+
+        ModeList(mode_list, mo.m)
+
+end
+
 at_most_one_photon_per_bin(state) = all(state[:] .<= 1)
 at_most_one_photon_per_bin(r::ModeOccupation) = at_most_one_photon_per_bin(r.state)
 
@@ -157,6 +200,51 @@ Create a [`ModeOccupation`](@ref) with `n` photons in the last sites of `m` mode
 last_modes(n::Int,m::Int) = n<=m ? ModeOccupation([i > m-n ? 1 : 0 for i in 1:m]) : error("n>m")
 
 last_modes_array(n::Int,m::Int) = last_modes(n,m).state
+
+equilibrated_input(sparsity, m) = ModeOccupation([((i-1) % sparsity) == 0 ? 1 : 0 for i in 1:m])
+
+"""
+    mutable struct ThresholdModeOccupation
+
+Holds threshold detector clicks. Example
+
+    ThresholdModeOccupation(ModeList([1,2,4], 4))
+
+"""
+@auto_hash_equals mutable struct ThresholdModeOccupation
+
+    m::Int
+    clicks::Vector{Int}
+
+    function ThresholdModeOccupation(ml::ModeList)
+
+        clicks = convert(ModeOccupation, ml).state
+
+        if !all(clicks[:] .>= 0)
+            error("negative mode clicks")
+        elseif !all(clicks[:] .<= 1)
+            error("clicks can be at most one")
+        else
+            new(ml.m, clicks)
+        end
+    end
+
+    function ThresholdModeOccupation(mo::ModeOccupation)
+
+            clicks = mo.state
+            if !all(clicks[:] .>= 0)
+                error("negative mode clicks")
+            elseif !all(clicks[:] .<= 1)
+                error("clicks can be at most one")
+            else
+                new(mo.m, clicks)
+            end
+
+    end
+
+end
+
+# example ThresholdModeOccupation(ModeList([1,2,4], 4))
 
 
 """
@@ -183,10 +271,15 @@ Create a mode occupation list with at most one count per mode.
                 state = modeocc.state
                 isa_subset(state) ? new(sum(state), length(state), state) : error("invalid subset")
         end
+
+        function Subset(ml::ModeList)
+                Subset(convert(ModeOccupation, ml))
+        end
 end
 
 Base.show(io::IO, s::Subset) = print(io, "subset = ", convert(Vector{Int},occupancy_vector_to_partition(s.subset)))
 
+Base.length(subset::Subset) = sum(subset.subset)
 
 function check_disjoint_subsets(s1::Subset, s2::Subset)
         @argcheck s1.m == s2.m "subsets do not have the same dimension"
@@ -356,6 +449,18 @@ Base.show(io::IO, part_occ::PartitionOccupancy) = begin
         for (i, count) in enumerate(part_occ.counts.state)
                 println(io, count," in ", part_occ.partition.subsets[i])
         end
+
+end
+
+function to_threshold(part_occ::PartitionOccupancy)
+
+    if [(length(subset)) for subset in part_occ.partition.subsets] == ones(length(part_occ.partition.subsets))
+
+        return PartitionOccupancy(to_threshold(part_occ.counts),part_occ.n, part_occ.partition)
+
+    else
+        error("subsets span multiple mode and threshold action is not clear")
+    end
 
 end
 

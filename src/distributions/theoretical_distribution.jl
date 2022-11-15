@@ -58,3 +58,8 @@ function theoretical_distribution(;input::Input, interf::Interferometer, i=nothi
     end
 
 end
+
+(1,2,4)
+(2,1,4)
+
+ModeOccupation([1,2,4])

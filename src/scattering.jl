@@ -101,6 +101,15 @@ function random_mode_occupation_collisionless(n::Int, m::Int)
 
 end
 
+function random_mode_list_collisionless(n::Int, m::Int)
+
+	mo = random_mode_occupation_collisionless(n,m)
+	convert(ModeList, mo)
+
+end
+
+
+
 """
 	at_most_one_photon_per_bin(occupancy_vector::Vector{Int})
 	check_at_most_one_particle_per_mode(occ)

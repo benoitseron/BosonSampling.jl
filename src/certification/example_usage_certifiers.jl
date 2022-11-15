@@ -61,7 +61,7 @@ scatter(certif.probabilities)
 # generate what would be experimental data
 m = 14
 n = 5
-events = generate_experimental_data(n_events = 1000, n = n,m = m, interf = RandHaar(m), TIn = Bosonic)
+events = generate_experimental_data(n_events = 10, n = n,m = m, interf = RandHaar(m), TIn = Bosonic)
 
 
 n_subsets = 3
