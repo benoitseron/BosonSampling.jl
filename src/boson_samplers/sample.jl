@@ -65,7 +65,7 @@ function sample!(ev::Event{TIn, TOut}) where {TIn<:InputType, TOut <: RealisticD
     # remove each of the readings with p_no_count
     for mode in 1:sample_dark.m
         if do_with_probability(ev.output_measurement.p_no_count)
-            sample_dark.s[mode] = 0
+            sample_dark.state[mode] = 0
         end
     end
 

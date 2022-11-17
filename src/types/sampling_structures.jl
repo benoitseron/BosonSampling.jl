@@ -156,7 +156,9 @@ function set_interferometer!(interf::Interferometer, params::Union{PartitionSamp
             getfield(params, field) = to_lossy(getfield(params, field))
         end
 
-        params.n_subsets += 1
+        if typeof(params) == PartitionSamplingParameters
+            params.n_subsets += 1
+        end
     else
         @argcheck interf.m == params.m
     end
