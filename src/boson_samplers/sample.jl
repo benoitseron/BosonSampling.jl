@@ -76,6 +76,39 @@ function sample!(params::SamplingParameters)
     sample!(params.ev)
 end
 
+function get_lossy_threshold_detector_reading(sampling_params::SamplingParameters)
+
+        this_sample = BosonSampling.sample!(sampling_params)
+        this_sample = ModeOccupation(this_sample.state[1:sampling_params.n]) #only keeping the relevant modes, not the environment
+
+        sum(this_sample.state) # number of remaining photons
+
+        to_threshold(this_sample)
+
+end
+
+function generate_approximate_threshold_lossy_distribution(sampling_params::SamplingParameters, n_samples::Int)
+
+        samples = Vector{ModeOccupation}()
+        counts = Vector{Int}()
+
+        for sample_count in 1:n_samples
+
+                this_sample = get_lossy_threshold_detector_reading(sampling_params)
+
+                index_array = findall(x->x==this_sample, samples)
+
+                if length(index_array) == 0
+                        push!(samples, this_sample)
+                        push!(counts, 1)
+                elseif length(index_array) == 1
+                        counts[index_array[1]] += 1
+                end
+        end
+
+        MultipleCounts(samples, counts ./ sum(counts)) # normalize to make it a probability as is eaten by MultipleCounts
+
+end
 
 """
     scattershot_sampling(n::Int, m::Int; N=1000, interf=nothing)
