@@ -92,7 +92,7 @@ function generate_approximate_threshold_lossy_distribution(sampling_params::Samp
         samples = Vector{ModeOccupation}()
         counts = Vector{Int}()
 
-        for sample_count in 1:n_samples
+        @showprogress for sample_count in 1:n_samples
 
                 this_sample = get_lossy_threshold_detector_reading(sampling_params)
 
