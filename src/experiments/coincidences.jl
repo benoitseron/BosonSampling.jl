@@ -30,3 +30,35 @@ function get_fixed_number_coincidences(summarized_counts::MultipleCounts, number
 
         MultipleCounts(counts, proba)
 end
+
+
+"""
+    max_coincidences(samples::MultipleCounts)
+
+Gives the maximum number of clicks observed.
+"""
+max_coincidences(samples::MultipleCounts) = maximum([sum(samples.counts[i].state) for i in 1:length(samples.counts)])
+
+
+"""
+
+    sort_by_coincidence_counts(samples::MultipleCounts)
+
+Outputs a dictionary linking the number of coincidences observed to the relevant samples.
+
+"""
+function sort_by_coincidence_counts(samples::MultipleCounts)
+
+    sorted_samples = Dict{Int, MultipleCounts}()
+
+    n_max = max_coincidences(samples)
+
+    for n_coincidences in 1:n_max
+
+        sorted_samples[n_coincidences] = get_fixed_number_coincidences(samples, n_coincidences)
+
+    end
+
+    sorted_samples
+
+end
