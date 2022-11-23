@@ -206,7 +206,7 @@ equilibrated_input(sparsity, m) = ModeOccupation([((i-1) % sparsity) == 0 ? 1 : 
 """
     mutable struct ThresholdModeOccupation
 
-Holds threshold detector clicks. Example
+Holds threshold detector state. Example
 
     ThresholdModeOccupation(ModeList([1,2,4], 4))
 
@@ -214,30 +214,30 @@ Holds threshold detector clicks. Example
 @auto_hash_equals mutable struct ThresholdModeOccupation
 
     m::Int
-    clicks::Vector{Int}
+    state::Vector{Int}
 
     function ThresholdModeOccupation(ml::ModeList)
 
-        clicks = convert(ModeOccupation, ml).state
+        state = convert(ModeOccupation, ml).state
 
-        if !all(clicks[:] .>= 0)
-            error("negative mode clicks")
-        elseif !all(clicks[:] .<= 1)
-            error("clicks can be at most one")
+        if !all(state[:] .>= 0)
+            error("negative mode state")
+        elseif !all(state[:] .<= 1)
+            error("state can be at most one")
         else
-            new(ml.m, clicks)
+            new(ml.m, state)
         end
     end
 
     function ThresholdModeOccupation(mo::ModeOccupation)
 
-            clicks = mo.state
-            if !all(clicks[:] .>= 0)
-                error("negative mode clicks")
-            elseif !all(clicks[:] .<= 1)
-                error("clicks can be at most one")
+            state = mo.state
+            if !all(state[:] .>= 0)
+                error("negative mode state")
+            elseif !all(state[:] .<= 1)
+                error("state can be at most one")
             else
-                new(mo.m, clicks)
+                new(mo.m, state)
             end
 
     end

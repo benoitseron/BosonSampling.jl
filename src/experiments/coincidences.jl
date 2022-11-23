@@ -2,7 +2,7 @@
 
         get_fixed_number_coincidences(summarized_counts::MultipleCounts, number_coincidences::Int)
 
-Takes in a `MultipleCount` containing event with different number of photons detected (when loss is present, that is) and returns a `MultipleCounts` with `number_coincidences` clicks in the detectors.
+Takes in a `MultipleCount` containing event with different number of photons detected (when loss is present, that is) and returns a `MultipleCounts` with `number_coincidences` state in the detectors.
 
 """
 function get_fixed_number_coincidences(summarized_counts::MultipleCounts, number_coincidences::Int)
@@ -15,7 +15,7 @@ function get_fixed_number_coincidences(summarized_counts::MultipleCounts, number
                 if typeof(summarized_counts.counts[1]) == ModeOccupation
                         state = summarized_counts.counts[i].state
                 elseif typeof(summarized_counts.counts[1]) == ThresholdModeOccupation
-                        state = summarized_counts.counts[i].clicks
+                        state = summarized_counts.counts[i].state
                 end
 
                 if sum(state) == number_coincidences
