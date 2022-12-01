@@ -87,7 +87,7 @@ include("experiments/data_conversion.jl")
 include("experiments/coincidences.jl")
 
 include("distinguishability/parametrizations.jl")
-
+include("bunching/average_bins_occupied.jl")
 
 
 permanent = ryser

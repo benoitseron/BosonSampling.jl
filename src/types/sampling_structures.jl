@@ -94,6 +94,7 @@ end
     T::Type{T} where {T<:InputType} = Bosonic
     mode_occ::ModeOccupation = first_modes(n,m)
     x::Union{Nothing, Real} = nothing
+    S::Union{Nothing, Matrix} = nothing
 
     i::Union{Input, Nothing} = nothing
 
@@ -126,6 +127,8 @@ function set_input!(params::Union{PartitionSamplingParameters, SamplingParameter
         params.i = Input{params.T}(params.mode_occ)
     elseif params.T == OneParameterInterpolation
         params.i = Input{params.T}(params.mode_occ, params.x)
+    elseif params.T == UserDefinedGramMatrix
+        params.i = Input{params.T}(params.mode_occ, params.S)
     else
         error("type not implemented")
     end
