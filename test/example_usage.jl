@@ -347,3 +347,7 @@ set_parameters!(params)
 
 compute_probability!(params.ev)
 compute_probability!(params)
+
+### gram matrices and bragman invariants ###
+
+@test is_a_gram_matrix(gram_matrix_parametrized(rand(4)...))

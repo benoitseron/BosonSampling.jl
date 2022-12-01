@@ -13,5 +13,3 @@ function gram_matrix_parametrized(α,β,γ,ϕ)
     G = [1 ab ac; conj(ab) 1 bc; conj(ac) conj(bc) 1]
 
 end
-
-@test is_a_gram_matrix(gram_matrix_parametrized(rand(4)...))
