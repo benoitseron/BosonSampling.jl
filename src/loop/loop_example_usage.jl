@@ -250,3 +250,16 @@ build_loop(LoopSamplingParameters(n = 10, input_type = Distinguishable))
 params = PartitionSamplingParameters(n = 10, m = 10)
 
 compute_probability!(params)
+
+### computing the entire distribution ###
+
+n = 3
+interf = Fourier(n)
+o = BosonSamplingDistribution()
+
+params = SamplingParameters(n = n, interf = interf, o = o)
+
+set_parameters!(params)
+
+compute_probability!(params.ev)
+compute_probability!(params)

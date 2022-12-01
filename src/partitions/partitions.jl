@@ -430,3 +430,11 @@ function compute_probability!(params::PartitionSamplingParameters)
     compute_probability!(ev)
 
 end
+
+function compute_probability!(params::SamplingParameters)
+
+    @unpack ev = params
+
+    compute_probability!(ev)
+
+end

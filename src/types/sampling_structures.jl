@@ -179,7 +179,7 @@ end
 function set_measurement!(o::OutputMeasurementType, params::SamplingParameters)
 
 
-    if StateMeasurement(typeof(o)) == FockStateMeasurement()
+    if StateMeasurement(typeof(o)) in [FockStateMeasurement(), CompleteDistribution()]
         params.o = o
         params.ev =  Event(params.i,params.o,params.interf)
     else

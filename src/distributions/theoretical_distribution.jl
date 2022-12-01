@@ -1,6 +1,8 @@
 """
     theoretical_distribution(;input::Input, interf::Interferometer, i=nothing)
 
+WARNING: use full_distribution() instead, depreciated
+
 Compute the probability distribution of all possible output configurations of
 fully/partially-indistinguishable photons through a lossless interferometer.
 
@@ -59,7 +61,27 @@ function theoretical_distribution(;input::Input, interf::Interferometer, i=nothi
 
 end
 
-(1,2,4)
-(2,1,4)
+"""
 
-ModeOccupation([1,2,4])
+    full_distribution(i::Input, interf::Interferometer)
+
+Generates the complete BosonSampling distribution for the `Input` `i` and the given `Interferometer`.
+
+"""
+function full_distribution(i::Input, interf::Interferometer)
+
+    outputs = ModeOccupation.(all_mode_configurations(i.n,i.m; only_photon_number_conserving = true))
+    probas = zeros(length(outputs))
+
+    @showprogress for (j, output) in enumerate(outputs)
+
+        o = FockDetection(output)
+        ev = Event(i, o, interf)
+
+        probas[j] = compute_probability!(ev)
+
+    end
+
+    MultipleCounts(outputs, probas)
+
+end
