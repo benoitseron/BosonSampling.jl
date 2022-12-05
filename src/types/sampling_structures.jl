@@ -69,6 +69,7 @@
     T::Type{T} where {T<:InputType} = Bosonic
     mode_occ::ModeOccupation = first_modes(n,m)
     x::Union{Nothing, Real} = nothing
+    S::Union{Nothing, Matrix} = nothing
 
     i::Union{Input, Nothing} = nothing
 
