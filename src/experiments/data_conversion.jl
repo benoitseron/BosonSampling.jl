@@ -30,7 +30,7 @@ Example usage:
     convert_csv_to_samples("data/loop_examples/test.csv", 10)
 
 """
-function convert_csv_to_samples(path_to_file::String, m::Int, input_type = ThresholdModeOccupation, input_format = (input_data) -> ModeOccupation(input_data), samples_type = MultipleCounts)
+function convert_csv_to_samples(path_to_file::String, m::Int, input_type = ThresholdModeOccupation, input_format = (input_data) -> ModeOccupation(input_data); samples_type = MultipleCounts)
 
     data = readdlm(path_to_file, ',', Int)
 

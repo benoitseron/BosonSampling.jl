@@ -141,7 +141,7 @@ function correlation_length(θ)
     correlation_length(get_psp(θ))
 end
 
-θ = 0.01:0.1:0.99
+θ = 0.01:0.01:0.99
 
 plot(θ, correlation_length.(θ), yaxis = :log10)
 ylabel!("corr length")

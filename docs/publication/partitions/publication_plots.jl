@@ -85,7 +85,6 @@ end
 
 ### bosonic to distinguishable single subset ###
 
-
 n = 14
 m = n
 n_iter = 1000
@@ -763,42 +762,42 @@ n_samples_array = l["n_samples_array"]
 
 partition_color(k, partition_sizes) = get(color_map, k / length(partition_sizes))
 
-    plt = plot()
-    for (k,K) in enumerate(partition_sizes)
+plt = plot()
+for (k,K) in enumerate(partition_sizes)
 
-        x_data = reverse(1 ./ invert_densities)
-        y_data = reverse(n_samples_array[k,:])
+    x_data = reverse(1 ./ invert_densities)
+    y_data = reverse(n_samples_array[k,:])
 
-        x_spl = range(minimum(x_data),maximum(x_data), length = 1000)
-        spl = Spline1D(x_data,y_data)
-        y_spl = spl(x_spl)
-        #
-        # scatter!(x_data , y_data, yerr = sqrt.(var_array[k,:]), c = lost_photon_color(k,lost_photons), label = "", m = :cross, xaxis=:log10)
-        #
-        # scatter!(x_data , y_data, yerr = sqrt.(var_array[k,:]), c = partition_color(k,partition_sizes), label = "", m = :cross, xaxis=:log10, yaxis = :log10)
+    x_spl = range(minimum(x_data),maximum(x_data), length = 1000)
+    spl = Spline1D(x_data,y_data)
+    y_spl = spl(x_spl)
+    #
+    # scatter!(x_data , y_data, yerr = sqrt.(var_array[k,:]), c = lost_photon_color(k,lost_photons), label = "", m = :cross, xaxis=:log10)
+    #
+    # scatter!(x_data , y_data, yerr = sqrt.(var_array[k,:]), c = partition_color(k,partition_sizes), label = "", m = :cross, xaxis=:log10, yaxis = :log10)
 
-        scatter!(x_data , y_data, c = partition_color(k,partition_sizes), label = "", m = :cross, xaxis=:log10,yaxis =:log10)
+    scatter!(x_data , y_data, c = partition_color(k,partition_sizes), label = "", m = :cross, xaxis=:log10,yaxis =:log10)
 
-        # scatter!(x_data , y_data, yerr = sqrt.(var_array[k,:]), c = partition_color(k,partition_sizes), label = "", m = :cross, xaxis=:log10)
+    # scatter!(x_data , y_data, yerr = sqrt.(var_array[k,:]), c = partition_color(k,partition_sizes), label = "", m = :cross, xaxis=:log10)
 
-        plot!(x_data, y_data, c = partition_color(k,partition_sizes), label = "K = $K", xaxis=:log10, yaxis =:log10, xminorticks = 10, xminorgrid = true, yminorticks = 10; yminorgrid = true)
-        #
-        # plot!(x_spl, y_spl, c = partition_color(k,partition_sizes), label = "K = $K", xaxis=:log10, yaxis =:log10)
+    plot!(x_data, y_data, c = partition_color(k,partition_sizes), label = "K = $K", xaxis=:log10, yaxis =:log10, xminorticks = 10, xminorgrid = true, yminorticks = 10; yminorgrid = true)
+    #
+    # plot!(x_spl, y_spl, c = partition_color(k,partition_sizes), label = "K = $K", xaxis=:log10, yaxis =:log10)
 
 
 
-        # plot!(η_array,tvd_η_array[k,:], label = "up to $lost lost", c = lost_photon_color(k,lost_photons))
+    # plot!(η_array,tvd_η_array[k,:], label = "up to $lost lost", c = lost_photon_color(k,lost_photons))
 
-    end
+end
 
-    plt = plot!(legend=:topright)
-    #ylims!(0, maxiter)
+plt = plot!(legend=:topright)
+#ylims!(0, maxiter)
 
-    xlabel!("ρ")
-    ylabel!("samples")
+xlabel!("ρ")
+ylabel!("samples")
 
-    display(plt)
-    savefig(plt, "images/publication/number_samples.png")
+display(plt)
+savefig(plt, "images/publication/number_samples.png")
 
 
 k = 1
@@ -1536,3 +1535,107 @@ end
 
 # cd("..")
 # cd("..")
+
+
+###### validity number of samples needed from bayesian ######
+
+n = 10
+partition_sizes = 2:3
+max_density = 1
+min_density = 0.07
+steps = 20
+n_trials = 1000
+maxiter = 100000
+
+invert_densities = [max_density * (max_density/min_density)^((i-1)/(steps-1)) for i in 1:steps]
+
+m_array = Int.(floor.(n * invert_densities))
+
+n_samples_array = zeros((length(partition_sizes), length(m_array)))
+n_samples_array_var_array = copy(n_samples_array)
+
+for (k,n_subsets) in enumerate(partition_sizes)
+
+    @show n_subsets
+
+    @showprogress for (i,m) in enumerate(m_array)
+
+        trials = []
+
+        for i in 1:n_trials
+
+            interf = RandHaar(m)
+
+            ib = Input{Bosonic}(first_modes(n,m))
+            id = Input{Distinguishable}(first_modes(n,m))
+
+            part = equilibrated_partition(m,n_subsets)
+            o = PartitionCountsAll(part)
+
+            evb = Event(ib,o,interf)
+            evd = Event(id,o,interf)
+
+            push!(trials , number_of_samples(evb,evd, maxiter = maxiter))
+
+        end
+
+        trials = remove_nothing(trials)
+
+        n_samples_array[k,i] = (n_subsets <= m_array[i] ? mean(trials) : missing)
+        n_samples_array_var_array[k,i] = (n_subsets <= m_array[i] ? var(trials) : missing)
+    end
+
+end
+
+
+save("data/number_samples.jld", "n_samples_array", n_samples_array, "n_samples_array_var_array" , n_samples_array_var_array)
+
+l = load("data/save/number_samples.jld")
+
+n_samples_array = l["n_samples_array"]
+
+partition_color(k, partition_sizes) = get(color_map, k / length(partition_sizes))
+
+plt = plot()
+for (k,K) in enumerate(partition_sizes)
+
+    x_data = reverse(1 ./ invert_densities)
+    y_data = reverse(n_samples_array[k,:])
+
+    x_spl = range(minimum(x_data),maximum(x_data), length = 1000)
+    spl = Spline1D(x_data,y_data)
+    y_spl = spl(x_spl)
+    #
+    # scatter!(x_data , y_data, yerr = sqrt.(var_array[k,:]), c = lost_photon_color(k,lost_photons), label = "", m = :cross, xaxis=:log10)
+    #
+    # scatter!(x_data , y_data, yerr = sqrt.(var_array[k,:]), c = partition_color(k,partition_sizes), label = "", m = :cross, xaxis=:log10, yaxis = :log10)
+
+    scatter!(x_data , y_data, c = partition_color(k,partition_sizes), label = "", m = :cross, xaxis=:log10,yaxis =:log10)
+
+    # scatter!(x_data , y_data, yerr = sqrt.(var_array[k,:]), c = partition_color(k,partition_sizes), label = "", m = :cross, xaxis=:log10)
+
+    plot!(x_data, y_data, c = partition_color(k,partition_sizes), label = "K = $K", xaxis=:log10, yaxis =:log10, xminorticks = 10, xminorgrid = true, yminorticks = 10; yminorgrid = true)
+    #
+    # plot!(x_spl, y_spl, c = partition_color(k,partition_sizes), label = "K = $K", xaxis=:log10, yaxis =:log10)
+
+
+
+    # plot!(η_array,tvd_η_array[k,:], label = "up to $lost lost", c = lost_photon_color(k,lost_photons))
+
+end
+
+plt = plot!(legend=:topright)
+#ylims!(0, maxiter)
+
+xlabel!("ρ")
+ylabel!("samples")
+
+display(plt)
+savefig(plt, "images/publication/number_samples.png")
+
+
+k = 1
+x_data = reverse(1 ./ invert_densities)
+y_data = reverse(n_samples_array[k,:])
+
+get_power_law_log_log(x_data, y_data)

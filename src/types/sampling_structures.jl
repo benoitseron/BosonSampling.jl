@@ -230,15 +230,16 @@ By default it applies a random phase at each optical line.
     n::Int = 4
     m::Int = n
     x::Union{Real, Nothing} = nothing
-    input_type::Type{T} where {T<:InputType} = Bosonic
+    T::Type{T} where {T<:InputType} = Bosonic
+    mode_occ::ModeOccupation = first_modes(n,m)
     i::Input = begin
-        if input_type in [Bosonic, Distinguishable]
-            i =  Input{input_type}(first_modes(n,m))
-        elseif input_type == OneParameterInterpolation
+        if T in [Bosonic, Distinguishable]
+            i =  Input{T}(mode_occ)
+        elseif T == OneParameterInterpolation
             if x == nothing
                 error("x not given")
             else
-                i = Input{input_type}(first_modes(n,m), x)
+                i = Input{T}(mode_occ, x)
             end
         end
     end
@@ -258,7 +259,7 @@ end
 
 function Base.convert(::Type{PartitionSamplingParameters}, params::LoopSamplingParameters)
 
-    @unpack n, m, input_type, i, η, η_loss_bs, η_loss_lines, d, ϕ, p_dark, p_no_count = params
+    @unpack n, m, T, i, η, η_loss_bs, η_loss_lines, d, ϕ, p_dark, p_no_count = params
 
     interf = build_loop(params)
 
