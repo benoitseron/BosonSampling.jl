@@ -198,14 +198,20 @@ Holds something like the photon counting probabilities with their respective
 probability (in order to use them as a single observation). Can be declared
 empty as a placeholder.
 
-	Fields:
-		- counts::Union{Nothing, Vector{ModeOccupation}, Vector{PartitionOccupancy}},
-		- proba::Union{Nothing,Vector{Real}}
+    Fields:
+    - counts::Union{Nothing, Vector{ModeOccupation}, Vector{PartitionOccupancy}, Vector{ThresholdModeOccupation}},
+    - proba::Union{Nothing,Vector{Real},Vector{Int}}
+
+!!! Warning:
+
+    The naming of `proba` and `counts` was done at a much earlier stage of the project. Understand `counts` as detector readings. `proba` can hold either probabilites or also number of times an event was observed.
+
+
 """
 mutable struct MultipleCounts
 
 	counts::Union{Nothing, Vector{ModeOccupation}, Vector{PartitionOccupancy}, Vector{ThresholdModeOccupation}}
-	proba::Union{Nothing,Vector{Real}}
+	proba::Union{Nothing,Vector{Real},Vector{Int}}
 
 	MultipleCounts() = new(nothing,nothing)
 	MultipleCounts(counts, proba) = new(counts,proba)
