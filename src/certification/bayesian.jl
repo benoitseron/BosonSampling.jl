@@ -151,7 +151,7 @@ end
 
 Outputs the probability that a given `FockDetection` would have if the `InputType` was `Bosonic` for this event.
 """
-function p_B(event::Event{TIn, TOut}) where {TIn<:InputType, TOut <: FockDetection}
+function p_B(event::Event{TIn, TOut}) where {TIn<:InputType, TOut <: Union{FockDetection, ThresholdFockDetection}}
 
     interf = event.interferometer
     r = event.input_state.r
@@ -170,7 +170,7 @@ end
 
 Outputs the probability that a given `FockDetection` would have if the `InputType` was `Distinguishable` for this event.
 """
-function p_D(event::Event{TIn, TOut}) where {TIn<:InputType, TOut <: FockDetection}
+function p_D(event::Event{TIn, TOut}) where {TIn<:InputType, TOut <: Union{FockDetection, ThresholdFockDetection}}
 
     interf = event.interferometer
     r = event.input_state.r
@@ -190,7 +190,7 @@ end
 
 Outputs the probability that a given `FockDetection` would have if the `InputType` was `OneParameterInterpolation` with distinguishability `x` for this event.
 """
-function p_x(event::Event{TIn, TOut},x) where {TIn<:InputType, TOut <: FockDetection}
+function p_x(event::Event{TIn, TOut},x) where {TIn<:InputType, TOut <: Union{FockDetection, ThresholdFockDetection}}
 
     interf = event.interferometer
     r = event.input_state.r
