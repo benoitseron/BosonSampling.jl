@@ -163,7 +163,7 @@ end
 
 function build_loop(params::LoopSamplingParameters)
 
-    @unpack n, m, input_type, i, η, η_loss_bs, η_loss_lines, d, ϕ, p_dark, p_no_count = params
+    @unpack n, m, i, η, η_loss_bs, η_loss_lines, d, ϕ, p_dark, p_no_count = params
 
     build_loop(m, η, η_loss_bs, η_loss_lines, ϕ)
 
@@ -180,10 +180,6 @@ function build_loop!(params::LoopSamplingParameters)
     params.interferometer = build_loop(params::LoopSamplingParameters)
 end
     
-
-function build_loop!(data::OneLoopData)
-    build_loop!(data.params)
-end
 
 
 """

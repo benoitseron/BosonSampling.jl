@@ -251,7 +251,7 @@ By default it applies a random phase at each optical line.
     d::Union{Nothing, Real, Distribution} = Uniform(0, 2pi)
     ϕ::Union{Nothing, T, Vector{T}} where {T<:Real} = rand(d, m)
 
-    interferometer = Union{Nothing, Interferometer} = build_loop(m, η, η_loss_bs, η_loss_lines, ϕ)
+    interferometer::Union{Nothing, Interferometer} = build_loop(m, η, η_loss_bs, η_loss_lines, ϕ)
 
     p_dark::Real = 0.0
     p_no_count::Real = 0.0
