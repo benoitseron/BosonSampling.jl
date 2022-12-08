@@ -227,7 +227,7 @@ By default it applies a random phase at each optical line.
 """
 @with_kw mutable struct LoopSamplingParameters
 
-    n::Int = 4
+    n::Int
     m::Int = n
     x::Union{Real, Nothing} = nothing
     T::Type{T} where {T<:InputType} = Bosonic
@@ -246,10 +246,12 @@ By default it applies a random phase at each optical line.
 
 
     η::Union{T, Vector{T}}  where {T<:Real} = 1/sqrt(2) .* ones(m-1)
-    η_loss_bs::Union{Nothing, T, Vector{T}}   where {T<:Real} = 1 .* ones(m-1)
-    η_loss_lines::Union{Nothing, T, Vector{T}}   where {T<:Real} = 1 .* ones(m)
+    η_loss_bs::Union{Nothing, T, Vector{T}} where {T<:Real} = 1 .* ones(m-1)
+    η_loss_lines::Union{Nothing, T, Vector{T}} where {T<:Real} = 1 .* ones(m)
     d::Union{Nothing, Real, Distribution} = Uniform(0, 2pi)
     ϕ::Union{Nothing, T, Vector{T}} where {T<:Real} = rand(d, m)
+
+    interferometer = Union{Nothing, Interferometer} = build_loop(m, η, η_loss_bs, η_loss_lines, ϕ)
 
     p_dark::Real = 0.0
     p_no_count::Real = 0.0

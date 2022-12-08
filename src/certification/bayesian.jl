@@ -184,6 +184,26 @@ function p_D(event::Event{TIn, TOut}) where {TIn<:InputType, TOut <: FockDetecti
 
 end
 
+
+"""
+    p_x(event::Event{TIn, TOut},x) where {TIn<:InputType, TOut <: FockDetection}
+
+Outputs the probability that a given `FockDetection` would have if the `InputType` was `OneParameterInterpolation` with distinguishability `x` for this event.
+"""
+function p_x(event::Event{TIn, TOut},x) where {TIn<:InputType, TOut <: FockDetection}
+
+    interf = event.interferometer
+    r = event.input_state.r
+    input_state = Input{OneParameterInterpolation}(r,x)
+    output_state = event.output_measurement
+
+    event_A = Event(input_state, output_state, interf)
+    compute_probability!(event_A)
+
+    event_A.proba_params.probability
+
+end
+
 # """
 #     compute_probability!(b::BayesianPartition)
 #

@@ -11,6 +11,7 @@ For high number of detections, using a `Vector{ThresholdModeOccupation}` is inef
 
     params::LoopSamplingParameters
     samples::Union{Vector{ThresholdModeOccupation}, MultipleCounts}
+    sample_type::Union{Nothing, ModeOccupation, ThresholdModeOccupation} = ThresholdModeOccupation
     date::DateTime = now()
     name::String = string(date)
     extra_info
@@ -18,12 +19,13 @@ For high number of detections, using a `Vector{ThresholdModeOccupation}` is inef
 end
 
 """
-    save(data::OneLoopData; path_to_file::String = "data/one_loop/")
+    save(data::OneLoopData; path_to_file::String = "data/one_loop/", recompile_interferometer = true)
 
-Saves a OneLoopData.
+Saves a OneLoopData. Recompiles the interferometer to make sure it is the right one.
 """
 function JLD.save(data::OneLoopData; path_to_file::String = "data/one_loop/")
-
+ 
+    recompile_interferometer ? build_loop!(data) : nothing
     save(path_to_file * "$(data.name).jld", "data", data)
 
 end

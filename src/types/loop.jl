@@ -170,6 +170,21 @@ function build_loop(params::LoopSamplingParameters)
 end
 
 
+"""
+    build_loop!(params::LoopSamplingParameters)
+    build_loop!(data::OneLoopData)
+
+Updates the `interferometer` field of a `LoopSamplingParameters`.
+"""
+function build_loop!(params::LoopSamplingParameters)
+    params.interferometer = build_loop(params::LoopSamplingParameters)
+end
+    
+
+function build_loop!(data::OneLoopData)
+    build_loop!(data.params)
+end
+
 
 """
     get_sample_loop(params::LoopSamplingParameters)
