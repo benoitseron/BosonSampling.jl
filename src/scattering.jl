@@ -340,6 +340,7 @@ process_probability_partial(interf::Interferometer, input_state::Input{TIn} wher
 
 """
 	compute_probability(ev::Event{TIn, TOut}) where {TIn<:InputType, TOut<:FockDetection}
+	compute_probability(ev::Event{TIn, TOut}) where {TIn<:InputType, TOut<:ThresholdFockDetection}
 
 Given an [`Event`](@ref), gives the probability to get the outcome `TOut` when `TIn`
 passes though the interferometer `ev.interferometer`.
@@ -365,6 +366,26 @@ function compute_probability!(ev::Event{TIn,TOut}) where {TIn<:InputType, TOut<:
 
 	ev.proba_params.probability = clean_proba(ev.proba_params.probability)
 
+end
+
+function compute_probability!(ev::Event{TIn, TOut}) where {TIn<:InputType, TOut<:ThresholdFockDetection}
+
+	if is_collisionless(ev.output_measurement.s,ev.input_state.n)
+
+		# temporarily swap the output_measurement into a FockDetection to make the equivalent computation
+
+		ev.output_measurement = FockDetection(ModeOccupation(ev.output_measurement.s.state))
+
+		ev2 = Event(ev.input_state, FockDetection(ModeOccupation(ev.output_measurement.s.state)), ev.interferometer)
+
+		compute_probability!(ev2)
+
+		ev.proba_params = ev2.proba_params
+
+	else
+		error("this ThresholdFockDetection contains an ambiguity of more than one photon in a mode or loss that cannot be resolved")
+	end
+	
 end
 
 """
@@ -448,10 +469,27 @@ end
 #
 # 	probability_vector
 # end
+"""
 
+	is_collisionless(r)
+	is_collisionless(i::Input)
+	is_collisionless(r::ModeOccupation)
+	is_collisionless(r::ThresholdModeOccupation, n_in::Int)
+
+Tells if an event contains more than one photon in an input bin.
+
+For `ThresholdModeOccupation`, this is infered knowing the input number of photons.
+
+"""
 function is_collisionless(r)
     all(r .<= 1)
 end
 
 is_collisionless(r::ModeOccupation) = is_collisionless(r.state)
 is_collisionless(i::Input) = is_collisionless(i.r.state)
+
+function is_collisionless(r::ThresholdModeOccupation, n_in::Int)
+
+	sum(r) == n_in
+
+end

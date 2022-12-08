@@ -21,7 +21,7 @@ partition_mean(i,m) = begin
 end
 
 
-n = 6
+n = 4
 sparsity = 3
 m = sparsity * n
 

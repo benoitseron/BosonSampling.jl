@@ -64,3 +64,25 @@ mc.counts[1]
 
 
 BosonSampling.to_threshold(mc::MultipleCounts)
+
+### computing ThresholdFockDetection probabilities
+
+
+a = ThresholdModeOccupation([1,0,1])
+a.state
+
+is_collisionless(a,2)
+
+Base.sum(mo::ModeOccupation) = sum(mo.state)
+Base.sum(mo::ThresholdModeOccupation) = sum(mo.state)
+
+n = 2
+m = 3
+i = Input{Bosonic}(first_modes(n,m))
+o = ThresholdFockDetection(a)
+interf = RandHaar(m)
+
+ev = Event(i,o,interf)
+
+compute_probability!(ev)
+

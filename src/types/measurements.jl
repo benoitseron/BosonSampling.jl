@@ -28,6 +28,29 @@ end
 
 StateMeasurement(::Type{FockDetection}) = FockStateMeasurement()
 
+
+"""
+    ThresholdFockDetection(s::ThresholdModeOccupation)
+
+Measuring the probability of getting the [`ThresholdModeOccupation`](@ref) `s` at the output.
+
+    Fields:
+        - s::ThresholdModeOccupation
+"""
+mutable struct ThresholdFockDetection <: OutputMeasurementType
+    s::ThresholdModeOccupation
+    ThresholdFockDetection(s::ThresholdModeOccupation) = new(s) #at_most_one_photon_per_bin(s) ? new(s) : error("more than one detector per more")
+
+    ThresholdFockDetection(v::Vector{Int}) = ThresholdFockDetection(ThresholdModeOccupation(v))
+end
+
+StateMeasurement(::Type{ThresholdFockDetection}) = FockStateMeasurement()
+
+Base.convert(::Type{FockDetection}, tmo::ThresholdFockDetection) = FockDetection(ModeOccupation(tmo.state)) 
+
+Base.convert(::Type{ThresholdFockDetection}, mo::FockDetection) = ThresholdFockDetection(to_threshold(mo.s.state)) 
+
+
 """
     PartitionCount(part_occupancy::PartitionOccupancy)
 
