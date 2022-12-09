@@ -13,8 +13,12 @@ If loading from a file, do for instance
 
     loaded_experiment = d["data"]
 
+!!! Makes the following conversions by default 
+
+    dict_sample_type_to_measurement = Dict(ThresholdModeOccupation => ThresholdFockDetection, ModeOccupation => FockDetection)
+
 """
-function get_event_list(loaded_experiment::OneLoopData)
+function get_event_list(loaded_experiment::ExperimentalData)
 
     # we convert the experimental data into a list of event (as need for certifiers)
 
