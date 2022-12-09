@@ -6,8 +6,15 @@ confidence(χ) = χ == Inf ? 1. : χ/(1+χ)
 
 function update_confidence(event, p_q, p_a, χ)
 
-    χ *= p_q(event)/p_a(event)
-    χ
+    p_q_ = p_q(event)
+    p_a_ = p_a(event)
+
+    if isapprox(p_a_, 0) 
+        return Inf
+    else
+        χ *= p_q(event)/p_a(event)
+        return χ
+    end
 
 end
 
