@@ -323,7 +323,7 @@ function compute_probability!(ev::Event{TIn,TOut}) where {TIn<:InputType, TOut<:
         # clean up to keep photon number conserving events (possibly lossy events in the partition occupies all modes)
 
         part_occ_physical = []
-        pdf_physical = []
+        pdf_physical = Vector{Real}()
 
         n = i.n
 

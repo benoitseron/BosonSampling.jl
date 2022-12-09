@@ -211,7 +211,7 @@ empty as a placeholder.
 mutable struct MultipleCounts
 
 	counts::Union{Nothing, Vector{ModeOccupation}, Vector{PartitionOccupancy}, Vector{ThresholdModeOccupation}}
-	proba::Union{Nothing,Vector{Real},Vector{Int}}
+	proba::Union{Nothing,Vector{TReal},Vector{TInt}} where {TReal <: Real, TInt <: Int}
 
 	MultipleCounts() = new(nothing,nothing)
 	MultipleCounts(counts, proba) = new(counts,proba)
