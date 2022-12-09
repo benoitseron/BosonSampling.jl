@@ -40,7 +40,7 @@ function compute_confidence_array(events, p_q, p_a)
 
     χ_array = [1.]
 
-    for event in events
+    @showprogress for event in events
         push!(χ_array, update_confidence(event, p_q, p_a, χ_array[end]))
     end
 

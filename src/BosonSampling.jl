@@ -78,6 +78,7 @@ include("permanent_conjectures/permanent_on_top.jl")
 include("certification/experimental_data_generation.jl")
 include("certification/bayesian.jl")
 include("certification/correlators.jl")
+include("certification/experiment.jl")
 
 include("visual.jl")
 
