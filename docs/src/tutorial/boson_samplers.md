@@ -49,7 +49,7 @@ The output vector of length `n` tells us which of the output modes contain a pho
 
 ## Noisy sampler
 
-We present here the current best known approximate sampler, based on truncating probabilities in `k` perfectly interfering bosons and `n-k` perfectly distinguishable ones, an algorithm from [https://arxiv.org/pdf/1907.00022.pdf](https://arxiv.org/pdf/1907.00022.pdf). This decomposition is successful when some partial distinguishability is present. By simplicity, we restrict to the colloquial model of a one parameter `x` describing the overlap between two different photons (assumed to be equal for all pairs), which is implemented with [`OneParameterInterpolation`](@ref). Similary, loss is also accounted for.
+We present here the current best known approximate sampler, based on truncating probabilities in `k` perfectly interfering bosons and `n-k` perfectly distinguishable ones, an algorithm from [https://arxiv.org/pdf/1907.00022.pdf](https://arxiv.org/pdf/1907.00022.pdf). This decomposition is successful when some partial distinguishability is present. By simplicity, we restrict to the colloquial model of a one parameter `x` describing the overlap between two different photons (assumed to be equal for all pairs), which is implemented with [`OneParameterInterpolation`](@ref). Similarly, loss is also accounted for.
 
 Let us now explain the usage of this algorithm. As before, one creates an input of particles that are not completely indistinguishable from [`OneParameterInterpolation`](@ref)
 

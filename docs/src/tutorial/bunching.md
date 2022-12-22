@@ -6,7 +6,7 @@ Given an interferometer `interf`, the probability to find all photons of a given
 
     full_bunching_probability(interf::Interferometer, i::Input, subset_modes::Subset)
 
-At the heart of this forumla lies the `H_matrix(interf::Interferometer, i::Input, subset_modes::ModeOccupation)`, describing the bunching properties of an interferometer and subset (see [Boson bunching is not
+At the heart of this formula lies the `H_matrix(interf::Interferometer, i::Input, subset_modes::ModeOccupation)`, describing the bunching properties of an interferometer and subset (see [Boson bunching is not
 maximized by indistinguishable particles](https://arxiv.org/abs/2203.01306)).
 
 Although inefficient, we also provide a check function to evaluate by direct summation the bunching probabilities for `Bosonic` inputs

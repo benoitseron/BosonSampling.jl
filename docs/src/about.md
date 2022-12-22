@@ -45,4 +45,4 @@ Contact can be made by clicking on our names.
 
 The original research presented in the package is done in collaboration with Dr. Leonardo Novo, Prof. Nicolas Cerf.
 
-BosonSampling.jl is licensied under the [MIT license](https://github.com/benoitseron/BosonSampling.jl/blob/main/LICENSE).
+BosonSampling.jl is licensed under the [MIT license](https://github.com/benoitseron/BosonSampling.jl/blob/main/LICENSE).

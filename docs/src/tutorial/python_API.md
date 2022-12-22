@@ -20,7 +20,7 @@ One can now install `PyJulia` via `pip` through
 
 or directly via the Github repository: [`https://github.com/JuliaPy/pyjulia`]( https://github.com/JuliaPy/pyjulia).
 
-Finally, install the remaining dependencies requiered by `PyJulia`:
+Finally, install the remaining dependencies required by `PyJulia`:
 
     $ python
     >>> import julia
