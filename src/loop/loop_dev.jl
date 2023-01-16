@@ -86,3 +86,7 @@ ev = Event(i,o,interf)
 
 compute_probability!(ev)
 
+
+n = 3
+m = 4
+all_mode_configurations(n,m, only_photon_number_conserving = true)
