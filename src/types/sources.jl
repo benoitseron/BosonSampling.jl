@@ -13,16 +13,9 @@ Type holding a model of a QuantumDot. The point is to simulate its non determini
 
 This is held in through the field `efficiency`, the probability that a photon is generated if we ask one in this position. The probabilities are assumed to be IID.
 """
-@withkw mutable struct QuantumDot <: Source
+@with_kw mutable struct QuantumDot <: Source
     efficiency::Real = 1. # probability that a photon is generated if we ask one in this position
 end
-
-"""
-
-    generate_input_list_from_perfect_input(source::QuantumDot,input_state::Vector{<:Int}) 
-
-Takes in a
-"""
 
 
 
@@ -106,3 +99,36 @@ function possible_inputs_loss(input_no_loss::Vector{Int}, lost::Int)
     all_inputs
 
 end
+
+
+"""
+
+    input_probability(input_ideal::Vector{Int}, input_real::Vector{Int}, source::QuantumDot)
+
+
+Computes the probability of obtaining `input_real` from `input_ideal` for a simple quantum dot source.
+"""
+function input_probability(input_ideal::Vector{Int}, input_real::Vector{Int}, source::QuantumDot)
+
+    # compute number of modes
+
+    m = length(input_ideal)
+
+    # compute number of photons
+
+    n = sum(input_ideal)
+
+    # compute number of photons in the real input
+
+    n_real = sum(input_real)
+
+    # assert that the number of modes is the same
+
+    @argcheck m == length(input_real)
+
+    # compute the probability to generate n_real photons when n photons are generated, each one with a probability given by the quantum dot `efficiency` through a binomial distribution
+
+    proba = binomial(n, n_real) * source.efficiency^n_real * (1-source.efficiency)^(n-n_real)
+
+end
+
