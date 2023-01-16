@@ -132,3 +132,54 @@ function input_probability(input_ideal::Vector{Int}, input_real::Vector{Int}, so
 
 end
 
+
+"""
+
+    compute_probability_imperfect_source(params::SamplingParameters, source::QuantumDot)
+
+Computes the probability of obtaining the output `params.o` from the input `params.i` for a simple quantum dot source that is not perfect. Generates all input combinaisons compatible with the number of lost photons and computes the probability for each one of them.
+
+"""
+function compute_probability_imperfect_source(params::SamplingParameters, source::QuantumDot)
+
+    # count the number of photons detected in the ModeOccupation of `o`
+
+    n_detected = params.o.s.n
+
+    # count the number of lost photons
+
+    n_lost = params.interf.m - n_detected
+
+    # find input_state from params
+
+    input_state = params.i.r.state
+
+    # generate all possible inputs 
+
+    possible_input_states = possible_inputs_loss(input_state, n_lost)
+
+    # compute the weighted probability for all possible inputs states
+
+    overall_probability = 0
+
+    @showprogress for possible_input_state in possible_input_states
+
+        params.mode_occ = ModeOccupation(possible_input_state)
+
+        set_parameters!(params)
+
+        try 
+            overall_probability += compute_probability!(params) * input_probability(input_state, possible_input_state, source)
+        catch err
+            @warn "some probabilities did not compute: $err (this might happen if lossless interferometer but lossy input for instance) with input:"
+            @show params.i
+
+            continue
+        end
+
+    end
+
+    overall_probability
+
+end
+
