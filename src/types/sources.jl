@@ -148,7 +148,7 @@ function compute_probability_imperfect_source(params::SamplingParameters, source
 
     # count the number of lost photons
 
-    n_lost = params.interf.m - n_detected
+    n_lost =  params.i.n - n_detected
 
     # find input_state from params
 
@@ -182,4 +182,3 @@ function compute_probability_imperfect_source(params::SamplingParameters, source
     overall_probability
 
 end
-

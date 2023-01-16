@@ -146,6 +146,12 @@ This function acts as an outer constructor to make it compatible with peculiarit
 """
 function set_interferometer!(interf::Interferometer, params::Union{PartitionSamplingParameters, SamplingParameters})
 
+    
+    # skipping if not output measurement
+    if params.o == nothing
+        return
+    end
+
     if params.i == nothing
         set_input!(params)
     end
@@ -180,12 +186,16 @@ function set_partition!(params::PartitionSamplingParameters)
 
 end
 
-function set_measurement!(o::OutputMeasurementType, params::SamplingParameters)
+function set_measurement!(o::Union{OutputMeasurementType, Nothing}, params::SamplingParameters)
 
+    if o == nothing
 
-    if StateMeasurement(typeof(o)) in [FockStateMeasurement(), CompleteDistribution()]
+        params.o = nothing
+
+    elseif StateMeasurement(typeof(o)) in [FockStateMeasurement(), CompleteDistribution()]
         params.o = o
         params.ev =  Event(params.i,params.o,params.interf)
+    
     else
         error("invalid measurement")
 
@@ -270,5 +280,19 @@ function Base.convert(::Type{PartitionSamplingParameters}, params::LoopSamplingP
     set_interferometer!(ps)
 
     ps
+
+end
+
+function Base.convert(::Type{SamplingParameters}, params::LoopSamplingParameters)
+
+    @unpack n, m, T, i, η, η_loss_bs, η_loss_lines, d, ϕ, p_dark, p_no_count = params
+
+    interf = build_loop(params)
+
+    params_event = SamplingParameters(n=n, m=m, T= get_parametric_type(i)[1], interf = interf, mode_occ = i.r, x = i.distinguishability_param,i=i)
+
+    set_parameters!(params_event)
+
+    params_event
 
 end
