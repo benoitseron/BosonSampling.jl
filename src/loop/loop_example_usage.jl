@@ -293,3 +293,10 @@ compute_probability_imperfect_source(params_event, source)
 compute_probability_imperfect_source(params_event_x, source)
 
 
+p_x_imperfect_source(params_event, 0, source)
+
+ev = params_event_x.ev
+ev.output_measurement = FockDetection(ModeOccupation([1,1,1]))
+ev
+
+p_x_imperfect_source_update_this_event(ev, params_event_x, source)
