@@ -80,13 +80,14 @@ end
 
 function Base.copy(params::SamplingParameters)
 
-    params_copy = SamplingParameters(n=params.n, m=params.m, T=params.T, interf = params.interf, mode_occ = params.mode_occ, x = params.x, i=params.i)
+    params_copy = SamplingParameters(n=params.n, m=params.m, T=params.T, interf = params.interf, mode_occ = params.mode_occ, x = params.x, i=params.i, o=params.o, ev=params.ev)
 
     set_parameters!(params_copy)
 
     params_copy
 
 end
+
 
 @with_kw mutable struct PartitionSamplingParameters
 
@@ -143,10 +144,15 @@ end
 """
 function set_input!(params::Union{PartitionSamplingParameters, SamplingParameters})
 
+    if params.x != nothing
+        params.T = OneParameterInterpolation
+    end
+
     if params.T in [Bosonic, Distinguishable]
         params.i = Input{params.T}(params.mode_occ)
     elseif params.T == OneParameterInterpolation
         params.i = Input{params.T}(params.mode_occ, params.x)
+        
     elseif params.T == UserDefinedGramMatrix
         params.i = Input{params.T}(params.mode_occ, params.S)
     else

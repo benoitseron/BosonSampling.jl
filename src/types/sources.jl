@@ -162,17 +162,22 @@ function compute_probability_imperfect_source(params::SamplingParameters, source
 
     overall_probability = 0
 
+    params_ = copy(params)
+
+    # @show params
+    # @show params_
+
     @showprogress for possible_input_state in possible_input_states
 
-        params.mode_occ = ModeOccupation(possible_input_state)
+        params_.mode_occ = ModeOccupation(possible_input_state)
 
-        set_parameters!(params)
+        set_parameters!(params_)
 
         try 
-            overall_probability += compute_probability!(params) * input_probability(input_state, possible_input_state, source)
+            overall_probability += compute_probability!(params_) * input_probability(input_state, possible_input_state, source)
         catch err
             @warn "some probabilities did not compute: $err (this might happen if lossless interferometer but lossy input for instance) with input:"
-            @show params.i
+            @show params_.i
 
             continue
         end

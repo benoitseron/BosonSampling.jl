@@ -15,33 +15,17 @@ source = QuantumDot(efficiency = 0.85)
 params_event = convert(SamplingParameters, params)
 params_event_x = copy(params_event)
 
-params_event_x.x = 1.0
+params_event_x.x = 0
 
 params_event.o =  FockDetection(ModeOccupation([1,1,0]))
-params_event_x.o =  FockDetection(ModeOccupation([1,1,1]))
+params_event_x.o =  FockDetection(ModeOccupation([1,1,0]))
 
 set_parameters!(params_event)
 set_parameters!(params_event_x)
 
-@show params_event.ev
-@show params_event_x.ev  
-
 compute_probability_imperfect_source(params_event, source)
 compute_probability_imperfect_source(params_event_x, source)
 
-# I think the bugs comes from the fact that this modifies the Event inside params_event,
-# should rather make a copy
-
-
-params_2 = copy(params_event)
-
-params_2.x = 0.5
-
-
-
-
-params_event.x
-params_2.x
 
 
 """
@@ -70,8 +54,14 @@ function p_x_imperfect_source_update_this_event(event::Event{TIn, TOut},params_e
 
     params_event.o = o
 
-    p_x_imperfect_source(params_event, event.input_state.x, source)
+    p_x_imperfect_source(params_event, params_event.x, source)
 
 end
 
-p_x_imperfect_source(params_event, 1, source)
+p_x_imperfect_source(params_event, 0, source)
+
+ev = params_event_x.ev
+ev.output_measurement = FockDetection(ModeOccupation([1,1,1]))
+ev
+
+p_x_imperfect_source_update_this_event(ev, params_event_x, source)
