@@ -78,6 +78,15 @@
 
 end
 
+function Base.copy(params::SamplingParameters)
+
+    params_copy = SamplingParameters(n=params.n, m=params.m, T=params.T, interf = params.interf, mode_occ = params.mode_occ, x = params.x, i=params.i)
+
+    set_parameters!(params_copy)
+
+    params_copy
+
+end
 
 @with_kw mutable struct PartitionSamplingParameters
 
@@ -113,6 +122,16 @@ end
 
     o::OutputMeasurementType = PartitionCountsAll(part)
     ev::Union{Event, Nothing} = nothing
+
+end
+
+function Base.copy(params::PartitionSamplingParameters)
+
+    params_copy = PartitionSamplingParameters(n=params.n, m=params.m, T=params.T, interf = params.interf, mode_occ = params.mode_occ, x = params.x, i=params.i, n_subsets=params.n_subsets, part=params.part)
+
+    set_parameters!(params_copy)
+
+    params_copy
 
 end
 
@@ -268,6 +287,11 @@ By default it applies a random phase at each optical line.
 
 end
 
+function Base.copy(params::LoopSamplingParameters)
+
+    LoopSamplingParameters(n=params.n, m=params.m, x=params.x, T=params.T, mode_occ=params.mode_occ, i=params.i, η=params.η, η_loss_bs=params.η_loss_bs, η_loss_lines=params.η_loss_lines, d=params.d, ϕ=params.ϕ, interferometer=params.interferometer, p_dark=params.p_dark, p_no_count=params.p_no_count)
+
+end
 
 function Base.convert(::Type{PartitionSamplingParameters}, params::LoopSamplingParameters)
 
