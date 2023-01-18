@@ -224,6 +224,7 @@ Holds threshold detector state. Example
 
     m::Int
     state::Vector{Int}
+    n_detected::Int
 
     function ThresholdModeOccupation(ml::ModeList)
 
@@ -234,7 +235,7 @@ Holds threshold detector state. Example
         elseif !all(state[:] .<= 1)
             error("state can be at most one")
         else
-            new(ml.m, state)
+            new(ml.m, state, sum(state))
         end
     end
 
@@ -246,7 +247,7 @@ Holds threshold detector state. Example
             elseif !all(state[:] .<= 1)
                 error("state can be at most one")
             else
-                new(mo.m, state)
+                new(mo.m, state, sum(state))
             end
 
     end

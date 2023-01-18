@@ -64,6 +64,14 @@ function check_subset_overlap(subset::Subset)
         nothing
 end
 
+function complement_subset(s::Subset)   
+
+        state = s.subset
+        Subset(ones(Int, length(state)) - state)
+    
+    end
+    
+
 """
     Partition(subsets::Vector{Subset})
 
