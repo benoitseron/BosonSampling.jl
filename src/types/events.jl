@@ -140,3 +140,5 @@ Base.convert(::Type{Event{TIn, FockDetection}}, ev::Event{TIn, FockSample}) wher
 
 # fs = FockSample([1,2,3])
 # convert(FockDetection, fs)
+
+StateMeasurement(ev::Event) = StateMeasurement(typeof(ev.output_measurement))
