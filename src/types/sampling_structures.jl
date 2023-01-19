@@ -326,3 +326,9 @@ function Base.convert(::Type{SamplingParameters}, params::LoopSamplingParameters
     params_event
 
 end
+
+
+
+is_lossy(params::SamplingParameters) = LossParameters(typeof(params.ev.interferometer)) == IsLossy()
+is_lossless(params::SamplingParameters) = LossParameters(typeof(params.ev.interferometer)) == IsLossless()
+

@@ -2,39 +2,38 @@ include("packages_loop.jl")
 
 
 
-vtypeof(params)
+@time begin
 
-n = 3
-m = n
+    n = 9
+    m = n
 
-d = Uniform(0,2pi)
-ϕ = nothing # rand(d,m)
-η_loss_lines = 0.9 * ones(m)
-η_loss_bs = 1. * ones(m-1)
+    n_lost = 2
 
-params = LoopSamplingParameters(n=n, η = η_thermalization(n), η_loss_bs = η_loss_bs, η_loss_lines = η_loss_lines, ϕ = ϕ)
+    source = QuantumDot(13.5 / 80)
 
-source = QuantumDot(efficiency = 0.85)
+    d = Uniform(0,2pi)
+    ϕ = nothing # rand(d,m)
 
-params_event = convert(SamplingParameters, params)
-params_event_x = copy(params_event)
+    η_loss_lines = 0.9 * ones(m)
+    η_loss_bs =  0.9 * ones(m-1)
 
-params_event_x.x = 0
+    params = LoopSamplingParameters(n=n, η = η_thermalization(n), η_loss_bs = η_loss_bs, η_loss_lines = η_loss_lines, ϕ = ϕ)
 
-params_event.o =  FockDetection(ModeOccupation([1,1,0]))
-params_event_x.o =  FockDetection(ModeOccupation([1,1,0]))
+    params_event = convert(SamplingParameters, params)
+    params_event.o = ThresholdFockDetection(ThresholdModeOccupation(first_modes(n-n_lost, m).state))
 
-set_parameters!(params_event)
-set_parameters!(params_event_x)
+    set_parameters!(params_event)
 
-compute_probability_imperfect_source(params_event, source)
-compute_probability_imperfect_source(params_event_x, source)
+    ev = params_event.ev
 
 
-p_x_imperfect_source(params_event, 0, source)
+    # can also just use 
 
-ev = params_event_x.ev
-ev.output_measurement = FockDetection(ModeOccupation([1,1,1]))
-ev
+    compute_probability!(params_event) 
 
-p_x_imperfect_source_update_this_event(ev, params_event_x, source)
+    ### with the validation formalism now ###
+
+    p_x_imperfect_source(params_event, 0, source)
+
+end
+

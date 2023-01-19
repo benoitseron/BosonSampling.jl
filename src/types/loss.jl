@@ -328,12 +328,9 @@ end
 
 is_lossy(interf::Interferometer) = LossParameters(typeof(interf)) == IsLossy()
 is_lossy(ev::Event) = LossParameters(typeof(ev.interferometer)) == IsLossy()
-is_lossy(params::SamplingParameters) = LossParameters(typeof(params.ev.interferometer)) == IsLossy()
 
 is_lossless(interf::Interferometer) = LossParameters(typeof(interf)) == IsLossless()
 is_lossless(ev::Event) = LossParameters(typeof(ev.interferometer)) == IsLossless()
-is_lossless(params::SamplingParameters) = LossParameters(typeof(params.ev.interferometer)) == IsLossless()
-
 
 """
 

@@ -320,10 +320,6 @@ params_event.o = ThresholdFockDetection(ThresholdModeOccupation([0,0,1,1]))
 
 set_parameters!(params_event)
 
-using Test
-
-@test_throws ErrorException compute_probability!(params_event)
-
 ev = params_event.ev
 
 @test compute_threshold_detection_probability(ev) ≈ 0.21782756693593455

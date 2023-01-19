@@ -144,7 +144,13 @@ function compute_probability_imperfect_source(params::SamplingParameters, source
 
     # count the number of photons detected in the ModeOccupation of `o`
 
-    n_detected = params.o.s.n
+    if typeof(params.o.s) == ThresholdModeOccupation
+        n_detected = params.o.s.n_detected
+    elseif typeof(params.o.s) == ModeOccupation
+        n_detected = params.o.s.n
+    else
+        @error "not implemented"
+    end
 
     # count the number of lost photons
 
