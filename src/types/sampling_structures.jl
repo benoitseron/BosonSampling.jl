@@ -283,6 +283,7 @@ By default it applies a random phase at each optical line.
     η::Union{T, Vector{T}}  where {T<:Real} = 1/sqrt(2) .* ones(m-1)
     η_loss_bs::Union{Nothing, T, Vector{T}} where {T<:Real} = 1 .* ones(m-1)
     η_loss_lines::Union{Nothing, T, Vector{T}} where {T<:Real} = 1 .* ones(m)
+    η_loss_source::Union{Nothing, T, Vector{T}} where {T<:Real} = 1 .* ones(m)
     d::Union{Nothing, Real, Distribution} = Uniform(0, 2pi)
     ϕ::Union{Nothing, T, Vector{T}} where {T<:Real} = rand(d, m)
 
@@ -295,13 +296,13 @@ end
 
 function Base.copy(params::LoopSamplingParameters)
 
-    LoopSamplingParameters(n=params.n, m=params.m, x=params.x, T=params.T, mode_occ=params.mode_occ, i=params.i, η=params.η, η_loss_bs=params.η_loss_bs, η_loss_lines=params.η_loss_lines, d=params.d, ϕ=params.ϕ, interferometer=params.interferometer, p_dark=params.p_dark, p_no_count=params.p_no_count)
+    LoopSamplingParameters(n=params.n, m=params.m, x=params.x, T=params.T, mode_occ=params.mode_occ, i=params.i, η=params.η, η_loss_bs=params.η_loss_bs, η_loss_lines=params.η_loss_lines, d=params.d, ϕ=params.ϕ, interferometer=params.interferometer, p_dark=params.p_dark, p_no_count=params.p_no_count, η_loss_source=params.η_loss_source)
 
 end
 
 function Base.convert(::Type{PartitionSamplingParameters}, params::LoopSamplingParameters)
 
-    @unpack n, m, T, i, η, η_loss_bs, η_loss_lines, d, ϕ, p_dark, p_no_count = params
+    @unpack n, m, T, i, η, η_loss_bs, η_loss_lines, d, ϕ, p_dark, p_no_count, η_loss_source = params
 
     interf = build_loop(params)
 
@@ -315,7 +316,7 @@ end
 
 function Base.convert(::Type{SamplingParameters}, params::LoopSamplingParameters)
 
-    @unpack n, m, T, i, η, η_loss_bs, η_loss_lines, d, ϕ, p_dark, p_no_count = params
+    @unpack n, m, T, i, η, η_loss_bs, η_loss_lines, d, ϕ, p_dark, p_no_count, η_loss_source = params
 
     interf = build_loop(params)
 

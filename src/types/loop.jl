@@ -33,12 +33,13 @@ mutable struct LossyLoop<: Loop
     η::Union{T, Vector{T}}  where {T<:Real}
     η_loss_bs::Union{Nothing, T, Vector{T}} where {T<:Real}
     η_loss_lines::Union{Nothing, T, Vector{T}} where {T<:Real}
+    η_loss_source::Union{Nothing, T, Vector{T}} where {T<:Real}
     ϕ::Union{Nothing, T, Vector{T}}   where {T<:Real}
     circuit::Circuit
     U::Union{Nothing, Matrix}
 
     function LossyLoop(m, η, η_loss_bs, η_loss_lines, ϕ)
-        circuit =  build_loop(m, η, η_loss_bs, η_loss_lines, ϕ)
+        circuit =  build_loop(m, η, η_loss_bs, η_loss_lines, η_loss_source, ϕ)
         new(m, η, η_loss_bs, η_loss_lines, ϕ, circuit, circuit.U)
 
     end
@@ -200,9 +201,9 @@ end
 
 function build_loop(params::LoopSamplingParameters)
 
-    @unpack n, m, i, η, η_loss_bs, η_loss_lines, d, ϕ, p_dark, p_no_count = params
+    @unpack n, m, i, η, η_loss_bs, η_loss_lines, d, ϕ, p_dark, p_no_count, η_loss_source = params
 
-    build_loop(m, η, η_loss_bs, η_loss_lines, ϕ)
+    build_loop(m, η, η_loss_bs, η_loss_lines, η_loss_source, ϕ)
 
 end
 
@@ -228,7 +229,7 @@ function get_sample_loop(params::LoopSamplingParameters)
 
     @unpack n, m, input_type, i, η, η_loss_bs, η_loss_lines, d, ϕ, p_dark, p_no_count = params
 
-    circuit = LossyLoop(m, η, η_loss_bs, η_loss_lines, ϕ).circuit
+    circuit = LossyLoop(m, η, η_loss_bs, η_loss_lines, η_loss_source, ϕ).circuit
 
     o = RealisticDetectorsFockSample(p_dark, p_no_count)
     ev = Event(i,o, circuit)
