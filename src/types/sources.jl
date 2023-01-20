@@ -142,6 +142,8 @@ Computes the probability of obtaining the output `params.o` from the input `para
 """
 function compute_probability_imperfect_source(params::SamplingParameters, source::QuantumDot)
 
+    @warn "this function is highly inefficient: there is a better trick if the source is a simple quantum dot, it suffices to introduce loss lines. Here it computes every possible input and then computes the probability for each one of them. This is not necessary if using the trick, a single probability will be computed. I left this fuction available because it is a useful template for more complicated sources."
+
     # count the number of photons detected in the ModeOccupation of `o`
 
     if typeof(params.o.s) == ThresholdModeOccupation
@@ -191,5 +193,11 @@ function compute_probability_imperfect_source(params::SamplingParameters, source
     end
 
     overall_probability
+
+end
+
+function get_η_loss_source(m::Int,source::QuantumDot)
+    
+    ones(m) * source.efficiency
 
 end

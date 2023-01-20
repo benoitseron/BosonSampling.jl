@@ -123,17 +123,13 @@ function build_loop(m::Int, η::Union{T, Vector{T}}, η_loss_bs::Union{Nothing, 
 
         if lossy && η_loss_source != nothing
             interf = LossyLine(η_loss_source[mode])
-        else
-            continue
         end
 
         target_modes_in = ModeList([mode], circuit.m_real)
         target_modes_out = target_modes_in
 
-        if lossy
+        if lossy && η_loss_source != nothing
             add_element_lossy!(circuit, interf, target_modes_in, target_modes_out)
-        else
-            continue
         end
 
     end
