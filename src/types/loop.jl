@@ -62,9 +62,10 @@ A pulse of `n` photons in `m` temporal modes is sent through a variable `BeamSpl
         - η::Union{T, Vector{T}} array of beam splitter transmissivities
         - η_loss_bs::Union{Nothing, T, Vector{T}} array of beam splitter transmissivities for accounting loss
         - η_loss_lines::Union{Nothing, T, Vector{T}} array of beam delay lines transmissivities for accounting loss
+        - η_loss_source::Union{Nothing, T, Vector{T}} = nothing simulates an imperfect source, such as a QuantumDot sending photons in with a certain probability < 1
         - ϕ::Union{Nothing, T, Vector{T}} array of phases applied by the delay lines
 """
-function build_loop(m::Int, η::Union{T, Vector{T}}, η_loss_bs::Union{Nothing, T, Vector{T}} = nothing, η_loss_lines::Union{Nothing, T, Vector{T}} = nothing, ϕ::Union{Nothing, T, Vector{T}} = nothing) where {T<:Real}
+function build_loop(m::Int, η::Union{T, Vector{T}}, η_loss_bs::Union{Nothing, T, Vector{T}} = nothing, η_loss_lines::Union{Nothing, T, Vector{T}} = nothing, η_loss_source::Union{Nothing, T, Vector{T}} = nothing, ϕ::Union{Nothing, T, Vector{T}} = nothing) where {T<:Real}
 
     for param in [η, η_loss_bs, η_loss_lines, ϕ]
         if param != nothing
@@ -110,7 +111,33 @@ function build_loop(m::Int, η::Union{T, Vector{T}}, η_loss_bs::Union{Nothing, 
         end
     end
 
-    if η_loss_bs != nothing ||  η_loss_lines != nothing
+    """
+
+    Adds a line source to the circuit to represent a source that doesn't send photon with certainty.
+
+    """
+    function add_line_source!(mode, lossy)
+
+        # need to be applied to mode being mode + 1 (if adding just before the beam splitter with the conventions of the loop below)
+
+        if lossy && η_loss_source != nothing
+            interf = LossyLine(η_loss_source[mode])
+        else
+            interf = RandomPhaseShifter(0.)
+        end
+
+        target_modes_in = ModeList([mode], circuit.m_real)
+        target_modes_out = target_modes_in
+
+        if lossy
+            add_element_lossy!(circuit, interf, target_modes_in, target_modes_out)
+        else
+            add_element!(circuit, interf, target_modes_in, target_modes_out)
+        end
+
+    end
+
+    if η_loss_bs != nothing ||  η_loss_lines != nothing || η_loss_source != nothing
 
         lossy = true
 
