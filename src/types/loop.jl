@@ -123,7 +123,7 @@ function build_loop(m::Int, η::Union{T, Vector{T}}, η_loss_bs::Union{Nothing, 
         if lossy && η_loss_source != nothing
             interf = LossyLine(η_loss_source[mode])
         else
-            interf = RandomPhaseShifter(0.)
+            continue
         end
 
         target_modes_in = ModeList([mode], circuit.m_real)
@@ -132,7 +132,7 @@ function build_loop(m::Int, η::Union{T, Vector{T}}, η_loss_bs::Union{Nothing, 
         if lossy
             add_element_lossy!(circuit, interf, target_modes_in, target_modes_out)
         else
-            add_element!(circuit, interf, target_modes_in, target_modes_out)
+            continue
         end
 
     end
@@ -145,7 +145,17 @@ function build_loop(m::Int, η::Union{T, Vector{T}}, η_loss_bs::Union{Nothing, 
 
         for mode in 1:m-1
 
-            add_line!(mode, lossy)
+            if mode != 1
+                ######## I am not sure this should be there for the first mode! ... it was there previously but I removed it
+                add_line!(mode, lossy)
+            end
+            
+            if mode == 1
+                add_line_source!(mode, lossy)
+                add_line_source!(mode+1, lossy)
+            else
+                add_line_source!(mode+1, lossy)
+            end
 
             if η_loss_bs != nothing
                 interf = LossyBeamSplitter(η[mode], η_loss_bs[mode])
