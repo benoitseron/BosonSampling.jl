@@ -1,29 +1,36 @@
 include("packages_loop.jl")
 
-n = 8
-m = n
+function func(n)
 
-n_lost = 4
+    m = n
 
-source = QuantumDot(13.5 / 80)
+    n_lost = 1
 
-d = Uniform(0,2pi)
-ϕ = nothing # rand(d,m)
+    source = QuantumDot(13.5 / 80)
 
-η_loss_lines = 0.9 * ones(m)
-η_loss_bs =  0.9 * ones(m-1)
-η_loss_source = get_η_loss_source(m,source)
+    d = Uniform(0,2pi)
+    ϕ = nothing # rand(d,m)
 
-params = LoopSamplingParameters(n=n, η = η_thermalization(n), η_loss_bs = η_loss_bs, η_loss_lines = η_loss_lines, η_loss_source = η_loss_source, ϕ = ϕ)
+    η_loss_lines = 0.9 * ones(m)
+    η_loss_bs =  0.9 * ones(m-1)
+    η_loss_source = get_η_loss_source(m,source)
 
-params_event = convert(SamplingParameters, params)
-params_event.o = ThresholdFockDetection(ThresholdModeOccupation(first_modes(n-n_lost, m).state))
+    params = LoopSamplingParameters(n=n, η = η_thermalization(n), η_loss_bs = η_loss_bs, η_loss_lines = η_loss_lines, η_loss_source = η_loss_source, ϕ = ϕ)
 
-set_parameters!(params_event)
+    params_event = convert(SamplingParameters, params)
+    params_event.o = ThresholdFockDetection(ThresholdModeOccupation(first_modes(n-n_lost, m).state))
 
-ev = params_event.ev
+    set_parameters!(params_event)
 
-@time compute_probability!(ev)
+    ev = params_event.ev
+
+    @time compute_probability!(ev)
+
+end
+
+a = func(20)
+
+### previous method ###
 
 params_no_η_loss_source = LoopSamplingParameters(n=n, η = η_thermalization(n), η_loss_bs = η_loss_bs, η_loss_lines = η_loss_lines, η_loss_source = nothing, ϕ = ϕ)
 
