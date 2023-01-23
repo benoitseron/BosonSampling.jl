@@ -14,7 +14,7 @@ of those possible arrangements can be retrieved by using [`output_mode_occupatio
     [2, 1]
     [2, 2]
 
-giving a vector of the possible mode assignement lists. We propose here some functions
+giving a vector of the possible mode assignment lists. We propose here some functions
 that generate all the associated probabilities to end up in one of such configuration
 from an [`Input`](@ref) and an [`Interferometer`](@ref). In the following, each
 generated probability distribution is indexed as [`output_mode_occupation`](@ref),
@@ -43,7 +43,7 @@ As in the original HOM effect, we consider here two particles initially placed o
                push!(x_, x)
            end
 
-Where we have stored the coincidence probablities in `p_coinc`. By plotting the latter we recover the dip translating the well known two-particle interference effect when considering a [`Bosonic`](@ref) input: 
+Where we have stored the coincidence probabilities in `p_coinc`. By plotting the latter we recover the dip translating the well known two-particle interference effect when considering a [`Bosonic`](@ref) input: 
 
 ![distr](proba_bunching.png)
 

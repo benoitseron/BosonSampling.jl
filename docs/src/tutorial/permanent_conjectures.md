@@ -9,5 +9,5 @@ One can then use
 
 which will iterate the function until you press `Ctrl+C` to interrupt the computation.
 
-Another important conjecture is the permaent-on-top conjecture, disproved by V. S. Shchesnovich in [The permanent-on-top conjecture is false](https://www.sciencedirect.com/science/article/pii/S0024379515006631).
+Another important conjecture is the permanent-on-top conjecture, disproved by V. S. Shchesnovich in [The permanent-on-top conjecture is false](https://www.sciencedirect.com/science/article/pii/S0024379515006631).
 Special matrices related to this conjecture are given in this package such as the `schur_matrix(H)`, the general partial distinguishability function J(σ) implemented as `J_array`. From a matrix J, one can recover the density matrix of the internal states with `density_matrix_from_J`.
