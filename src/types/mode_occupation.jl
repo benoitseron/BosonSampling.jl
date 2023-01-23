@@ -284,6 +284,11 @@ function possible_threshold_detections_lossless(n::Int, state::Vector{Int})
 
     n_detected = sum(state)
 
+    # if no loss, nothing to do 
+    if n_detected == n
+        return [state]
+    end
+
     # finding the position of possible colliding photons
     mode_configs_colliding_photons = all_mode_configurations(n - n_detected, n_detected, only_photon_number_conserving = false)
 
