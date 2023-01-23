@@ -45,7 +45,7 @@ ev = params_event.ev
 
 ### correcting the ThresholdDetection ###
 
-n = 4
+n = 8
 m = n
 
 d = Uniform(0,2pi)
@@ -56,7 +56,7 @@ d = Uniform(0,2pi)
 params = LoopSamplingParameters(n=n, η = η_thermalization(n), η_loss_bs = η_loss_bs, η_loss_lines = η_loss_lines, ϕ = ϕ)
 
 params_event = convert(SamplingParameters, params)
-params_event.o = ThresholdFockDetection(ThresholdModeOccupation([0,0,1,1]))
+params_event.o = ThresholdFockDetection(ThresholdModeOccupation([0,0,0,0,0,0,1,1]))
 
 set_parameters!(params_event)
 
@@ -65,39 +65,12 @@ o = params_event.o
 
 state = o.s.state
 
+possible_threshold_detections(n, state, lossy = true)
+
 possible_threshold_detections(ev)
 
-unique(possible_threshold_detections(n::Int, state::Vector{Int}))
+# find if the interferometer of ev is lossy
 
 
-# get all indexes with a photon
 
-indexes = findall(x->x==1, state)
 
-# get number of photons detected
-
-n_detected = sum(state)
-
-# finding the position of possible colliding photons
-mode_configs_colliding_photons = all_mode_configurations(n - n_detected, n_detected, only_photon_number_conserving = false)
-
-possible_states = []
-
-# generate a list of each possible configuration of colliding photons
-# add this configuration where a photon is detected in `state` (as labelled by `indexes`)
-
-for mode_config in mode_configs_colliding_photons
-
-    for i in 1:length(indexes)
-
-        new_state = copy(state)
-
-        new_state[indexes[i]] += mode_config[i]
-
-        push!(possible_states, new_state)
-
-    end
-
-end
-
-unique(possible_states)
