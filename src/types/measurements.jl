@@ -284,7 +284,7 @@ function to_threshold(mc::MultipleCounts)
     # println("######")
     # @show count_proba
 
-    counts = Vector{typeof(mc.counts[1])}()
+    counts = Vector{ThresholdModeOccupation}()
     probas = Vector{typeof(mc.proba[1])}()
 
     for key in keys(count_proba)
@@ -303,10 +303,60 @@ end
 
 function to_threshold!(mc::MultipleCounts)
 
-    mc = to_threshold(mc)
+    mc_copy = to_threshold(mc)
+    mc.counts = mc_copy.counts
+    mc.proba = mc_copy.proba
 
 end
 
+# write a function that takes as argument a MultipleCounts and sums the probability associated for all events who have the same mode occupation
+# return a MultipleCounts with only the unique mode occupation
+
+function sum_duplicates!(mc::MultipleCounts)
+    count_proba = Dict()
+
+    for (count, proba) in zip(mc.counts, mc.proba)
+        new_count = count
+
+        if new_count in keys(count_proba)
+            count_proba[new_count] += proba
+        else
+            count_proba[new_count] = proba
+        end
+
+    end
+
+    # println("######")
+    # @show count_proba
+
+    counts = Vector{typeof(mc.counts[1])}()
+    probas = Vector{typeof(mc.proba[1])}()
+
+    for key in keys(count_proba)
+
+        push!(counts, key)
+        push!(probas, count_proba[key])
+
+    end
+
+    # @show counts
+    # @show probas
+
+    mc.counts = counts
+    mc.proba = probas
+    mc
+end
+
+
+# apply the remove_lossy_part to all counts of a `MultipleCounts` object
+
+function remove_lossy_part!(mc::MultipleCounts)
+    for i in 1:length(mc.counts)
+        remove_lossy_part!(mc.counts[i])
+    end
+    sum_duplicates!(mc)
+    mc
+end
 
 """
     BosonSamplingDistribution <: OutputMeasurementType

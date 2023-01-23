@@ -8,7 +8,7 @@ A list of the size of the number of modes `m`, with entry `j` of `state` being t
          - m::Int
          - state::Vector{Int}
 """
-@auto_hash_equals struct ModeOccupation
+@auto_hash_equals mutable struct ModeOccupation
     n::Int
     m::Int
     state::Vector{Int}
@@ -418,4 +418,34 @@ function possible_threshold_detections(n::Int,state::ThresholdModeOccupation; lo
 
     possible_mode_occupations
 
+end
+
+
+# remove the lossy part of a ThresholdModeOccupation by removing the last half of the output modes and dividing m by two
+
+function remove_lossy_part!(tmo::ThresholdModeOccupation)
+
+    # check that the number of modes is even
+    if tmo.m % 2 != 0
+        error("The number of modes is not even")
+    end
+
+    tmo.m = tmo.m ÷ 2
+    tmo.state = tmo.state[1:tmo.m]
+    tmo.n_detected = sum(tmo.state)
+    tmo
+end
+
+# write the same function for a ModeOccupation
+
+function remove_lossy_part!(mo::ModeOccupation)
+
+    # check that the number of modes is even
+    if mo.m % 2 != 0
+        error("The number of modes is not even")
+    end
+
+    mo.m = mo.m ÷ 2
+    mo.state = mo.state[1:mo.m]
+    mo
 end

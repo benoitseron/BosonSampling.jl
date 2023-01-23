@@ -281,25 +281,58 @@ end
     sort_by_lost_photons(pb::MultipleCounts)
 
 Outputs a (n+1) sized array of MultipleCounts containing 0,...,n lost photons.
+
+Use `lossy_partition_mc = true` if the counts are from a lossy partition. There it will assume that the number of lost photons is the number of photons in the last subset.
 """
-function sort_by_lost_photons(pb::MultipleCounts)
+function sort_by_lost_photons(pb::MultipleCounts; lossy_partition_mc = true)
 
-    # number of lost photons is the number of photons in the last subset
+    if lossy_partition_mc
+        # number of lost photons is the number of photons in the last subset
 
-    n = pb.counts[1].n
-    sorted_array = [MultipleCounts() for i in 0:n]
-    initialise_to_empty_vectors!.(sorted_array, Real, PartitionOccupancy)
+        n = pb.counts[1].n
+        sorted_array = [MultipleCounts() for i in 0:n]
+        initialise_to_empty_vectors!.(sorted_array, Real, PartitionOccupancy)
 
-    for (p, count) in zip(pb.proba, pb.counts)
+        for (p, count) in zip(pb.proba, pb.counts)
 
-        n_lost = count.counts.state[end]
-        push!(sorted_array[n_lost+1].proba, p)
-        push!(sorted_array[n_lost+1].counts, count)
+            n_lost = count.counts.state[end]
+            push!(sorted_array[n_lost+1].proba, p)
+            push!(sorted_array[n_lost+1].counts, count)
+
+        end
+
+        return sorted_array
+    else
+
+        n = pb.counts[1].n
+        sorted_array = [MultipleCounts() for i in 0:n]
+        initialise_to_empty_vectors!.(sorted_array, Real, ModeOccupation)
+
+        for (p, count) in zip(pb.proba, pb.counts)
+
+            n_lost = n - sum(count.state)
+            push!(sorted_array[n_lost+1].proba, p)
+            push!(sorted_array[n_lost+1].counts, count)
+
+        end
+
+        return sorted_array
 
     end
+        
 
-    sorted_array
+end
 
+function lossless_part(mc::MultipleCounts)
+    sort_by_lost_photons(mc, lossy_partition_mc = false)[1]
+end
+
+function keep_lossless_part!(mc::MultipleCounts, renormalize = true)
+
+    lossless_mc = lossless_part(mc)
+    mc.proba = renormalize ? lossless_mc.proba / sum(lossless_mc.proba) : lossless_mc.proba
+    mc.counts = lossless_mc.counts
+    mc
 end
 
 
