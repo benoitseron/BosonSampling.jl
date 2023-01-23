@@ -145,7 +145,7 @@ possible to define our own unitary by resorting to the type [`UserDefinedInterfe
 
 Now consider what you want to observe, in this numerical experiment. If looking at the case of a single output, we would use an [`OutputMeasurement`](@ref) type called [`FockDetection`](@ref). Other types are currently defined such as [`PartitionCount`](@ref), which would evaluate the probability of finding a photon count in a partition of the output modes.
 
-Similary to the definition of the [`Input`](@ref), it is also possible to define an output configuration from a [`ModeOccupation`](@ref)
+Similarly to the definition of the [`Input`](@ref), it is also possible to define an output configuration from a [`ModeOccupation`](@ref)
 
     julia> n = 3;
 

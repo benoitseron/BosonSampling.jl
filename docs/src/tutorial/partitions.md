@@ -16,7 +16,7 @@ Subsets are defined as follow
 
     s1 = Subset([1,1,0,0,0])
 
-By construction, we do not allow for Susbets to overlap (although there is no theoretical limitation, it is inefficient and messy in practice if considering photon conservation). This can be checked as follow
+By construction, we do not allow for Subsets to overlap (although there is no theoretical limitation, it is inefficient and messy in practice if considering photon conservation). This can be checked as follow
 
     s1 = Subset([1,1,0,0,0])
     s2 = Subset([0,0,1,1,0])
