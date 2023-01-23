@@ -57,8 +57,9 @@ d = Uniform(0,2pi)
 params = LoopSamplingParameters(n=n, η = η_thermalization(n), η_loss_bs = η_loss_bs, η_loss_lines = η_loss_lines, η_loss_source = η_loss_source, ϕ = ϕ)
 
 params_event = convert(SamplingParameters, params)
-params_event.o = ThresholdFockDetection(ThresholdModeOccupation([0,0,0,0,1,1,1,1,1,1]))
+params_event.o = ThresholdFockDetection(ThresholdModeOccupation([0,0,0,0,0,1,1,1,1,1]))
 
 set_parameters!(params_event)
 
 compute_probability!(params_event)
+

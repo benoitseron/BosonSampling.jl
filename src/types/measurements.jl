@@ -60,23 +60,6 @@ function possible_threshold_detections(n, state::ThresholdFockDetection; lossy =
 
 end
 
-# write possible_threshold_detections for an Event
-# extract n from the input_state
-
-function possible_threshold_detections(ev::Event)
-
-    # check that the output_measurement is a ThresholdFockDetection
-
-    @argcheck ev.output_measurement isa ThresholdFockDetection
-
-    lossy = is_lossy(ev.interferometer)
-
-    n = ev.input_state.r.n
-
-    possible_threshold_detections(n,ev.output_measurement, lossy = lossy)
-
-end
-
 
 """
     PartitionCount(part_occupancy::PartitionOccupancy)

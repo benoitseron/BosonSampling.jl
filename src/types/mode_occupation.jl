@@ -72,8 +72,9 @@ end
 """
     to_threshold(v::Vector{Int})
     to_threshold(mo::ModeOccupation)
+    to_threshold!(mo::ModeOccupation)
 
-Converts a `ModeOccupation` into threshold detection.
+Converts a `ModeOccupation` into threshold detection. Converts it into a `ThresholdModeOccupation` if not using the inplace version.
 """
 function to_threshold(v::Vector{Int})
 
@@ -83,7 +84,7 @@ end
 
 function to_threshold(mo::ModeOccupation)
 
-    ModeOccupation(to_threshold(mo.state))
+    ThresholdModeOccupation(to_threshold(mo.state))
 
 end
 
