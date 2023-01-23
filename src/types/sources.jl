@@ -17,8 +17,6 @@ This is held in through the field `efficiency`, the probability that a photon is
     efficiency::Real = 1. # probability that a photon is generated if we ask one in this position
 end
 
-
-
 """
 
     possible_inputs_loss(input_no_loss::Vector{Int}, lost::Int)
@@ -141,6 +139,8 @@ Computes the probability of obtaining the output `params.o` from the input `para
 
 """
 function compute_probability_imperfect_source(params::SamplingParameters, source::QuantumDot)
+
+    @warn "this was not made clear from the start but this function does not give the exact probability: it limits the comptutation to the inputs compatible with the number of lost photons. This means that when you have an imperfect source, all inputs with less photons are discarded, while they still contribute to the overall probability. You can see this function as a conditional probability upon sending enough photons for detecting this output. This is fine for its initial purpose of validation using Bayesian methods but it is not the exact probability."
 
     @warn "this function is highly inefficient: there is a better trick if the source is a simple quantum dot, it suffices to introduce loss lines. Here it computes every possible input and then computes the probability for each one of them. This is not necessary if using the trick, a single probability will be computed. I left this fuction available because it is a useful template for more complicated sources."
 
