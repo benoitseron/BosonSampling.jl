@@ -87,6 +87,11 @@ function to_threshold(mo::ModeOccupation)
 
 end
 
+function to_threshold!(mo::ModeOccupation)
+
+    mo.state = to_threshold(mo.state)
+
+end
 
 """
         Base.cat(s1::ModeOccupation, s2::ModeOccupation)
@@ -262,3 +267,154 @@ end
 Base.sum(mo::ModeOccupation) = sum(mo.state)
 Base.sum(mo::ThresholdModeOccupation) = sum(mo.state)
 
+"""
+
+    possible_threshold_detections_lossless(state::Vector{Int})
+
+Returns a list of all possible states that can be obtained from `state`, the state resulting from a threshold detection.
+
+"""
+function possible_threshold_detections_lossless(n::Int, state::Vector{Int})
+
+    # get all indexes with a photon
+
+    indexes = findall(x->x==1, state)
+
+    # get number of photons detected
+
+    n_detected = sum(state)
+
+    # if no loss, nothing to do 
+    if n_detected == n
+        return [state]
+    end
+
+    # finding the position of possible colliding photons
+    mode_configs_colliding_photons = all_mode_configurations(n - n_detected, n_detected, only_photon_number_conserving = false)
+
+    possible_states = []
+
+    # generate a list of each possible configuration of colliding photons
+    # add this configuration where a photon is detected in `state` (as labelled by `indexes`)
+
+    for mode_config in mode_configs_colliding_photons
+
+        for i in 1:length(indexes)
+
+            new_state = copy(state)
+
+            new_state[indexes[i]] += mode_config[i]
+
+            push!(possible_states, new_state)
+
+        end
+
+    end
+
+    unique(possible_states)
+
+end
+
+"""
+
+    possible_threshold_detections(n::Int, state::Vector{Int}; lossy::Bool = false)
+
+Returns a list of all possible states that can be obtained from `state`, the state resulting from a threshold detection. If `lossy` is true, then the number of photons lost is also taken into account. This means computing all possible repartition of the lost photons among the last half of the output modes.
+
+"""
+function possible_threshold_detections(n::Int, state::Vector{Int}; lossy::Bool = false)
+
+    if !lossy
+
+        return possible_threshold_detections_lossless(n, state)
+
+    else
+
+        # find the number of modes
+
+        m = length(state)
+
+        # verify that the number of modes is even using @argcheck
+
+        @argcheck iseven(m) "The number of modes must be even"
+
+        # find half the number of modes as an Integer
+
+        m_half = div(m,2)
+
+        possible_states_lossless = possible_threshold_detections_lossless(n, state) 
+
+        # get number of photons in the first half of each possible state
+
+        n_not_lost_array = [sum(state[1:div(length(state),2)]) for state in possible_states_lossless]
+
+        # get the number of lost photons for each possible state from n_not_lost_array
+
+        n_lost_array = [n - n_not_lost for n_not_lost in n_not_lost_array]
+
+        possible_states_lossy = []
+
+        for possible_state_lossless in possible_states_lossless
+
+            # @show "starting state: $possible_state_lossless"
+
+            # get the number of lost photons for this possible state by counting the number of photon in the last half of this state
+
+            n_lost = n - sum(possible_state_lossless[1:div(length(possible_state_lossless),2)])
+            
+            # generate possible mode configurations in the last half of the state for n_lost photons
+
+            if n_lost == 0
+
+                # @show "no lost photons"
+
+                push!(possible_states_lossy, possible_state_lossless)
+
+            else
+                    
+                mode_configs_lost_photons = all_mode_configurations(n_lost, m_half, only_photon_number_conserving = true)
+
+                # add each possible configuration of lost photons to the possible state
+                # push to possible_states_lossy
+
+                # @show mode_configs_lost_photons
+
+                for mode_config in mode_configs_lost_photons
+
+                    new_state = copy(possible_state_lossless)
+
+                    new_state[div(length(possible_state_lossless),2)+1:end] = mode_config
+
+                    push!(possible_states_lossy, new_state)
+
+                end
+
+            end
+
+        end
+            
+        return unique(possible_states_lossy)
+
+    end
+
+end
+
+
+# write possible_treshold_detections for a ThresholdModeOccupation
+# output a list of ModeOccupation
+
+function possible_threshold_detections(n::Int,state::ThresholdModeOccupation; lossy = false)
+
+    possible_states = possible_threshold_detections(n, state.state, lossy = lossy)
+
+    possible_mode_occupations = []
+
+    for state in possible_states
+
+        push!(possible_mode_occupations, ModeOccupation(state))
+
+    end
+
+    possible_mode_occupations
+
+end

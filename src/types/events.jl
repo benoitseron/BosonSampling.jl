@@ -129,7 +129,7 @@ end
 function check_probability_empty(ev::Event; resetting_message = true)
     if ev.proba_params.probability != nothing
 		if resetting_message
-			@warn "probability was already set in, rewriting"
+			# @warn "probability was already set in, rewriting"
 		else
 			@warn "unexpected probabilities found in Event"
 		end
@@ -142,3 +142,35 @@ Base.convert(::Type{Event{TIn, FockDetection}}, ev::Event{TIn, FockSample}) wher
 # convert(FockDetection, fs)
 
 StateMeasurement(ev::Event) = StateMeasurement(typeof(ev.output_measurement))
+
+# write possible_threshold_detections for an Event
+# extract n from the input_state
+
+function possible_threshold_detections(ev::Event)
+
+    # check that the output_measurement is a ThresholdFockDetection
+
+    @argcheck ev.output_measurement isa ThresholdFockDetection
+
+    n = ev.input_state.r.n
+
+    possible_threshold_detections(n,ev.output_measurement)
+
+end
+
+# write a function to deepcopy an Event importing the Base.deepcopy
+
+function Base.copy(ev::Event)
+
+	input_state = deepcopy(ev.input_state)
+	output_measurement = deepcopy(ev.output_measurement)
+	interferometer = deepcopy(ev.interferometer)
+	proba_params = deepcopy(ev.proba_params)
+
+	Event(input_state, output_measurement, interferometer, proba_params)
+
+end
+
+
+
+

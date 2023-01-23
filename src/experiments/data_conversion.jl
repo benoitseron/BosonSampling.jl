@@ -34,7 +34,15 @@ Setting `renormalize = false` outputs the number of times an event was observed,
 """
 function convert_csv_to_samples(path_to_file::String, m::Int, input_type = ThresholdModeOccupation, input_format = (input_data) -> ModeOccupation(input_data); samples_type = MultipleCounts, renormalize = false)
 
-    data = readdlm(path_to_file, ',', Int)
+    data = readdlm(path_to_file, ',')
+
+    # removing the first line if it is not a number (info about counts typically)
+    if typeof(data[1, :][1]) != Int 
+        data = data[2:end, :]
+    
+        # convert data to a matrix of Int
+        data = convert(Matrix{Int}, data)
+    end
 
     samples = Vector{input_type}()
 

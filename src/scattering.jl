@@ -379,49 +379,26 @@ Also works with loss.
 """
 function compute_threshold_detection_probability(ev::Event{<:InputType,<:ThresholdFockDetection})
 
-    state = lossless_output_detection_state(ev)
+	state = ev.output_measurement.s.state
+	n = ev.input_state.r.n
 
-    detection_subset = Subset(state)
-    complement = complement_subset(detection_subset)
+	possible_threshold_detections(n, state, lossy = true)
 
-    ##### need to check this stuff if loss
+	possible_outputs = possible_threshold_detections(ev)
 
-    part = BosonSampling.Partition([detection_subset, complement])
+	ev_ = Event(ev.input_state, FockDetection(possible_outputs[1]), ev.interferometer)
 
-    # compute the probabilities associated with the partition created by the detection
+	# for each possible output, compute the probability
+	# and sum them up
 
-    i = ev.input_state
-    o = PartitionCountsAll(part)
-    ev_partition = Event(i,o,ev.interferometer)
+	p = 0.
+	@showprogress for o in possible_outputs
+		ev_.output_measurement = FockDetection(o)
+		p += compute_probability!(ev_)
+	end
 
-	mc = compute_probability!(ev_partition)
 
-    # we are now interested in the case where there are zero photons in the complement, and from the number of threshold counts detected up to the number of input photons
-
-    n_input = ev.input_state.r.n
-    n_detected = ev.output_measurement.s.n_detected
-
-    n_in_complement(i) = mc.counts[i].counts.state[2] 
-    n_in_detectors(i) = mc.counts[i].counts.state[1]
-    # there is potentially mc.counts[i].counts.state[3] lost
-
-    function valid_count(i)
-        if n_in_complement(i) == 0 && (n_in_detectors(i) >= n_detected && n_in_detectors(i) <= n_input)
-            return true
-        else
-            return false
-        end
-    end
-
-    probability_this_threshold_detection = 0
-
-    for i in 1:length(mc.counts)
-        if valid_count(i)
-            probability_this_threshold_detection += mc.proba[i]
-        end
-    end
-
-    probability_this_threshold_detection
+	p
 
 end
 

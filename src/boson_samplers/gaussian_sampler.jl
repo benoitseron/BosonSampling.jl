@@ -368,11 +368,11 @@ function gaussian_sampler_treshold(;input::GaussianInput{T}, nsamples=Int(1e3), 
 
 end
 
-function gaussian_sampler(ev::GaussianEvent{TIn,TOut}; nsamples=Int(1e3), burn_in=200, thinning_rate=100, mean_val=nothing) where {TIn<:Gaussian, TOut<:Union{FockSample,TresholdDetection}}
+function gaussian_sampler(ev::GaussianEvent{TIn,TOut}; nsamples=Int(1e3), burn_in=200, thinning_rate=100, mean_val=nothing) where {TIn<:Gaussian, TOut<:Union{FockSample,ThresholdDetection}}
 
     if TOut == FockSample
         gaussian_sampler_PNRD(input=ev.input_state, nsamples=nsamples, burn_in=burn_in, thinning_rate=thinning_rate, mean_n=mean_val)
-    elseif TOut == TresholdDetection
+    elseif TOut == ThresholdDetection
         mean_val == nothing ? mean_val = 1 : nothing
         return gaussian_sampler_treshold(input=ev.input_state, nsamples=nsamples, burn_in=burn_in, thinning_rate=thinning_rate, mean_click=mean_val)
     else
