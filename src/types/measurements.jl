@@ -451,3 +451,20 @@ function tvd(mc::MultipleCounts, samples::MultipleCounts)
 
     tvd(mc.proba, samples.proba)
 end
+
+
+
+function tvd_weighted(mc::MultipleCounts, samples::MultipleCounts, weights)
+    # weighted tvd function 
+
+    sort_samples!(mc)
+    sort_samples!(samples)
+
+    sum(weights[i] * abs(mc.proba[i] - samples.proba[i]) for i in 1:length(weights))
+end
+
+function tvd_weighted_by_samples(mc::MultipleCounts, samples::MultipleCounts)
+
+    tvd_weighted(mc, samples, samples.proba)
+
+end
