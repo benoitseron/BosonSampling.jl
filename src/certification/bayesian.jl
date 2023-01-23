@@ -6,8 +6,15 @@ confidence(χ) = χ == Inf ? 1. : χ/(1+χ)
 
 function update_confidence(event, p_q, p_a, χ)
 
-    χ *= p_q(event)/p_a(event)
-    χ
+    p_q_ = p_q(event)
+    p_a_ = p_a(event)
+
+    if isapprox(p_a_, 0) 
+        return Inf
+    else
+        χ *= p_q(event)/p_a(event)
+        return χ
+    end
 
 end
 
@@ -33,7 +40,7 @@ function compute_confidence_array(events, p_q, p_a)
 
     χ_array = [1.]
 
-    for event in events
+    @showprogress for event in events
         push!(χ_array, update_confidence(event, p_q, p_a, χ_array[end]))
     end
 
@@ -151,7 +158,7 @@ end
 
 Outputs the probability that a given `FockDetection` would have if the `InputType` was `Bosonic` for this event.
 """
-function p_B(event::Event{TIn, TOut}) where {TIn<:InputType, TOut <: FockDetection}
+function p_B(event::Event{TIn, TOut}) where {TIn<:InputType, TOut <: Union{FockDetection, ThresholdFockDetection}}
 
     interf = event.interferometer
     r = event.input_state.r
@@ -170,11 +177,31 @@ end
 
 Outputs the probability that a given `FockDetection` would have if the `InputType` was `Distinguishable` for this event.
 """
-function p_D(event::Event{TIn, TOut}) where {TIn<:InputType, TOut <: FockDetection}
+function p_D(event::Event{TIn, TOut}) where {TIn<:InputType, TOut <: Union{FockDetection, ThresholdFockDetection}}
 
     interf = event.interferometer
     r = event.input_state.r
     input_state = Input{Distinguishable}(r)
+    output_state = event.output_measurement
+
+    event_A = Event(input_state, output_state, interf)
+    compute_probability!(event_A)
+
+    event_A.proba_params.probability
+
+end
+
+
+"""
+    p_x(event::Event{TIn, TOut},x) where {TIn<:InputType, TOut <: FockDetection}
+
+Outputs the probability that a given `FockDetection` would have if the `InputType` was `OneParameterInterpolation` with distinguishability `x` for this event.
+"""
+function p_x(event::Event{TIn, TOut},x) where {TIn<:InputType, TOut <: Union{FockDetection, ThresholdFockDetection}}
+
+    interf = event.interferometer
+    r = event.input_state.r
+    input_state = Input{OneParameterInterpolation}(r,x)
     output_state = event.output_measurement
 
     event_A = Event(input_state, output_state, interf)
@@ -241,3 +268,35 @@ function number_of_samples(evb::Event{TIn1, TOut}, evd::Event{TIn2, TOut}; p_nul
     return nothing
 
 end
+
+
+"""
+    p_x_imperfect_source(params_event::SamplingParameters ,x, source::QuantumDot)
+
+Outputs the probability that a given `FockDetection` would have if the `InputType` was `OneParameterInterpolation` with distinguishability `x` for this event. This averages over all possible inputs compatible with the number of lost photons
+"""
+function p_x_imperfect_source(params_event::SamplingParameters, x, source::QuantumDot) 
+
+    params_event.x = x
+    set_parameters!(params_event)
+    compute_probability_imperfect_source(params_event, source)
+
+end
+
+"""
+    p_x_imperfect_source_update_this_event(event::Event{TIn, TOut},params_event::SamplingParameters, source::QuantumDot) where {TIn<:InputType, TOut <: Union{FockDetection, ThresholdFockDetection}}
+
+Same as above but eating an `Event` so as to keep the previous workflow working.
+
+Still need to create at once the `params_event` at the beginnig of the validation process.
+"""
+function p_x_imperfect_source_update_this_event(event::Event{TIn, TOut},params_event::SamplingParameters, source::QuantumDot) where {TIn<:InputType, TOut <: Union{FockDetection, ThresholdFockDetection}}
+
+    o = event.output_measurement
+
+    params_event.o = o
+
+    p_x_imperfect_source(params_event, params_event.x, source)
+
+end
+

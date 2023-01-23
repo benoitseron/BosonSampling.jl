@@ -33,12 +33,13 @@ mutable struct LossyLoop<: Loop
     η::Union{T, Vector{T}}  where {T<:Real}
     η_loss_bs::Union{Nothing, T, Vector{T}} where {T<:Real}
     η_loss_lines::Union{Nothing, T, Vector{T}} where {T<:Real}
+    η_loss_source::Union{Nothing, T, Vector{T}} where {T<:Real}
     ϕ::Union{Nothing, T, Vector{T}}   where {T<:Real}
     circuit::Circuit
     U::Union{Nothing, Matrix}
 
     function LossyLoop(m, η, η_loss_bs, η_loss_lines, ϕ)
-        circuit =  build_loop(m, η, η_loss_bs, η_loss_lines, ϕ)
+        circuit =  build_loop(m, η, η_loss_bs, η_loss_lines, η_loss_source, ϕ)
         new(m, η, η_loss_bs, η_loss_lines, ϕ, circuit, circuit.U)
 
     end
@@ -62,9 +63,10 @@ A pulse of `n` photons in `m` temporal modes is sent through a variable `BeamSpl
         - η::Union{T, Vector{T}} array of beam splitter transmissivities
         - η_loss_bs::Union{Nothing, T, Vector{T}} array of beam splitter transmissivities for accounting loss
         - η_loss_lines::Union{Nothing, T, Vector{T}} array of beam delay lines transmissivities for accounting loss
+        - η_loss_source::Union{Nothing, T, Vector{T}} = nothing simulates an imperfect source, such as a QuantumDot sending photons in with a certain probability < 1
         - ϕ::Union{Nothing, T, Vector{T}} array of phases applied by the delay lines
 """
-function build_loop(m::Int, η::Union{T, Vector{T}}, η_loss_bs::Union{Nothing, T, Vector{T}} = nothing, η_loss_lines::Union{Nothing, T, Vector{T}} = nothing, ϕ::Union{Nothing, T, Vector{T}} = nothing) where {T<:Real}
+function build_loop(m::Int, η::Union{T, Vector{T}}, η_loss_bs::Union{Nothing, T, Vector{T}} = nothing, η_loss_lines::Union{Nothing, T, Vector{T}} = nothing, η_loss_source::Union{Nothing, T, Vector{T}} = nothing, ϕ::Union{Nothing, T, Vector{T}} = nothing) where {T<:Real}
 
     for param in [η, η_loss_bs, η_loss_lines, ϕ]
         if param != nothing
@@ -110,7 +112,29 @@ function build_loop(m::Int, η::Union{T, Vector{T}}, η_loss_bs::Union{Nothing, 
         end
     end
 
-    if η_loss_bs != nothing ||  η_loss_lines != nothing
+    """
+
+    Adds a line source to the circuit to represent a source that doesn't send photon with certainty.
+
+    """
+    function add_line_source!(mode, lossy)
+
+        # need to be applied to mode being mode + 1 (if adding just before the beam splitter with the conventions of the loop below)
+
+        if lossy && η_loss_source != nothing
+            interf = LossyLine(η_loss_source[mode])
+        end
+
+        target_modes_in = ModeList([mode], circuit.m_real)
+        target_modes_out = target_modes_in
+
+        if lossy && η_loss_source != nothing
+            add_element_lossy!(circuit, interf, target_modes_in, target_modes_out)
+        end
+
+    end
+
+    if η_loss_bs != nothing ||  η_loss_lines != nothing || η_loss_source != nothing
 
         lossy = true
 
@@ -118,7 +142,17 @@ function build_loop(m::Int, η::Union{T, Vector{T}}, η_loss_bs::Union{Nothing, 
 
         for mode in 1:m-1
 
-            add_line!(mode, lossy)
+            if mode != 1
+                ######## I am not sure this should be there for the first mode! ... it was there previously but I removed it
+                add_line!(mode, lossy)
+            end
+            
+            if mode == 1
+                add_line_source!(mode, lossy)
+                add_line_source!(mode+1, lossy)
+            else
+                add_line_source!(mode+1, lossy)
+            end
 
             if η_loss_bs != nothing
                 interf = LossyBeamSplitter(η[mode], η_loss_bs[mode])
@@ -163,12 +197,23 @@ end
 
 function build_loop(params::LoopSamplingParameters)
 
-    @unpack n, m, input_type, i, η, η_loss_bs, η_loss_lines, d, ϕ, p_dark, p_no_count = params
+    @unpack n, m, i, η, η_loss_bs, η_loss_lines, d, ϕ, p_dark, p_no_count, η_loss_source = params
 
-    build_loop(m, η, η_loss_bs, η_loss_lines, ϕ)
+    build_loop(m, η, η_loss_bs, η_loss_lines, η_loss_source, ϕ)
 
 end
 
+
+"""
+    build_loop!(params::LoopSamplingParameters)
+    build_loop!(data::OneLoopData)
+
+Updates the `interferometer` field of a `LoopSamplingParameters`.
+"""
+function build_loop!(params::LoopSamplingParameters)
+    params.interferometer = build_loop(params::LoopSamplingParameters)
+end
+    
 
 
 """
@@ -180,7 +225,7 @@ function get_sample_loop(params::LoopSamplingParameters)
 
     @unpack n, m, input_type, i, η, η_loss_bs, η_loss_lines, d, ϕ, p_dark, p_no_count = params
 
-    circuit = LossyLoop(m, η, η_loss_bs, η_loss_lines, ϕ).circuit
+    circuit = LossyLoop(m, η, η_loss_bs, η_loss_lines, η_loss_source, ϕ).circuit
 
     o = RealisticDetectorsFockSample(p_dark, p_no_count)
     ev = Event(i,o, circuit)
@@ -190,3 +235,5 @@ function get_sample_loop(params::LoopSamplingParameters)
     ev.output_measurement.s
 
 end
+
+

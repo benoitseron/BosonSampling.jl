@@ -250,3 +250,96 @@ build_loop(LoopSamplingParameters(n = 10, input_type = Distinguishable))
 params = PartitionSamplingParameters(n = 10, m = 10)
 
 compute_probability!(params)
+
+### computing the entire distribution ###
+
+n = 3
+interf = Fourier(n)
+o = BosonSamplingDistribution()
+
+params = SamplingParameters(n = n, interf = interf, o = o)
+
+set_parameters!(params)
+
+compute_probability!(params.ev)
+compute_probability!(params)
+
+### imperfect sources and summing all possible probabilities ###
+
+n = 3
+m = n
+
+d = Uniform(0,2pi)
+ϕ = nothing # rand(d,m)
+η_loss_lines = 0.9 * ones(m)
+η_loss_bs = 1. * ones(m-1)
+
+params = LoopSamplingParameters(n=n, η = η_thermalization(n), η_loss_bs = η_loss_bs, η_loss_lines = η_loss_lines, ϕ = ϕ)
+
+source = QuantumDot(efficiency = 0.85)
+
+params_event = convert(SamplingParameters, params)
+params_event_x = copy(params_event)
+
+params_event_x.x = 0
+
+params_event.o =  FockDetection(ModeOccupation([1,1,0]))
+params_event_x.o =  FockDetection(ModeOccupation([1,1,0]))
+
+set_parameters!(params_event)
+set_parameters!(params_event_x)
+
+compute_probability_imperfect_source(params_event, source)
+compute_probability_imperfect_source(params_event_x, source)
+
+
+p_x_imperfect_source(params_event, 0, source)
+
+ev = params_event_x.ev
+ev.output_measurement = FockDetection(ModeOccupation([1,1,1]))
+ev
+
+p_x_imperfect_source_update_this_event(ev, params_event_x, source)
+
+
+### computing ThresholdFockDetection event probabilities ###
+
+
+n = 4
+m = n
+
+d = Uniform(0,2pi)
+ϕ = nothing # rand(d,m)
+η_loss_lines = nothing #0.2 * ones(m)
+η_loss_bs = nothing # 0.2 * ones(m-1)
+
+params = LoopSamplingParameters(n=n, η = η_thermalization(n), η_loss_bs = η_loss_bs, η_loss_lines = η_loss_lines, ϕ = ϕ)
+
+params_event = convert(SamplingParameters, params)
+params_event.o = ThresholdFockDetection(ThresholdModeOccupation([0,0,1,1]))
+
+set_parameters!(params_event)
+
+ev = params_event.ev
+
+@test compute_threshold_detection_probability(ev) ≈ 0.21782756693593455
+
+# now adding some loss 
+
+η_loss_lines = 0.2 * ones(m)
+η_loss_bs =  0.2 * ones(m-1)
+
+params = LoopSamplingParameters(n=n, η = η_thermalization(n), η_loss_bs = η_loss_bs, η_loss_lines = η_loss_lines, ϕ = ϕ)
+
+params_event = convert(SamplingParameters, params)
+params_event.o = ThresholdFockDetection(ThresholdModeOccupation([0,0,1,1]))
+
+set_parameters!(params_event)
+
+ev = params_event.ev
+
+@test compute_threshold_detection_probability(ev) ≈ 0.06234128207801644
+
+# can also just use 
+
+@test compute_probability!(params_event) ≈ 0.06234128207801644

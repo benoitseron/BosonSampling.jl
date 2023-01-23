@@ -340,6 +340,7 @@ process_probability_partial(interf::Interferometer, input_state::Input{TIn} wher
 
 """
 	compute_probability(ev::Event{TIn, TOut}) where {TIn<:InputType, TOut<:FockDetection}
+	compute_probability(ev::Event{TIn, TOut}) where {TIn<:InputType, TOut<:ThresholdFockDetection}
 
 Given an [`Event`](@ref), gives the probability to get the outcome `TOut` when `TIn`
 passes though the interferometer `ev.interferometer`.
@@ -365,6 +366,73 @@ function compute_probability!(ev::Event{TIn,TOut}) where {TIn<:InputType, TOut<:
 
 	ev.proba_params.probability = clean_proba(ev.proba_params.probability)
 
+end
+
+
+"""
+
+    compute_threshold_detection_probability(ev::Event{<:InputType,<:ThresholdFockDetection})
+
+Compute the probability of a threshold detection event. This is done by computing the probabilities of all possible number of photons detected, and then summing the probabilities of the number of photons detected up to the number of photons in the input state. This uses the partition formalism to make this summation much faster than a direct computation.
+
+Also works with loss.
+"""
+function compute_threshold_detection_probability(ev::Event{<:InputType,<:ThresholdFockDetection})
+
+    state = lossless_output_detection_state(ev)
+
+    detection_subset = Subset(state)
+    complement = complement_subset(detection_subset)
+
+    ##### need to check this stuff if loss
+
+    part = BosonSampling.Partition([detection_subset, complement])
+
+    # compute the probabilities associated with the partition created by the detection
+
+    i = ev.input_state
+    o = PartitionCountsAll(part)
+    ev_partition = Event(i,o,ev.interferometer)
+
+	mc = compute_probability!(ev_partition)
+
+    # we are now interested in the case where there are zero photons in the complement, and from the number of threshold counts detected up to the number of input photons
+
+    n_input = ev.input_state.r.n
+    n_detected = ev.output_measurement.s.n_detected
+
+    n_in_complement(i) = mc.counts[i].counts.state[2] 
+    n_in_detectors(i) = mc.counts[i].counts.state[1]
+    # there is potentially mc.counts[i].counts.state[3] lost
+
+    function valid_count(i)
+        if n_in_complement(i) == 0 && (n_in_detectors(i) >= n_detected && n_in_detectors(i) <= n_input)
+            return true
+        else
+            return false
+        end
+    end
+
+    probability_this_threshold_detection = 0
+
+    for i in 1:length(mc.counts)
+        if valid_count(i)
+            probability_this_threshold_detection += mc.proba[i]
+        end
+    end
+
+    probability_this_threshold_detection
+
+end
+
+function compute_probability!(ev::Event{TIn, TOut}) where {TIn<:InputType, TOut<:ThresholdFockDetection}
+
+	proba = compute_threshold_detection_probability(ev)
+	
+	ev.proba_params.precision = eps()
+	ev.proba_params.failure_probability = 0
+	ev.proba_params.probability = proba
+	
 end
 
 """
@@ -448,10 +516,27 @@ end
 #
 # 	probability_vector
 # end
+"""
 
+	is_collisionless(r)
+	is_collisionless(i::Input)
+	is_collisionless(r::ModeOccupation)
+	is_collisionless(r::ThresholdModeOccupation, n_in::Int)
+
+Tells if an event contains more than one photon in an input bin.
+
+For `ThresholdModeOccupation`, this is infered knowing the input number of photons.
+
+"""
 function is_collisionless(r)
     all(r .<= 1)
 end
 
 is_collisionless(r::ModeOccupation) = is_collisionless(r.state)
 is_collisionless(i::Input) = is_collisionless(i.r.state)
+
+function is_collisionless(r::ThresholdModeOccupation, n_in::Int)
+
+	sum(r) == n_in
+
+end

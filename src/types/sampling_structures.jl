@@ -69,11 +69,22 @@
     T::Type{T} where {T<:InputType} = Bosonic
     mode_occ::ModeOccupation = first_modes(n,m)
     x::Union{Nothing, Real} = nothing
+    S::Union{Nothing, Matrix} = nothing
 
     i::Union{Input, Nothing} = nothing
 
     o::Union{OutputMeasurementType, Nothing} = nothing
     ev::Union{Event, Nothing} = nothing
+
+end
+
+function Base.copy(params::SamplingParameters)
+
+    params_copy = SamplingParameters(n=params.n, m=params.m, T=params.T, interf = params.interf, mode_occ = params.mode_occ, x = params.x, i=params.i, o=params.o, ev=params.ev)
+
+    set_parameters!(params_copy)
+
+    params_copy
 
 end
 
@@ -94,6 +105,7 @@ end
     T::Type{T} where {T<:InputType} = Bosonic
     mode_occ::ModeOccupation = first_modes(n,m)
     x::Union{Nothing, Real} = nothing
+    S::Union{Nothing, Matrix} = nothing
 
     i::Union{Input, Nothing} = nothing
 
@@ -114,6 +126,16 @@ end
 
 end
 
+function Base.copy(params::PartitionSamplingParameters)
+
+    params_copy = PartitionSamplingParameters(n=params.n, m=params.m, T=params.T, interf = params.interf, mode_occ = params.mode_occ, x = params.x, i=params.i, n_subsets=params.n_subsets, part=params.part)
+
+    set_parameters!(params_copy)
+
+    params_copy
+
+end
+
 """
     set_input!(params::PartitionSamplingParameters)
     set_input!(params::SamplingParameters)
@@ -122,10 +144,17 @@ end
 """
 function set_input!(params::Union{PartitionSamplingParameters, SamplingParameters})
 
+    if params.x != nothing
+        params.T = OneParameterInterpolation
+    end
+
     if params.T in [Bosonic, Distinguishable]
         params.i = Input{params.T}(params.mode_occ)
     elseif params.T == OneParameterInterpolation
         params.i = Input{params.T}(params.mode_occ, params.x)
+        
+    elseif params.T == UserDefinedGramMatrix
+        params.i = Input{params.T}(params.mode_occ, params.S)
     else
         error("type not implemented")
     end
@@ -142,6 +171,12 @@ This function acts as an outer constructor to make it compatible with peculiarit
 """
 function set_interferometer!(interf::Interferometer, params::Union{PartitionSamplingParameters, SamplingParameters})
 
+    
+    # skipping if not output measurement
+    if params.o == nothing
+        return
+    end
+
     if params.i == nothing
         set_input!(params)
     end
@@ -156,7 +191,9 @@ function set_interferometer!(interf::Interferometer, params::Union{PartitionSamp
             getfield(params, field) = to_lossy(getfield(params, field))
         end
 
-        params.n_subsets += 1
+        if typeof(params) == PartitionSamplingParameters
+            params.n_subsets += 1
+        end
     else
         @argcheck interf.m == params.m
     end
@@ -174,12 +211,16 @@ function set_partition!(params::PartitionSamplingParameters)
 
 end
 
-function set_measurement!(o::OutputMeasurementType, params::SamplingParameters)
+function set_measurement!(o::Union{OutputMeasurementType, Nothing}, params::SamplingParameters)
 
+    if o == nothing
 
-    if StateMeasurement(typeof(o)) == FockStateMeasurement()
+        params.o = nothing
+
+    elseif StateMeasurement(typeof(o)) in [FockStateMeasurement(), CompleteDistribution()]
         params.o = o
         params.ev =  Event(params.i,params.o,params.interf)
+    
     else
         error("invalid measurement")
 
@@ -221,38 +262,47 @@ By default it applies a random phase at each optical line.
 """
 @with_kw mutable struct LoopSamplingParameters
 
-    n::Int = 4
+    n::Int
     m::Int = n
     x::Union{Real, Nothing} = nothing
-    input_type::Type{T} where {T<:InputType} = Bosonic
+    T::Type{T} where {T<:InputType} = Bosonic
+    mode_occ::ModeOccupation = first_modes(n,m)
     i::Input = begin
-        if input_type in [Bosonic, Distinguishable]
-            i =  Input{input_type}(first_modes(n,m))
-        elseif input_type == OneParameterInterpolation
+        if T in [Bosonic, Distinguishable]
+            i =  Input{T}(mode_occ)
+        elseif T == OneParameterInterpolation
             if x == nothing
                 error("x not given")
             else
-                i = Input{input_type}(first_modes(n,m), x)
+                i = Input{T}(mode_occ, x)
             end
         end
     end
 
 
     η::Union{T, Vector{T}}  where {T<:Real} = 1/sqrt(2) .* ones(m-1)
-    η_loss_bs::Union{Nothing, T, Vector{T}}   where {T<:Real} = 1 .* ones(m-1)
-    η_loss_lines::Union{Nothing, T, Vector{T}}   where {T<:Real} = 1 .* ones(m)
+    η_loss_bs::Union{Nothing, T, Vector{T}} where {T<:Real} = 1 .* ones(m-1)
+    η_loss_lines::Union{Nothing, T, Vector{T}} where {T<:Real} = 1 .* ones(m)
+    η_loss_source::Union{Nothing, T, Vector{T}} where {T<:Real} = 1 .* ones(m)
     d::Union{Nothing, Real, Distribution} = Uniform(0, 2pi)
     ϕ::Union{Nothing, T, Vector{T}} where {T<:Real} = rand(d, m)
+
+    interferometer::Union{Nothing, Interferometer} = build_loop(m, η, η_loss_bs, η_loss_lines, η_loss_source, ϕ)
 
     p_dark::Real = 0.0
     p_no_count::Real = 0.0
 
 end
 
+function Base.copy(params::LoopSamplingParameters)
+
+    LoopSamplingParameters(n=params.n, m=params.m, x=params.x, T=params.T, mode_occ=params.mode_occ, i=params.i, η=params.η, η_loss_bs=params.η_loss_bs, η_loss_lines=params.η_loss_lines, d=params.d, ϕ=params.ϕ, interferometer=params.interferometer, p_dark=params.p_dark, p_no_count=params.p_no_count, η_loss_source=params.η_loss_source)
+
+end
 
 function Base.convert(::Type{PartitionSamplingParameters}, params::LoopSamplingParameters)
 
-    @unpack n, m, input_type, i, η, η_loss_bs, η_loss_lines, d, ϕ, p_dark, p_no_count = params
+    @unpack n, m, T, i, η, η_loss_bs, η_loss_lines, d, ϕ, p_dark, p_no_count, η_loss_source = params
 
     interf = build_loop(params)
 
@@ -263,3 +313,23 @@ function Base.convert(::Type{PartitionSamplingParameters}, params::LoopSamplingP
     ps
 
 end
+
+function Base.convert(::Type{SamplingParameters}, params::LoopSamplingParameters)
+
+    @unpack n, m, T, i, η, η_loss_bs, η_loss_lines, d, ϕ, p_dark, p_no_count, η_loss_source = params
+
+    interf = build_loop(params)
+
+    params_event = SamplingParameters(n=n, m=m, T= get_parametric_type(i)[1], interf = interf, mode_occ = i.r, x = i.distinguishability_param,i=i)
+
+    set_parameters!(params_event)
+
+    params_event
+
+end
+
+
+
+is_lossy(params::SamplingParameters) = LossParameters(typeof(params.ev.interferometer)) == IsLossy()
+is_lossless(params::SamplingParameters) = LossParameters(typeof(params.ev.interferometer)) == IsLossless()
+

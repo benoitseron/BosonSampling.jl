@@ -85,7 +85,6 @@ end
 
 ### bosonic to distinguishable single subset ###
 
-
 n = 14
 m = n
 n_iter = 1000
@@ -706,65 +705,75 @@ sample_array[:,10]
 
 ###### number of samples needed from bayesian ######
 
-n = 10
-partition_sizes = 2:3
-max_density = 1
-min_density = 0.07
-steps = 20
-n_trials = 1000
-maxiter = 100000
 
-invert_densities = [max_density * (max_density/min_density)^((i-1)/(steps-1)) for i in 1:steps]
+for n in [10,12,14,16]
 
-m_array = Int.(floor.(n * invert_densities))
+    @show n
+    partition_sizes = 2:3
+    max_density = 1
+    min_density = 0.07
+    steps = 20
+    n_trials = 1000
+    maxiter = 100000
 
-n_samples_array = zeros((length(partition_sizes), length(m_array)))
-n_samples_array_var_array = copy(n_samples_array)
+    invert_densities = [max_density * (max_density/min_density)^((i-1)/(steps-1)) for i in 1:steps]
+    
+    # # to avoid n > m
+    # filter!(x->x > 1,invert_densities)
+    # steps = length(invert_densities)
+    # @show (invert_densities)
 
-for (k,n_subsets) in enumerate(partition_sizes)
+    m_array = Int.(floor.(n * invert_densities)) 
+    # @show length(m_array)
 
-    @show n_subsets
+    n_samples_array = zeros((length(partition_sizes), length(m_array)))
+    n_samples_array_var_array = copy(n_samples_array)
 
-    @showprogress for (i,m) in enumerate(m_array)
+    for (k,n_subsets) in enumerate(partition_sizes)
 
-        trials = []
+        @show n_subsets
 
-        for i in 1:n_trials
+        @showprogress for (i,m) in enumerate(m_array)
 
-            interf = RandHaar(m)
+            trials = []
 
-            ib = Input{Bosonic}(first_modes(n,m))
-            id = Input{Distinguishable}(first_modes(n,m))
+            for i in 1:n_trials
 
-            part = equilibrated_partition(m,n_subsets)
-            o = PartitionCountsAll(part)
+                interf = RandHaar(m)
 
-            evb = Event(ib,o,interf)
-            evd = Event(id,o,interf)
+                ib = Input{Bosonic}(first_modes(n,m))
+                id = Input{Distinguishable}(first_modes(n,m))
 
-            push!(trials , number_of_samples(evb,evd, maxiter = maxiter))
+                part = equilibrated_partition(m,n_subsets)
+                o = PartitionCountsAll(part)
 
+                evb = Event(ib,o,interf)
+                evd = Event(id,o,interf)
+
+                push!(trials , number_of_samples(evb,evd, maxiter = maxiter))
+
+            end
+
+            trials = remove_nothing(trials)
+
+            n_samples_array[k,i] = (n_subsets <= m_array[i] ? mean(trials) : missing)
+            n_samples_array_var_array[k,i] = (n_subsets <= m_array[i] ? var(trials) : missing)
         end
 
-        trials = remove_nothing(trials)
-
-        n_samples_array[k,i] = (n_subsets <= m_array[i] ? mean(trials) : missing)
-        n_samples_array_var_array[k,i] = (n_subsets <= m_array[i] ? var(trials) : missing)
     end
 
-end
 
+    save("data/number_samples.jld", "n_samples_array", n_samples_array, "n_samples_array_var_array" , n_samples_array_var_array)
 
-save("data/number_samples.jld", "n_samples_array", n_samples_array, "n_samples_array_var_array" , n_samples_array_var_array)
+    l = load("data/save/number_samples.jld")
 
-l = load("data/save/number_samples.jld")
+    n_samples_array = l["n_samples_array"]
 
-n_samples_array = l["n_samples_array"]
-
-partition_color(k, partition_sizes) = get(color_map, k / length(partition_sizes))
+    partition_color(k, partition_sizes) = get(color_map, k / length(partition_sizes))
 
     plt = plot()
     for (k,K) in enumerate(partition_sizes)
+
 
         x_data = reverse(1 ./ invert_densities)
         y_data = reverse(n_samples_array[k,:])
@@ -798,14 +807,16 @@ partition_color(k, partition_sizes) = get(color_map, k / length(partition_sizes)
     ylabel!("samples")
 
     display(plt)
-    savefig(plt, "images/publication/number_samples.png")
+    # savefig(plt, "images/publication/number_samples.png")
 
 
-k = 1
-x_data = reverse(1 ./ invert_densities)
-y_data = reverse(n_samples_array[k,:])
+    k = 1
+    x_data = reverse(1 ./ invert_densities)
+    y_data = reverse(n_samples_array[k,:])
 
-get_power_law_log_log(x_data, y_data)
+    get_power_law_log_log(x_data, y_data)
+
+end
 
 ###### number of samples needed x-model ######
 
@@ -817,7 +828,7 @@ m = n
 partition_sizes = 2:3
 steps = 10
 n_trials = 1000
-maxiter = 100000
+maxiter = 100000ceil
 p_null = 0.05
 
 x_array = collect(range(0.8,0.99,length = steps))
@@ -977,7 +988,6 @@ function add_this_x(x)
     p
 
 end
-
 
 p1 = add_this_x(1)
 p2 = add_this_x(0)
@@ -1536,3 +1546,100 @@ end
 
 # cd("..")
 # cd("..")
+
+
+# ###### validity number of samples needed from bayesian ######
+
+
+
+
+
+
+
+
+# partition_sizes = 2
+# n_array = collect(10:12)
+# n_trials = 1000
+# maxiter = 100000
+
+# results = zeros((2, length(n_array)))
+
+# function exponent_fit_number_of_samples(n)
+
+#     max_density = 1
+#     min_density = 0.03
+#     steps = 20
+
+#     invert_densities = [max_density * (max_density/min_density)^((i-1)/(steps-1)) for i in 1:steps]
+
+#     m_array = Int.(floor.(n * invert_densities))
+
+#     n_samples_array = zeros((length(partition_sizes), length(m_array)))
+#     n_samples_array_var_array = copy(n_samples_array)
+
+#     m_array = Int.(ceil.(n * invert_densities))
+
+#     for (k,n_subsets) in enumerate(partition_sizes)
+
+#         @show n_subsets
+    
+#         @showprogress for (i,m) in enumerate(m_array)
+    
+#             trials = []
+    
+#             for i in 1:n_trials
+    
+#                 interf = RandHaar(m)
+    
+#                 ib = Input{Bosonic}(first_modes(n,m))
+#                 id = Input{Distinguishable}(first_modes(n,m))
+    
+#                 part = equilibrated_partition(m,n_subsets)
+#                 o = PartitionCountsAll(part)
+    
+#                 evb = Event(ib,o,interf)
+#                 evd = Event(id,o,interf)
+    
+#                 push!(trials , number_of_samples(evb,evd, maxiter = maxiter))
+    
+#             end
+    
+#             trials = remove_nothing(trials)
+    
+#             n_samples_array[k,i] = (n_subsets <= m_array[i] ? mean(trials) : missing)
+#             n_samples_array_var_array[k,i] = (n_subsets <= m_array[i] ? var(trials) : missing)
+#         end
+    
+#     end
+
+#     x_data = reverse(1 ./ invert_densities)
+#     y_data = reverse(n_samples_array[1,:])
+
+#     get_power_law_log_log(x_data,y_data)
+
+# end
+
+# for (k,n) in enumerate(n_array)
+
+#     @show n
+#     this_run = exponent_fit_number_of_samples(n)
+
+#     results[1, k] = this_run[3]
+#     results[2, k] = this_run[2]
+# end
+
+# plt = plot()
+# begin
+#     col = [get(color_map, 0), get(color_map, 1)]
+
+#     scatter!(n_array, results[2,:], label = L"r", c = col[1])
+#     scatter!(n_array, results[1,:], label = L"d(2)", c = col[2])
+#     # ylims!((0,1.2))
+#     hline!([mean(results[2,:])], c = col[1], linestyle = :dash, label = L"\langle r \rangle = %$(round(mean(results[2,:]), digits = 3))")
+#     hline!([mean(results[1,:])], c = col[2], linestyle = :dash, label = L"\langle c(2) \rangle = %$(round(mean(results[1,:]), digits = 3))")
+#     plot!(legend=:bottomright)
+#     xlabel!(L"n")
+#     xlims!((n_array[1]-1, n_array[end]+2))
+#     display(plt)
+# end
+# savefig(plt, "images/publication/power_law_validity_number_samples.png")

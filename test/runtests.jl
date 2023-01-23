@@ -193,5 +193,6 @@ include("tools.jl")
 
 	include("circuits_and_loss.jl")
 	include("partitions.jl")
+	include("sources.jl")
 
 end

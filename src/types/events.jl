@@ -1,90 +1,4 @@
 """
-	MultipleCounts()
-	MultipleCounts(counts, proba)
-
-Holds something like the photon counting probabilities with their respective
-probability (in order to use them as a single observation). Can be declared
-empty as a placeholder.
-
-	Fields:
-		- counts::Union{Nothing, Vector{ModeOccupation}, Vector{PartitionOccupancy}},
-		- proba::Union{Nothing,Vector{Real}}
-"""
-mutable struct MultipleCounts
-
-	counts::Union{Nothing, Vector{ModeOccupation}, Vector{PartitionOccupancy}, Vector{ThresholdModeOccupation}}
-	proba::Union{Nothing,Vector{Real}}
-
-	MultipleCounts() = new(nothing,nothing)
-	MultipleCounts(counts, proba) = new(counts,proba)
-
-end
-
-function initialise_to_empty_vectors!(mc::MultipleCounts, type_proba, type_counts)
-
-	mc.proba = Vector{type_proba}()
-	mc.counts = Vector{type_counts}()
-
-end
-
-Base.show(io::IO, pb::MultipleCounts) = begin
-
-	if pb.proba == nothing
-		println(io, "Empty MultipleCounts")
-	else
-		for i in 1:length(pb.proba)
-
-			println(io, "output: \n")
-			println(io, pb.counts[i])
-			println(io, "p = $(pb.proba[i])")
-			println(io, "--------------------------------------")
-		end
-	end
-
-end
-
-
-"""
-	to_threshold(mc::MultipleCounts)
-
-Transforms a `MultipleCounts` into the equivalent for threshold detectors.
-"""
-function to_threshold(mc::MultipleCounts)
-
-    count_proba = Dict()
-
-    for (count, proba) in zip(mc.counts, mc.proba)
-        new_count = to_threshold(count)
-
-        if new_count in keys(count_proba)
-            count_proba[new_count] += proba
-        else
-            count_proba[new_count] = proba
-        end
-
-    end
-
-    # println("######")
-    # @show count_proba
-
-    counts = Vector{typeof(mc.counts[1])}()
-    probas = Vector{typeof(mc.proba[1])}()
-
-    for key in keys(count_proba)
-
-        push!(counts, key)
-        push!(probas, count_proba[key])
-
-    end
-
-    # @show counts
-    # @show probas
-
-    MultipleCounts(counts, probas)
-
-end
-
-"""
 	EventProbability(probability::Union{Nothing, Number})
 	EventProbability(mc::MultipleCounts)
 
@@ -226,3 +140,5 @@ Base.convert(::Type{Event{TIn, FockDetection}}, ev::Event{TIn, FockSample}) wher
 
 # fs = FockSample([1,2,3])
 # convert(FockDetection, fs)
+
+StateMeasurement(ev::Event) = StateMeasurement(typeof(ev.output_measurement))

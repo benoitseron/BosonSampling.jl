@@ -1,6 +1,8 @@
 """
     theoretical_distribution(;input::Input, interf::Interferometer, i=nothing)
 
+WARNING: use full_distribution() instead, depreciated
+
 Compute the probability distribution of all possible output configurations of
 fully/partially-indistinguishable photons through a lossless interferometer.
 
@@ -58,8 +60,3 @@ function theoretical_distribution(;input::Input, interf::Interferometer, i=nothi
     end
 
 end
-
-(1,2,4)
-(2,1,4)
-
-ModeOccupation([1,2,4])

@@ -1,5 +1,5 @@
 """
-    convert_csv_to_samples(path_to_file::String, m::Int, input_type = ThresholdModeOccupation, input_format = (input_data) -> ModeList(input_data, m), samples_type = MultipleCounts)
+    convert_csv_to_samples(path_to_file::String, m::Int, input_type = ThresholdModeOccupation, input_format = (input_data) -> ModeList(input_data, m), samples_type = MultipleCounts, renormalize = false)
 
 Reads a CSV file containing experimental data. Converts it into a collection of samples of type `input_type` following the type of detectors available. `input_format` holds how the data is encoded, for instance as a `ModeList` or `ModeOccupation`.
 
@@ -29,8 +29,10 @@ Example usage:
 
     convert_csv_to_samples("data/loop_examples/test.csv", 10)
 
+Setting `renormalize = false` outputs the number of times an event was observed, while true gives a probability of this particular event.
+
 """
-function convert_csv_to_samples(path_to_file::String, m::Int, input_type = ThresholdModeOccupation, input_format = (input_data) -> ModeOccupation(input_data), samples_type = MultipleCounts)
+function convert_csv_to_samples(path_to_file::String, m::Int, input_type = ThresholdModeOccupation, input_format = (input_data) -> ModeOccupation(input_data); samples_type = MultipleCounts, renormalize = false)
 
     data = readdlm(path_to_file, ',', Int)
 
@@ -48,7 +50,7 @@ function convert_csv_to_samples(path_to_file::String, m::Int, input_type = Thres
 
     elseif samples_type == MultipleCounts
 
-        counts = Vector{Real}()
+        counts = renormalize ? Vector{Real}() : Vector{Int}()
 
         for (output_number, output_pattern) in enumerate(eachrow(data[:,2:end]))
 
@@ -57,7 +59,7 @@ function convert_csv_to_samples(path_to_file::String, m::Int, input_type = Thres
 
         end
 
-        return MultipleCounts(samples, counts ./ sum(counts)) # normalize to make it a probability as is eaten by MultipleCounts
+        return MultipleCounts(samples, renormalize ? counts ./ sum(counts) : counts) 
     else
         error("not implemented")
     end

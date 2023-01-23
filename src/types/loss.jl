@@ -117,6 +117,12 @@ function to_lossy(mo::ModeOccupation)
 
 end
 
+function to_lossy(t::ThresholdModeOccupation)
+
+    ThresholdModeOccupation(vcat(t.state, zeros(Int, length(t.state))))
+
+end
+
 function to_lossy(state::Vector{Int})
 
     vcat(state,zeros(eltype(state), length(state)))
@@ -316,5 +322,56 @@ Gives the TVD obtained by considering 0,...,k photons lost. The tvd for each num
 function tvd_less_than_k_lost_photons(k, pb_sorted, pd_sorted)
 
     sum(tvd(pb_sorted[j].proba,pd_sorted[j].proba) for j in 1:k)
+
+end
+
+
+is_lossy(interf::Interferometer) = LossParameters(typeof(interf)) == IsLossy()
+is_lossy(ev::Event) = LossParameters(typeof(ev.interferometer)) == IsLossy()
+
+is_lossless(interf::Interferometer) = LossParameters(typeof(interf)) == IsLossless()
+is_lossless(ev::Event) = LossParameters(typeof(ev.interferometer)) == IsLossless()
+
+"""
+
+    lossless_state(state::Vector{Int}, ev::Event)
+
+Return the lossless state of the event `ev` given the state `state` of the input. If the event is lossy, the state is the first half of the state vector, otherwise it is the whole state vector.
+"""
+function lossless_state(state::Vector{Int}, ev::Event)
+
+    if StateMeasurement(ev) == FockStateMeasurement()
+
+        is_lossy(ev) ? state[1:Int(length(state) / 2)] : state
+
+    else
+        error("lossless_state is not implemented for this type of measurement")
+    end
+
+end
+
+"""
+
+    lossless_output_detection_state(ev::Event)
+
+Return the lossless state of the output of the event `ev`. If the event is lossy, the state is the first half of the state vector, otherwise it is the whole state vector.
+"""
+function lossless_output_detection_state(ev::Event)
+
+    
+    lossless_state(ev.output_measurement.s.state, ev)
+
+end
+
+
+"""
+
+    lossless_output_detection_state(ev::Event)
+
+Return the lossless state of the input of the event `ev`. If the event is lossy, the state is the first half of the state vector, otherwise it is the whole state vector.
+"""
+function lossless_input_state(ev::Event)
+
+    lossless_state(ev.input_state.r.state, ev)
 
 end

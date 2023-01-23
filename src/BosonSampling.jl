@@ -67,9 +67,9 @@ include("boson_samplers/noisy_sampler.jl")
 include("boson_samplers/sample.jl")
 include("boson_samplers/gaussian_sampler.jl")
 
-
 include("distributions/noisy_distribution.jl")
 include("distributions/theoretical_distribution.jl")
+include("distributions/full_distribution.jl")
 
 include("permanent_conjectures/bapat_sunder.jl")
 include("permanent_conjectures/counter_example_functions.jl")
@@ -79,13 +79,17 @@ include("permanent_conjectures/permanent_on_top.jl")
 include("certification/experimental_data_generation.jl")
 include("certification/bayesian.jl")
 include("certification/correlators.jl")
+include("certification/experiment.jl")
 
 include("visual.jl")
 
 include("loop/loop_functions.jl")
 
 include("experiments/data_conversion.jl")
+include("experiments/coincidences.jl")
 
+include("distinguishability/parametrizations.jl")
+include("bunching/average_bins_occupied.jl")
 
 
 permanent = ryser

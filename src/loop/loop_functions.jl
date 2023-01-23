@@ -48,7 +48,7 @@ end
 
 Defines the modes corresponding to the pseudo number resolution as subsets for thermalization. This corresponds to the first mode of the interferometer with spatial bins. Loss modes included in the last subset.
 """
-partition_thermalization_pnr(m) = begin
+partition_thermalization_pnr(n,m) = begin
 
     subsets = [Subset(ModeList(i,2m)) for i in n:m]
     #push!(subsets, Subset(last_modes(m,2m))) # loss subset

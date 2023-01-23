@@ -1,66 +1,45 @@
 include("packages_loop.jl")
 
+function func(n)
 
-###### what do we want to do ######
+    m = n
 
-# find the parameters of reflectivities that allow for the best TVD, or an interesting behaviour
-# fix the thermalization example to have this interesting case
-# be able to optimize on reflectivity parameters
-# for this I would like to be able to encapsulate everything in PartitionSamplingParameters etc
+    n_lost = 1
 
+    source = QuantumDot(13.5 / 80)
 
-###### development ######
+    d = Uniform(0,2pi)
+    ϕ = nothing # rand(d,m)
 
+    η_loss_lines = 0.9 * ones(m)
+    η_loss_bs =  0.9 * ones(m-1)
+    η_loss_source = get_η_loss_source(m,source)
 
+    params = LoopSamplingParameters(n=n, η = η_thermalization(n), η_loss_bs = η_loss_bs, η_loss_lines = η_loss_lines, η_loss_source = η_loss_source, ϕ = ϕ)
 
-params = LoopSamplingParameters(m=10)
+    params_event = convert(SamplingParameters, params)
+    params_event.o = ThresholdFockDetection(ThresholdModeOccupation(first_modes(n-n_lost, m).state))
 
+    set_parameters!(params_event)
 
+    ev = params_event.ev
 
-"""
-    get_partition_sampling_parameters(params::LoopSamplingParameters, T2::Type{T} where {T<:InputType} = Distinguishable)
-
-Unpacks the `params` to obtain a `PartitionSamplingParameters` compatible with as interferometer the circuit induced by `params`.
-"""
-function get_partition_sampling_parameters(params::LoopSamplingParameters)
-
-    @unpack n, m, input_type, i, η, η_loss_bs, η_loss_lines, d, ϕ, p_dark, p_no_count = params
-
-    PartitionSamplingParameters(n=n, m=m, T= get_parametric_type(params.i)[1], )
+    @time compute_probability!(ev)
 
 end
 
+a = func(20)
 
-psp = convert(PartitionSamplingParameters, params)
+### previous method ###
 
-compute_probability!(psp)
+params_no_η_loss_source = LoopSamplingParameters(n=n, η = η_thermalization(n), η_loss_bs = η_loss_bs, η_loss_lines = η_loss_lines, η_loss_source = nothing, ϕ = ϕ)
 
-###### to threshold ######
+params_event = convert(SamplingParameters, params)
+params_event.o = ThresholdFockDetection(ThresholdModeOccupation(first_modes(n-n_lost, m).state))
 
+set_parameters!(params_event)
 
-mo = ModeOccupation([2,1,0])
+ev = params_event.ev
 
-ModeOccupation([(mode >= 1 ? 1 : 0) for mode in mo.state])
+@time p_x_imperfect_source(params_event, 1., source)
 
-part = partition_thermalization_pnr(m)
-
-
-
-[(length(subset)) for subset in part.subsets] == ones(length(part.subsets))
-
-to_threshold(psp_b.ev.proba_params.probability.counts[10])
-
-length(part.subsets[1])
-
-
-# change a MultipleCounts to threshold
-
-mc = psp_b.ev.proba_params.probability
-
-typeof(mc)
-
-mc.counts[1]
-
-
-
-BosonSampling.to_threshold(mc::MultipleCounts)
