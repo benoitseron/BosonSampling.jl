@@ -51,6 +51,18 @@ Base.convert(::Type{FockDetection}, tmo::ThresholdFockDetection) = FockDetection
 Base.convert(::Type{ThresholdFockDetection}, mo::FockDetection) = ThresholdFockDetection(to_threshold(mo.s.state)) 
 
 
+# write possible_treshold_detections for a ThresholdFockDetection
+# extract the ThresholdModeOccupation and use the previous function
+
+function possible_threshold_detections(n, state::ThresholdFockDetection)
+
+    possible_threshold_detections(n,state.s)
+
+end
+
+
+
+
 """
     PartitionCount(part_occupancy::PartitionOccupancy)
 
@@ -184,10 +196,10 @@ end
 StateMeasurement(::Type{PartitionSample}) = PartitionMeasurement()
 
 
-mutable struct TresholdDetection <: OutputMeasurementType
+mutable struct ThresholdDetection <: OutputMeasurementType
     s::Union{Vector{Int64}, Nothing}
-    TresholdDetection() = new(nothing)
-    TresholdDetection(s::Vector{Int64}) = new(s)
+    ThresholdDetection() = new(nothing)
+    ThresholdDetection(s::Vector{Int64}) = new(s)
 end
 
 """
@@ -230,11 +242,20 @@ Base.show(io::IO, pb::MultipleCounts) = begin
 	if pb.proba == nothing
 		println(io, "Empty MultipleCounts")
 	else
+
+        #check if eltype of proba is an Int, and if so set variable `detector_counts` to true
+        detector_counts = eltype(pb.proba) <: Int
+
 		for i in 1:length(pb.proba)
 
 			println(io, "output: \n")
 			println(io, pb.counts[i])
-			println(io, "p = $(pb.proba[i])")
+            if detector_counts
+                println(io, "counts = $(pb.proba[i])")
+            else
+                println(io, "p = $(pb.proba[i])")
+            end
+			
 			println(io, "--------------------------------------")
 		end
 	end
@@ -281,6 +302,13 @@ function to_threshold(mc::MultipleCounts)
     MultipleCounts(counts, probas)
 
 end
+
+function to_threshold!(mc::MultipleCounts)
+
+    mc = to_threshold(mc)
+
+end
+
 
 """
     BosonSamplingDistribution <: OutputMeasurementType

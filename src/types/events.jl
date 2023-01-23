@@ -142,3 +142,18 @@ Base.convert(::Type{Event{TIn, FockDetection}}, ev::Event{TIn, FockSample}) wher
 # convert(FockDetection, fs)
 
 StateMeasurement(ev::Event) = StateMeasurement(typeof(ev.output_measurement))
+
+# write possible_threshold_detections for an Event
+# extract n from the input_state
+
+function possible_threshold_detections(ev::Event)
+
+    # check that the output_measurement is a ThresholdFockDetection
+
+    @argcheck ev.output_measurement isa ThresholdFockDetection
+
+    n = ev.input_state.r.n
+
+    possible_threshold_detections(n,ev.output_measurement)
+
+end

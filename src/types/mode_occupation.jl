@@ -87,6 +87,11 @@ function to_threshold(mo::ModeOccupation)
 
 end
 
+function to_threshold!(mo::ModeOccupation)
+
+    mo.state = to_threshold(mo.state)
+
+end
 
 """
         Base.cat(s1::ModeOccupation, s2::ModeOccupation)
@@ -262,3 +267,65 @@ end
 Base.sum(mo::ModeOccupation) = sum(mo.state)
 Base.sum(mo::ThresholdModeOccupation) = sum(mo.state)
 
+"""
+
+    possible_threshold_detections(state::Vector{Int})
+
+Returns a list of all possible states that can be obtained from `state`, the state resulting from a threshold detection.
+
+"""
+function possible_threshold_detections(n::Int, state::Vector{Int})
+
+    # get all indexes with a photon
+
+    indexes = findall(x->x==1, state)
+
+    # get number of photons detected
+
+    n_detected = sum(state)
+
+    # finding the position of possible colliding photons
+    mode_configs_colliding_photons = all_mode_configurations(n - n_detected, n_detected, only_photon_number_conserving = false)
+
+    possible_states = []
+
+    # generate a list of each possible configuration of colliding photons
+    # add this configuration where a photon is detected in `state` (as labelled by `indexes`)
+
+    for mode_config in mode_configs_colliding_photons
+
+        for i in 1:length(indexes)
+
+            new_state = copy(state)
+
+            new_state[indexes[i]] += mode_config[i]
+
+            push!(possible_states, new_state)
+
+        end
+
+    end
+
+    unique(possible_states)
+
+end
+
+
+# write possible_treshold_detections for a ThresholdModeOccupation
+# output a list of ModeOccupation
+
+function possible_threshold_detections(n::Int,state::ThresholdModeOccupation)
+
+    possible_states = possible_threshold_detections(n, state.state)
+
+    possible_mode_occupations = []
+
+    for state in possible_states
+
+        push!(possible_mode_occupations, ModeOccupation(state))
+
+    end
+
+    possible_mode_occupations
+
+end
