@@ -372,3 +372,82 @@ mutable struct BosonSamplingDistribution <: OutputMeasurementType
 end
 
 StateMeasurement(::Type{BosonSamplingDistribution}) = CompleteDistribution()
+
+
+function convert_samples_to_probabilities!(samples::MultipleCounts)
+
+    # convert the proba to the probabilities
+    proba = samples.proba ./ sum(samples.proba)
+
+    samples.proba = proba
+
+    samples
+end
+
+
+
+
+"""
+
+convert_state_to_n_ary_number(state::Vector{Int64}, n)
+
+Convert a vector of integers into a binary number. The first element of the vector is the least significant bit. This gives a hash function for a vector of integers.
+
+Need to give n = the number of input photons.
+
+"""
+function convert_state_to_n_ary_number(state::Vector{Int64}, n)
+
+    # invert the state order
+
+    state = reverse(state)
+    nary_number = 0
+
+    for i in 1:length(state)
+        nary_number += state[i] * (n+1)^(i-1)
+    end
+
+    nary_number
+end
+
+# write a function to sort a `MultipleCounts`
+# restrict to counts of type `ThresholdModeOccupation`
+# convert the state of each count into a binary number
+# sort the counts by the binary number
+# sort the probabilities accordingly
+
+function sort_samples!(samples::MultipleCounts)
+    # scan the counts
+    # look at each state
+    # find the overall number of photons
+
+    n_max = 0
+    for count in samples.counts
+        if sum(count.state) > n_max
+            n_max = sum(count.state)
+        end
+    end
+    
+
+    # sort the counts  of the samples using their binary number as key
+
+    sorted = sort(collect(zip(samples.counts, samples.proba)), by = x -> convert_state_to_n_ary_number(x[1].state, n_max))
+
+    counts = [sorted[i][1] for i in 1:length(sorted)]
+    proba = [sorted[i][2] for i in 1:length(sorted)]
+
+    samples.counts = counts
+    samples.proba = proba
+
+    samples
+end
+
+
+function tvd(mc::MultipleCounts, samples::MultipleCounts)
+    # find the tvd between the samples and the mc by computing the tvd between their field proba
+
+    sort_samples!(mc)
+    sort_samples!(samples)
+
+    tvd(mc.proba, samples.proba)
+end
