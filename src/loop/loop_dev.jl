@@ -29,11 +29,14 @@ ev_ = Event(ev.input_state, FockDetection(possible_outputs[1]), ev.interferomete
 
 @time compute_probability!(ev_)
 
+ev_
 
+# Event{Bosonic, FockDetection}(Input{Bosonic}(state = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 10, 20, GramMatrix{Bosonic}(10, ComplexF64[1.0 + 0.0im 1.0 + 0.0im … 1.0 + 0.0im 1.0 + 0.0im; 1.0 + 0.0im 1.0 + 0.0im … 1.0 + 0.0im 1.0 + 0.0im; … ; 1.0 + 0.0im 1.0 + 0.0im … 1.0 + 0.0im 1.0 + 0.0im; 1.0 + 0.0im 1.0 + 0.0im … 1.0 + 0.0im 1.0 + 0.0im], nothing, nothing, OrthonormalBasis(nothing)), nothing), FockDetection(state = [0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0]), EventProbability(2.4682721085522713e-48, 2.220446049250313e-16, 0), Interferometer :
 
-
-
-
+# Type : LossyCircuit
+# m : 20
+# U : 
+# Complex[0.12656250000000002 + 0.0im -0.06200979635307635 + 0.0im … 0.0 + 0.0im 0.0 + 0.0im; 0.11161763343553743 + 0.0im 0.07031250000000001 + 0.0im … 0.0 + 0.0im 0.0 + 0.0im; … ; 0.0 + 0.0im 0.0 + 0.0im … 0.16875 + 0.0im 0.0 + 0.0im; 0.0 + 0.0im 0.0 + 0.0im … 0.0 + 0.0im 0.16875 + 0.0im])
 
 
 
@@ -64,9 +67,11 @@ events = events[1:10]
 
 ev = events[1]
 
-compute_probability!(ev)
+# compute_probability!(ev)
 
-ev.input_state 
+ev.input_state.r
+
+i = Input{Bosonic}(ev.input_state.r)
 
 possible_threshold_detections(ev)
 
@@ -77,10 +82,23 @@ possible_threshold_detections(n, state, lossy = true)
 
 possible_outputs = possible_threshold_detections(ev)
 
-ev_ = Event(ev.input_state, FockDetection(possible_outputs[1]), ev.interferometer)
+# REMOVING THE PARTIAL DISTINGUISHABILITY
+
+i = Input{Bosonic}(ev.input_state.r)
+ev_ = Event(i, FockDetection(possible_outputs[1]), ev.interferometer)
+
+
 
 # for each possible output, compute the probability
 # and sum them up
+
+# Event{OneParameterInterpolation, FockDetection}(Input{OneParameterInterpolation}(state = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 10, 20, GramMatrix{OneParameterInterpolation}(10, [1.0 0.9 … 0.9 0.9; 0.9 1.0 … 0.9 0.9; … ; 0.9 0.9 … 1.0 0.9; 0.9 0.9 … 0.9 1.0], nothing, 0.9, OrthonormalBasis(nothing)), 0.9), FockDetection(state = [1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0]), EventProbability(nothing, nothing, nothing), Interferometer :
+
+# Type : LossyCircuit
+# m : 20
+# U : 
+# Complex[-0.13636899171668213 + 0.0im 0.10406410456750137 + 0.0im … 7.092747648714338e-5 + 0.0im 0.0 + 0.0im; -0.13636899171668215 + 0.0im -0.38901677063462753 + 0.0im … -0.00026514404719058915 + 0.0im 0.0 + 0.0im; … ; 0.0 + 0.0im 0.0 + 0.0im … -0.5092793132753864 + 0.0im 0.0 + 0.0im; 0.0 + 0.0im 0.0 + 0.0im … 0.0 + 0.0im -0.19285487757287617 + 0.0im])
+
 
 @time compute_probability!(ev_)
 
