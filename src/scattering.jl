@@ -382,8 +382,6 @@ function compute_threshold_detection_probability(ev::Event{<:InputType,<:Thresho
 	state = ev.output_measurement.s.state
 	n = ev.input_state.r.n
 
-	possible_threshold_detections(n, state, lossy = true)
-
 	possible_outputs = possible_threshold_detections(ev)
 
 	ev_ = Event(ev.input_state, FockDetection(possible_outputs[1]), ev.interferometer)
