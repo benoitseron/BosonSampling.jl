@@ -284,7 +284,19 @@ function to_threshold(mc::MultipleCounts)
     # println("######")
     # @show count_proba
 
-    counts = Vector{ThresholdModeOccupation}()
+    if eltype(mc.counts) == ModeOccupation
+
+        counts = Vector{ThresholdModeOccupation}()
+
+    elseif eltype(mc.counts) == PartitionOccupancy
+
+        counts = Vector{PartitionOccupancy}()
+
+    else
+
+        error("to_threshold not implemented for this type of MultipleCounts counts: ($(eltype(mc.counts)))")
+
+    end
     probas = Vector{typeof(mc.proba[1])}()
 
     for key in keys(count_proba)
