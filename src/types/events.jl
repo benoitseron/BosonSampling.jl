@@ -175,11 +175,15 @@ end
 
 function to_threshold(ev::Event{TIn, FockDetection}) where {TIn <: InputType}
 
-	ev = copy(ev)
-	convert(ThresholdFockDetection, ev.output_measurement)
+	input_state = deepcopy(ev.input_state)
+	output_measurement = deepcopy(ev.output_measurement)
+	interferometer = deepcopy(ev.interferometer)
+	proba_params = deepcopy(ev.proba_params)
 
-	error("not implemented yet")
-	########### need to convert the parametric type!!!
+	output_measurement = convert(ThresholdFockDetection, output_measurement)
+
+	Event(input_state, output_measurement, interferometer, proba_params)
+
 end
 
 
