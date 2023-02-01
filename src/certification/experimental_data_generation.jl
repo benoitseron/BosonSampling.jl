@@ -53,11 +53,15 @@ function generate_experimental_data(loaded_experiment::OneLoopData, n_events::In
 
     data = generate_experimental_data(loaded_experiment.params, n_events)
 
-
-
     if loaded_experiment.sample_type == ThresholdModeOccupation
-        error("to implement")
-    
+
+        data_threshold = []
+        println("converting to threshold mode occupation")
+        for ev in data
+            push!(data_threshold, to_threshold(ev))
+            
+        end
+        return data_threshold
     end
 
     data

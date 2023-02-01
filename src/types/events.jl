@@ -187,3 +187,5 @@ function to_threshold(ev::Event{TIn, FockDetection}) where {TIn <: InputType}
 end
 
 
+n_clicks(ev::Event) = sum(ev.output_measurement.s.state)
+max_possibly_lost_photons(ev::Event) = ev.input_state.n - n_clicks(ev)
