@@ -173,6 +173,13 @@ function Base.copy(ev::Event)
 
 end
 
+function to_threshold(ev::Event{TIn, FockDetection}) where {TIn <: InputType}
 
+	ev = copy(ev)
+	convert(ThresholdFockDetection, ev.output_measurement)
+
+	error("not implemented yet")
+	########### need to convert the parametric type!!!
+end
 
 

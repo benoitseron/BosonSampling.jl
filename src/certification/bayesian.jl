@@ -36,11 +36,20 @@ end
 Return an array of the probabilities of H being true as we process more and
 more events.
 """
-function compute_confidence_array(events, p_q, p_a)
+function compute_confidence_array(events, p_q, p_a; max_χ = 1000, min_χ = 0.001)
 
     χ_array = [1.]
 
     @showprogress for event in events
+        if χ_array[end] > max_χ
+            break
+        end
+
+        if χ_array[end] < min_χ
+            break
+        end
+
+        @show χ_array[end]
         push!(χ_array, update_confidence(event, p_q, p_a, χ_array[end]))
     end
 
@@ -61,9 +70,9 @@ end
 
 Updates all probabilities associated with a `Bayesian` `Certifier`.
 """
-function certify!(b::Union{Bayesian, BayesianPartition})
+function certify!(b::Union{Bayesian, BayesianPartition}; max_χ = 1000, min_χ = 0.001)
 
-    b.probabilities = compute_confidence_array(b.events, b.null_hypothesis.f, b.alternative_hypothesis.f)
+    b.probabilities = compute_confidence_array(b.events, b.null_hypothesis.f, b.alternative_hypothesis.f, max_χ = max_χ, min_χ = min_χ)
     b.confidence = b.probabilities[end]
 
 end
