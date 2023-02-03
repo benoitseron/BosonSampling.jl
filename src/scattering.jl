@@ -297,6 +297,18 @@ function process_probability_distinguishable(U, input_state, output_state, perma
 	distinguishable_probability(U, input_state, output_state, permanent)
 end
 
+"""
+	fermionic_probability(U, input_state, output_state)
+
+Compute the probability to go from `input_state` to `output_state` through
+the interferomter `U` in the [`Fermionic`](@ref) case.
+"""
+function fermionic_probability(U, input_state, output_state)
+
+	"""fermionic process_probability"""
+
+	abs(det(scattering_matrix(U, input_state, output_state))/sqrt(vector_factorial(input_state) * vector_factorial(output_state)))^2
+end
 
 ### need to implement partial distinguishability processs probabilities ###
 
@@ -359,6 +371,10 @@ function compute_probability!(ev::Event{TIn,TOut}) where {TIn<:InputType, TOut<:
 	elseif TIn == Distinguishable
 
 		ev.proba_params.probability = distinguishable_probability(ev.interferometer.U, ev.input_state.r.state, ev.output_measurement.s.state)
+
+	elseif TIn == Fermionic
+
+		ev.proba_params.probability = fermionic_probability(ev.interferometer.U, ev.input_state.r.state, ev.output_measurement.s.state)		
 
 	else
 		ev.proba_params.probability = process_probability_partial(ev.interferometer, ev.input_state, ev.output_measurement)

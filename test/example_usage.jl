@@ -1,7 +1,7 @@
 using BosonSampling
 using Test
 using JLD
-# using Plots
+using Plots
 
 ### scattering ###
 
@@ -394,3 +394,13 @@ ev = params_event.ev
 # can also just use 
 
 @test compute_probability!(params_event) ≈ 0.06234128207801644
+
+### Antibunching of Fermions ###
+
+input_state = Input{Fermionic}(first_modes(n,m))
+B = BeamSplitter(1/sqrt(2))
+
+output_state = FockDetection(ModeOccupation([1,1]))
+ev = Event(input_state,output_state,B)
+
+compute_probability!(ev)
