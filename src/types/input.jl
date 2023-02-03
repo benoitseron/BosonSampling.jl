@@ -59,6 +59,12 @@ struct Undef <: InputType
 end
 
 """
+Type used to notify that the input is made of a FockState indistiguishable fermions.
+"""
+struct Fermionic <: InputType
+end
+
+"""
 Supertype to any concrete input type of Gaussian state.
 """
 abstract type Gaussian end
@@ -211,6 +217,8 @@ struct GramMatrix{T<:InputType}
             return new{T}(n, rand_gram_matrix(n), nothing, nothing, OrthonormalBasis())
         elseif T == Undef
             return new{T}(n, Matrix{ComplexF64}(undef,n,n), nothing, nothing, OrthonormalBasis())
+        elseif T == Fermionic
+            return new{T}(n, ones(ComplexF64,n,n), nothing, nothing, OrthonormalBasis())
         else
             error("type ", T, " not implemented")
         end
@@ -262,7 +270,7 @@ struct Input{T<:InputType}
     end
 
     function Input{T}(r::ModeOccupation) where {T<:InputType}
-        if T in [Bosonic, Distinguishable, Undef, RandomGramMatrix]
+        if T in [Bosonic, Distinguishable, Undef, RandomGramMatrix, Fermionic]
             return new{T}(r, r.n, r.m, GramMatrix{T}(r.n), nothing)
         else
             error("type ", T, " not implemented")
