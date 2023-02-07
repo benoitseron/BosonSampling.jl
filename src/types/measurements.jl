@@ -84,7 +84,7 @@ end
 Return all possible [`ThresholdFockDetection`](@ref) for `n` modes and `m` photons.
 
 """
-function all_threshold_detections(n, m, only_photon_number_conserving = true)
+function all_threshold_detections(n, m; only_photon_number_conserving = true)
 
     array = all_threshold_mode_occupations(n, m, only_photon_number_conserving = only_photon_number_conserving)
 
@@ -418,6 +418,23 @@ end
 
 StateMeasurement(::Type{BosonSamplingDistribution}) = CompleteDistribution()
 
+"""
+mutable struct BosonSamplingThresholdDistribution <: OutputMeasurementType
+    <: OutputMeasurementType
+
+Container holding the entire boson sampling distribution for a given type of parameters, input, etc with threshold detectors.
+"""
+mutable struct BosonSamplingThresholdDistribution <: OutputMeasurementType
+
+    mc::Union{MultipleCounts, Nothing}
+	BosonSamplingThresholdDistribution() = new(nothing)
+	BosonSamplingThresholdDistribution(mc) = new(mc)
+
+end
+
+StateMeasurement(::Type{BosonSamplingThresholdDistribution}) = CompleteDistribution()
+
+
 
 function convert_samples_to_probabilities!(samples::MultipleCounts)
 
@@ -487,6 +504,14 @@ function sort_samples!(samples::MultipleCounts)
     samples
 end
 
+function Base.sort!(samples::MultipleCounts)
+    sort_samples!(samples)
+end
+
+function Base.sort(samples::MultipleCounts)
+    samples = deepcopy(samples)
+    sort_samples!(samples)
+end
 
 function tvd(mc::MultipleCounts, samples::MultipleCounts)
     # find the tvd between the samples and the mc by computing the tvd between their field proba

@@ -2,12 +2,12 @@ include("packages_loop.jl")
 
 ### verifying threshold probabilities ###
 
-n = 2
+n = 4
 m = 2n
 
 interf = Fourier(m)
 
-state = [0,0,1]
+state = [0,0,1,1]
 o = ThresholdFockDetection(ThresholdModeOccupation(state))
 i = Input{Bosonic}(first_modes(n,m))
 
@@ -15,18 +15,39 @@ ev = Event(i, o, interf)
 
 compute_probability!(ev)
 
-possible_threshold_detections(ev)
 
-is_lossy(ev)
+### full threshold distribution ###
 
-possible_threshold_detections(n, state, lossy =  is_lossy(ev))
+o = BosonSamplingThresholdDistribution()
+ev_full_distribution_threshold = Event(i, o, interf)
 
-possible_threshold_detections_lossless(n, state)
+compute_probability!(ev_full_distribution_threshold)
 
-all_readings = all_mode_configurations(n,m, only_photon_number_conserving = true, threshold = true)
+o = BosonSamplingDistribution()
+ev_full_distribution = Event(i, o, interf)
 
-all_threshold_detections(n,m)
+compute_probability!(ev_full_distribution)
 
+mc = ev_full_distribution.proba_params.probability
+mc_thresholdised = to_threshold(mc)
+
+mc_threshold = ev_full_distribution_threshold.proba_params.probability
+
+sort!(mc_thresholdised) 
+sort!(mc_threshold)
+
+mc_thresholdised.proba ≈ mc_threshold.proba
+
+deepcopy(mc_thresholdised)
+
+
+
+
+
+
+ev_full_distribution.proba_params.probability
+
+ev_full_distribution
 # get all indexes with a photon
 
 indexes = findall(x->x==1, state)
