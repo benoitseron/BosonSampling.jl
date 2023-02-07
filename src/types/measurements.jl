@@ -62,6 +62,39 @@ end
 
 
 """
+
+    function all_threshold_mode_occupations(n, m; only_photon_number_conserving = true)
+
+Return all possible [`ThresholdModeOccupation`](@ref) for `n` modes and `m` photons.
+
+"""
+function all_threshold_mode_occupations(n, m; only_photon_number_conserving = true)
+
+    array = all_mode_configurations(n,m, only_photon_number_conserving = only_photon_number_conserving, threshold = true)
+
+    return [ThresholdModeOccupation(x) for x in array]
+
+end
+
+
+"""
+
+    function all_threshold_detections(n, m; only_photon_number_conserving = true)
+
+Return all possible [`ThresholdFockDetection`](@ref) for `n` modes and `m` photons.
+
+"""
+function all_threshold_detections(n, m, only_photon_number_conserving = true)
+
+    array = all_threshold_mode_occupations(n, m, only_photon_number_conserving = only_photon_number_conserving)
+
+    return [ThresholdFockDetection(x) for x in array]
+
+end
+
+
+
+"""
     PartitionCount(part_occupancy::PartitionOccupancy)
 
 Measuring the probability of getting a specific count for a given partition `part_occupancy`.

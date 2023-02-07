@@ -2,8 +2,8 @@ include("packages_loop.jl")
 
 ### verifying threshold probabilities ###
 
-n = 3
-m = n
+n = 2
+m = 2n
 
 interf = Fourier(m)
 
@@ -23,6 +23,9 @@ possible_threshold_detections(n, state, lossy =  is_lossy(ev))
 
 possible_threshold_detections_lossless(n, state)
 
+all_readings = all_mode_configurations(n,m, only_photon_number_conserving = true, threshold = true)
+
+all_threshold_detections(n,m)
 
 # get all indexes with a photon
 
