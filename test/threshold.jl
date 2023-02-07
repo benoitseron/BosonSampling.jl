@@ -76,6 +76,33 @@ end
 @testset "OneLoopSampler with ThresholdDetection" begin
     
 
+    n = 3
+    sparsity = 2
+    m = sparsity * n
+
+    # x = 0.9
+    # T = OneParameterInterpolation
+    T = Bosonic
+    mode_occ = equilibrated_input(sparsity, m)
+
+    d = Uniform(0,2pi)
+    ϕ = nothing # rand(d,m)
+    η_loss_lines = nothing # 0.86 * ones(m)
+    η_loss_bs = nothing #0.93 * ones(m-1)
+    η_loss_source = nothing # get_η_loss_source(m, QuantumDot(13.5/80))
+
+    η = rand(m-1)
+
+    params = LoopSamplingParameters(n=n, m=m, η = η, η_loss_bs = η_loss_bs, η_loss_lines = η_loss_lines, η_loss_source = η_loss_source, ϕ = ϕ,T=T, mode_occ = mode_occ)
+
+    interf = build_loop!(params)
+
+    i = Input{T}(mode_occ)
+    o = ThresholdFockDetection(ThresholdModeOccupation(zeros(Int, m)))
+    ev = Event(i, o, interf)
+
+    @test check_full_threshold_distribution(ev)
+
 end
 
 
@@ -101,7 +128,8 @@ params = LoopSamplingParameters(n=n, m=m, η = η, η_loss_bs = η_loss_bs, η_l
 interf = build_loop!(params)
 
 i = Input{T}(mode_occ)
-ev = Event(i, BosonSamplingThresholdDistribution(), interf)
+o = ThresholdFockDetection(ThresholdModeOccupation(zeros(Int, m)))
+ev = Event(i, o, interf)
 
 @test check_full_threshold_distribution(ev)
 
