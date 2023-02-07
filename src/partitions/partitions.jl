@@ -12,6 +12,9 @@ of `n_subset` subsets.
       can be used likewise
 """
 function all_mode_configurations(n,n_subset; only_photon_number_conserving = false, threshold = false)
+        
+        @argcheck n >= 1 "n must be greater or equal to one. n = $n, n_subset = $n_subset" 
+        @argcheck n_subset >= 1 "n_subset must be greater or equal to one. n = $n, n_subset = $n_subset"
 
         array = []
         for i in 1:(n+1)^(n_subset)

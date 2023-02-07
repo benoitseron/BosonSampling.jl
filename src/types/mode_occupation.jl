@@ -285,12 +285,28 @@ function possible_threshold_detections_lossless(n::Int, state::Vector{Int})
 
     n_detected = sum(state)
 
+    if n_detected == 0
+
+        @warn "no compatible lossless detections for this state"
+        return []
+
+    end
+
+    if n_detected > n
+
+        @show n, state
+        error("incoherence: n_detected > n")
+
+    end
+
     # if no loss, nothing to do 
     if n_detected == n
         return [state]
     end
 
     # finding the position of possible colliding photons
+
+    @show n, n_detected
     mode_configs_colliding_photons = all_mode_configurations(n - n_detected, n_detected, only_photon_number_conserving = true)
 
     possible_states = []

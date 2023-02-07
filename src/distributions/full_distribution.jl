@@ -28,12 +28,14 @@ full_distribution(params::SamplingParameters) = full_distribution(params.i, para
 
 function full_threshold_distribution(i::Input, interf::Interferometer)
 
-    outputs = all_threshold_mode_occupations(i.n,i.m, only_photon_number_conserving = !is_lossy(interf))
+    outputs = all_threshold_mode_occupations(i.n,i.m, only_photon_number_conserving = true)
     probas = zeros(length(outputs))
 
     @showprogress for (j, o) in enumerate(outputs)
 
         ev = Event(i, ThresholdFockDetection(o), interf)
+
+        @show compute_probability!(ev)
 
         probas[j] = compute_probability!(ev)
 

@@ -7,7 +7,7 @@ m = 2n
 
 interf = Fourier(m)
 
-state = [0,0,1,1]
+state = [0,0,1,1,0,0,1,1]
 o = ThresholdFockDetection(ThresholdModeOccupation(state))
 i = Input{Bosonic}(first_modes(n,m))
 
@@ -16,83 +16,6 @@ ev = Event(i, o, interf)
 compute_probability!(ev)
 
 
-### full threshold distribution ###
-
-o = BosonSamplingThresholdDistribution()
-ev_full_distribution_threshold = Event(i, o, interf)
-
-compute_probability!(ev_full_distribution_threshold)
-
-o = BosonSamplingDistribution()
-ev_full_distribution = Event(i, o, interf)
-
-compute_probability!(ev_full_distribution)
-
-mc = ev_full_distribution.proba_params.probability
-mc_thresholdised = to_threshold(mc)
-
-mc_threshold = ev_full_distribution_threshold.proba_params.probability
-
-sort!(mc_thresholdised) 
-sort!(mc_threshold)
-
-mc_thresholdised.proba ≈ mc_threshold.proba
-
-deepcopy(mc_thresholdised)
-
-
-
-
-
-
-ev_full_distribution.proba_params.probability
-
-ev_full_distribution
-# get all indexes with a photon
-
-indexes = findall(x->x==1, state)
-
-# get number of photons detected
-
-n_detected = sum(state)
-
-# if no loss, nothing to do 
-if n_detected == n
-    return [state]
-end
-
-# finding the position of possible colliding photons
-mode_configs_colliding_photons = all_mode_configurations(n - n_detected, n_detected, only_photon_number_conserving = true)
-
-possible_states = []
-
-# generate a list of each possible configuration of colliding photons
-# add this configuration where a photon is detected in `state` (as labelled by `indexes`)
-
-
-
-for mode_config in mode_configs_colliding_photons
-
-    # @show mode_config
- 
-    new_state = copy(state)
-
-        # @show new_state
-        # @show indexes
-
-    for i in 1:length(indexes)
-
-        new_state[indexes[i]] += mode_config[i]
-
-    end
-
-        # @show new_state
-
-        push!(possible_states, new_state)
-
-end
-
-unique(possible_states)
 
 ### correcting the ThresholdDetection ###
 n = 10
