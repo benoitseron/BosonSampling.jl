@@ -291,7 +291,7 @@ function possible_threshold_detections_lossless(n::Int, state::Vector{Int})
     end
 
     # finding the position of possible colliding photons
-    mode_configs_colliding_photons = all_mode_configurations(n - n_detected, n_detected, only_photon_number_conserving = false)
+    mode_configs_colliding_photons = all_mode_configurations(n - n_detected, n_detected, only_photon_number_conserving = true)
 
     possible_states = []
 
@@ -300,16 +300,23 @@ function possible_threshold_detections_lossless(n::Int, state::Vector{Int})
 
     for mode_config in mode_configs_colliding_photons
 
+        # @show mode_config
+     
+        new_state = copy(state)
+    
+            # @show new_state
+            # @show indexes
+    
         for i in 1:length(indexes)
-
-            new_state = copy(state)
-
+    
             new_state[indexes[i]] += mode_config[i]
-
-            push!(possible_states, new_state)
-
+    
         end
-
+    
+            # @show new_state
+    
+            push!(possible_states, new_state)
+    
     end
 
     unique(possible_states)

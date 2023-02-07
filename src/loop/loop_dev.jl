@@ -1,7 +1,76 @@
 include("packages_loop.jl")
 
-### correcting the ThresholdDetection ###
+### verifying threshold probabilities ###
 
+n = 3
+m = n
+
+interf = Fourier(m)
+
+state = [0,0,1]
+o = ThresholdFockDetection(ThresholdModeOccupation(state))
+i = Input{Bosonic}(first_modes(n,m))
+
+ev = Event(i, o, interf)
+
+compute_probability!(ev)
+
+possible_threshold_detections(ev)
+
+is_lossy(ev)
+
+possible_threshold_detections(n, state, lossy =  is_lossy(ev))
+
+possible_threshold_detections_lossless(n, state)
+
+
+# get all indexes with a photon
+
+indexes = findall(x->x==1, state)
+
+# get number of photons detected
+
+n_detected = sum(state)
+
+# if no loss, nothing to do 
+if n_detected == n
+    return [state]
+end
+
+# finding the position of possible colliding photons
+mode_configs_colliding_photons = all_mode_configurations(n - n_detected, n_detected, only_photon_number_conserving = true)
+
+possible_states = []
+
+# generate a list of each possible configuration of colliding photons
+# add this configuration where a photon is detected in `state` (as labelled by `indexes`)
+
+
+
+for mode_config in mode_configs_colliding_photons
+
+    # @show mode_config
+ 
+    new_state = copy(state)
+
+        # @show new_state
+        # @show indexes
+
+    for i in 1:length(indexes)
+
+        new_state[indexes[i]] += mode_config[i]
+
+    end
+
+        # @show new_state
+
+        push!(possible_states, new_state)
+
+end
+
+unique(possible_states)
+
+### correcting the ThresholdDetection ###
 n = 10
 m = n
 
