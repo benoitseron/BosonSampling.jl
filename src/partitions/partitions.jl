@@ -11,9 +11,7 @@ of `n_subset` subsets.
     - This is the photon counting in partitions and not events outputs but it
       can be used likewise
 """
-function all_mode_configurations(n,n_subset; only_photon_number_conserving = false)
-
-
+function all_mode_configurations(n,n_subset; only_photon_number_conserving = false, threshold = false)
 
         array = []
         for i in 1:(n+1)^(n_subset)
@@ -29,13 +27,20 @@ function all_mode_configurations(n,n_subset; only_photon_number_conserving = fal
                 end
 
         end
-        array
+
+        if threshold
+                return unique(to_threshold.(array))
+        else
+                return array
+        end
 
 end
 
 all_mode_configurations(input_state::Input,part::Partition; only_photon_number_conserving = false) = all_mode_configurations(input_state.n,part.n_subset; only_photon_number_conserving = only_photon_number_conserving)
 
 all_mode_configurations(input_state::Input,sub::Subset; only_photon_number_conserving = false) = all_mode_configurations(input_state.n,1; only_photon_number_conserving = only_photon_number_conserving)
+
+
 
 """
     remove_trivial_partitions!(part_list)
