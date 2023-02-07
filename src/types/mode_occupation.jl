@@ -287,7 +287,8 @@ function possible_threshold_detections_lossless(n::Int, state::Vector{Int})
 
     if n_detected == 0
 
-        @warn "no compatible lossless detections for this state"
+
+        error("no compatible lossless detections for this state")
         return []
 
     end
@@ -459,6 +460,16 @@ function remove_lossy_part!(tmo::ThresholdModeOccupation)
     tmo
 end
 
+function remove_lossy_part(tmo::ThresholdModeOccupation)
+
+    tmo_ = deepcopy(tmo)
+
+    remove_lossy_part!(tmo_)
+
+    tmo_
+
+end
+
 # write the same function for a ModeOccupation
 
 function remove_lossy_part!(mo::ModeOccupation)
@@ -471,4 +482,25 @@ function remove_lossy_part!(mo::ModeOccupation)
     mo.m = mo.m ÷ 2
     mo.state = mo.state[1:mo.m]
     mo
+end
+
+function remove_lossy_part(tmo::ModeOccupation)
+
+    tmo_ = deepcopy(tmo)
+
+    remove_lossy_part!(tmo_)
+
+    tmo_
+
+end
+
+
+function remove_lossy_part(i::Input)
+
+    i_ = deepcopy(i)
+
+    remove_lossy_part!(i_.r)
+
+    i_
+
 end

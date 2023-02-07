@@ -28,22 +28,38 @@ full_distribution(params::SamplingParameters) = full_distribution(params.i, para
 
 function full_threshold_distribution(i::Input, interf::Interferometer)
 
-    outputs = all_threshold_mode_occupations(i.n,i.m, only_photon_number_conserving = true)
-    probas = zeros(length(outputs))
+    if is_lossless(interf)
+        outputs = all_threshold_mode_occupations(i.n,i.m, only_photon_number_conserving = true)
 
-    @showprogress for (j, o) in enumerate(outputs)
+        probas = zeros(length(outputs))
 
-        ev = Event(i, ThresholdFockDetection(o), interf)
+        @showprogress for (j, o) in enumerate(outputs)
 
-        @show compute_probability!(ev)
+            ev = Event(i, ThresholdFockDetection(o), interf)
+            compute_probability!(ev)
+        
+            probas[j] = ev.proba_params.probability
+        
+        end
+    else
+        outputs = all_threshold_mode_occupations(i.n,interf.m_real, only_photon_number_conserving = false)
 
-        probas[j] = compute_probability!(ev)
+        probas = zeros(length(outputs))
 
+        @showprogress for (j, o) in enumerate(outputs)
+
+            ev = Event(i, ThresholdFockDetection(o), interf)
+            compute_probability!(ev)
+        
+            probas[j] = ev.proba_params.probability
+        
+        end
+
+        
     end
-
-    if !is_lossy(interf)
-        @argcheck sum(probas) ≈ 1 "The sum of the probabilities is not 1."
-    end
+    
+    @argcheck sum(probas) ≈ 1 "The sum of the probabilities is not 1. $(MultipleCounts(outputs, probas))"
+    
 
     MultipleCounts(outputs, probas)
 
@@ -85,6 +101,6 @@ function compute_probability!(ev::Event{TIn,TOut}) where {TIn<:InputType, TOut<:
 
 	# ev.output_measurement.mc = full_threshold_distribution(ev.input_state, ev.interferometer)
 
-    ev.proba_params.probability = full_threshold_distribution(ev.input_state, ev.interferometer)
+    ev.proba_params.probability = full_threshold_distribution(ev.input_state, ev.interferometer) 
 
 end

@@ -135,7 +135,7 @@ ev = Event(i, o, interf)
 
 
 n = 2
-sparsity = 2
+sparsity = 1
 m = sparsity * n
 
 # x = 0.9
@@ -156,7 +156,8 @@ params = LoopSamplingParameters(n=n, m=m, η = η, η_loss_bs = η_loss_bs, η_l
 interf = build_loop!(params)
 
 i = Input{T}(mode_occ)
-ev = Event(i, ThresholdFockDetection(ThresholdModeOccupation([0,0,0,0])), interf)
+o = ThresholdFockDetection(ThresholdModeOccupation(zeros(Int, m)))
+ev = Event(i, o, interf)
 
 ev
 
@@ -165,14 +166,28 @@ compute_probability!(ev)
 possible_threshold_detections(ev)
 
 
-all_threshold_mode_occupations(i.n,i.m, only_photon_number_conserving = !is_lossy(interf))
+all_threshold_mode_occupations(i.n,interf.m_real, only_photon_number_conserving = false)
 
-check_full_threshold_distribution(ev)
+# check_full_threshold_distribution(ev)
 
 
-@test check_full_threshold_distribution(ev)
+# @test check_full_threshold_distribution(ev)
 
-is_lossy(interf)
-interf.m_real
-interf.m
-!is_lossy(interf)
+# full_threshold_distribution(i::Input{Bosonic}, interf::LossyCircuit)
+
+is_lossy(ev)
+
+remove_lossy_part(ev.input_state)
+
+ev.input_state
+i
+
+full_threshold_distribution(ev.input_state, ev.interferometer)
+
+####### there is a double counting of events that are physically equivalent... we only want to pass the actual detector readings I believe, not including the loss modes
+ev
+ev.output_measurement
+
+
+compute_probability!(ev)
+
