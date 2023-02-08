@@ -42,6 +42,10 @@ end
     result = possible_threshold_detections(n, state_physical, lossy = true)
 
     @test result == Any[[1, 0, 1, 1, 0, 0], [1, 0, 1, 0, 1, 0], [1, 0, 1, 0, 0, 1], [2, 0, 1, 0, 0, 0], [1, 0, 2, 0, 0, 0]]
+
+    # edge case
+    n = 2
+    @test possible_threshold_detections(n, [0,0], lossy = true) == Any[[0, 0, 2, 0], [0, 0, 1, 1], [0, 0, 0, 2]]
 end
 
 

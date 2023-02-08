@@ -55,26 +55,6 @@ ev = ev_physical_bins
 
 full_threshold_distribution(ev.input_state, ev.interferometer) 
 
-outputs = all_threshold_mode_occupations(i.n,interf.m_real, only_photon_number_conserving = false)
-
-probas = zeros(length(outputs))
-
-o = outputs[1]
-ThresholdFockDetection(o)
-compute_probability!(ev)
-
-possible_threshold_detections(ev)
-
-n = ev.input_state.n
-state_physical = remove_lossy_part(ev.output_measurement.s).state
-
-possible_threshold_detections(n, state_physical, lossy = true)
-
-n
-
-possible_threshold_detections(n, [0,0], lossy = true)
-
-possible_threshold_detections_lossless(1, [0,0])
 
 ###### edge case of no detection needs to be fixed
 

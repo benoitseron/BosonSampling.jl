@@ -24,6 +24,7 @@ Measuring the probability of getting the [`ModeOccupation`](@ref) `s` at the out
 mutable struct FockDetection <: OutputMeasurementType
     s::ModeOccupation
     FockDetection(s::ModeOccupation) = new(s) #at_most_one_photon_per_bin(s) ? new(s) : error("more than one detector per more")
+    FockDetection(v::Vector{Int}) = FockDetection(ModeOccupation(v))
 end
 
 StateMeasurement(::Type{FockDetection}) = FockStateMeasurement()
