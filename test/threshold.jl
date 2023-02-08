@@ -27,6 +27,23 @@ function check_full_threshold_distribution(ev::Event)
 
 end
 
+@testset "Possible threshold detections with loss" begin
+    
+    n = 2
+    state_physical = [1,0] #state[1:m_half]
+
+    result = possible_threshold_detections(n, state_physical, lossy = true)
+
+    @test result == Any[[1, 0, 1, 0], [1, 0, 0, 1], [2, 0, 0, 0]]
+
+    n = 3
+    state_physical = [1,0,1] #state[1:m_half]
+
+    result = possible_threshold_detections(n, state_physical, lossy = true)
+
+    @test result == Any[[1, 0, 1, 1, 0, 0], [1, 0, 1, 0, 1, 0], [1, 0, 1, 0, 0, 1], [2, 0, 1, 0, 0, 0], [1, 0, 2, 0, 0, 0]]
+end
+
 
 @testset "HOM with ThresholdDetection" begin
 

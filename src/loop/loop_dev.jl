@@ -72,61 +72,21 @@ m = length(state)
 
 m_half = div(m,2)
 
+n = 2
+state_physical = [1,0] #state[1:m_half]
+
+result = possible_threshold_detections(n, state_physical, lossy = true)
+
+@test result == Any[[1, 0, 1, 0], [1, 0, 0, 1], [2, 0, 0, 0]]
+
 n = 3
 state_physical = [1,0,1] #state[1:m_half]
-m_physical = length(state_physical)
 
+result = possible_threshold_detections(n, state_physical, lossy = true)
 
-# find possible physical detections that were thresholdised, ex. 
-# [1,0] gives [1,0] and [2,0]
+print(result)
 
-physical_fock_detections_compatible = []
-
-n_detected = sum(state_physical)
-n_lost = n - n_detected
-
-if n_lost == 0
-    physical_fock_detections_compatible = [state_physical]
-elseif n_lost < 0
-    error("invalid state, n combinaison")
-else
-    for n_collision in 0:n_lost
-
-        possible_states_this_collision = possible_threshold_detections_lossless(n_detected + n_collision, state_physical)
-
-        physical_fock_detections_compatible = vcat(physical_fock_detections_compatible, possible_states_this_collision)
-
-    end
-end
-
-physical_fock_detections_compatible
-
-fock_detections = []
-
-for physical_fock_detection in physical_fock_detections_compatible
-
-    n_lost_this_detection = n - sum(physical_fock_detection)
-
-    if n_lost_this_detection == 0
-
-        possible_loss_patterns = [zeros(Int,m_physical)]
-
-    else
-
-        possible_loss_patterns = all_mode_configurations(n_lost_this_detection, m_physical, only_photon_number_conserving = true)
-
-    end
-
-    fock_detections_this_physical_detection = [vcat(physical_fock_detection, possible_loss_pattern) for possible_loss_pattern in possible_loss_patterns]
-
-    fock_detections = vcat(fock_detections, fock_detections_this_physical_detection)
-
-end
-
-fock_detections
-
-@argcheck all([sum(fock_detection) == n for fock_detection in fock_detections]) "photon number not conserved"
-
+@test result == Any[[1, 0, 1, 1, 0, 0], [1, 0, 1, 0, 1, 0], [1, 0, 1, 0, 0, 1], [2, 0, 1, 0, 0, 0], [1, 0, 2, 0, 0, 0]]
 
 @showprogress for (j, o) in enumerate(outputs)
 

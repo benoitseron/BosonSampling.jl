@@ -344,8 +344,9 @@ end
 
     possible_threshold_detections(n::Int, state::Vector{Int}; lossy::Bool = false)
 
-Returns a list of all possible states that can be obtained from `state`, the state resulting from a threshold detection. If `lossy` is true, then the number of photons lost is also taken into account. This means computing all possible repartition of the lost photons among the last half of the output modes.
+Returns a list of all possible states that can be obtained from `state`, the state resulting from a threshold detection. 
 
+If `lossy` is true: you need to feed in the physical detected state, for instance with lossy HOM it would be [1,0]. The function will output a vector with length doubled, with all possible configurations of collisions/lost photons.
 """
 function possible_threshold_detections(n::Int, state::Vector{Int}; lossy::Bool = false)
 
@@ -355,70 +356,62 @@ function possible_threshold_detections(n::Int, state::Vector{Int}; lossy::Bool =
 
     else
 
-        # find the number of modes
+        state_physical = state
+        m_physical = length(state_physical)
 
-        m = length(state)
 
-        # verify that the number of modes is even using @argcheck
+        # find possible physical detections that were thresholdised, ex. 
+        # [1,0] gives [1,0] and [2,0]
 
-        @argcheck iseven(m) "The number of modes must be even"
+        physical_fock_detections_compatible = []
 
-        # find half the number of modes as an Integer
+        n_detected = sum(state_physical)
+        n_lost = n - n_detected
 
-        m_half = div(m,2)
+        if n_lost == 0
+            physical_fock_detections_compatible = [state_physical]
+        elseif n_lost < 0
+            error("invalid state, n combinaison")
+        else
+            for n_collision in 0:n_lost
 
-        possible_states_lossless = possible_threshold_detections_lossless(n, state) 
+                possible_states_this_collision = possible_threshold_detections_lossless(n_detected + n_collision, state_physical)
 
-        # get number of photons in the first half of each possible state
+                physical_fock_detections_compatible = vcat(physical_fock_detections_compatible, possible_states_this_collision)
 
-        n_not_lost_array = [sum(state[1:div(length(state),2)]) for state in possible_states_lossless]
+            end
+        end
 
-        # get the number of lost photons for each possible state from n_not_lost_array
+        # physical_fock_detections_compatible
 
-        n_lost_array = [n - n_not_lost for n_not_lost in n_not_lost_array]
+        fock_detections = []
 
-        possible_states_lossy = []
+        for physical_fock_detection in physical_fock_detections_compatible
 
-        for possible_state_lossless in possible_states_lossless
+            n_lost_this_detection = n - sum(physical_fock_detection)
 
-            # @show "starting state: $possible_state_lossless"
+            if n_lost_this_detection == 0
 
-            # get the number of lost photons for this possible state by counting the number of photon in the last half of this state
-
-            n_lost = n - sum(possible_state_lossless[1:div(length(possible_state_lossless),2)])
-            
-            # generate possible mode configurations in the last half of the state for n_lost photons
-
-            if n_lost == 0
-
-                # @show "no lost photons"
-
-                push!(possible_states_lossy, possible_state_lossless)
+                possible_loss_patterns = [zeros(Int,m_physical)]
 
             else
-                    
-                mode_configs_lost_photons = all_mode_configurations(n_lost, m_half, only_photon_number_conserving = true)
 
-                # add each possible configuration of lost photons to the possible state
-                # push to possible_states_lossy
-
-                # @show mode_configs_lost_photons
-
-                for mode_config in mode_configs_lost_photons
-
-                    new_state = copy(possible_state_lossless)
-
-                    new_state[div(length(possible_state_lossless),2)+1:end] = mode_config
-
-                    push!(possible_states_lossy, new_state)
-
-                end
+                possible_loss_patterns = all_mode_configurations(n_lost_this_detection, m_physical, only_photon_number_conserving = true)
 
             end
 
+            fock_detections_this_physical_detection = [vcat(physical_fock_detection, possible_loss_pattern) for possible_loss_pattern in possible_loss_patterns]
+
+            fock_detections = vcat(fock_detections, fock_detections_this_physical_detection)
+
         end
+
+        fock_detections
+
+        @argcheck all([sum(fock_detection) == n for fock_detection in fock_detections]) "photon number not conserved"
+
             
-        return unique(possible_states_lossy)
+        return unique(fock_detections)
 
     end
 
