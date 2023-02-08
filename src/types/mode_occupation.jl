@@ -373,12 +373,28 @@ function possible_threshold_detections(n::Int, state::Vector{Int}; lossy::Bool =
         elseif n_lost < 0
             error("invalid state, n combinaison")
         else
-            for n_collision in 0:n_lost
+            if n_detected > 0
 
-                possible_states_this_collision = possible_threshold_detections_lossless(n_detected + n_collision, state_physical)
+                # this condition is required: if there is not a single count, then there cannot be a collision
+
+                for n_collision in 0:n_lost
+
+                    # @show n_detected, n_collision
+                    # @show n_detected + n_collision, state_physical
+                        
+                    possible_states_this_collision = possible_threshold_detections_lossless(n_detected + n_collision, state_physical)
+
+                    physical_fock_detections_compatible = vcat(physical_fock_detections_compatible, possible_states_this_collision)
+                end                    
+            
+            else 
+
+                # it means that we are measuring physically only zeros
+                # @show state_physical
+                possible_states_this_collision = [state_physical]
+                # all_mode_configurations(n, m_physical, only_photon_number_conserving = true)
 
                 physical_fock_detections_compatible = vcat(physical_fock_detections_compatible, possible_states_this_collision)
-
             end
         end
 

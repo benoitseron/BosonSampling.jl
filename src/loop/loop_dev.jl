@@ -70,10 +70,18 @@ state_physical = remove_lossy_part(ev.output_measurement.s).state
 
 possible_threshold_detections(n, state_physical, lossy = true)
 
+n
+
 possible_threshold_detections(n, [0,0], lossy = true)
+
+possible_threshold_detections_lossless(1, [0,0])
 
 ###### edge case of no detection needs to be fixed
 
+possible_threshold_detections_lossless(0, [0,0])
+
+m_physical = length(state_physical)
+all_mode_configurations(n, m_physical, only_photon_number_conserving = true)
 
 
 remove_lossy_part(ev.output_measurement.s).state
