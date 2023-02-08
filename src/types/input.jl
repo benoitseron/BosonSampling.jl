@@ -432,3 +432,13 @@ function get_spectrum(state::Gaussian, k::Int)
     end
 
 end
+
+function remove_lossy_part(i::Input)
+
+    i_ = deepcopy(i)
+
+    remove_lossy_part!(i_.r)
+
+    i_
+
+end

@@ -495,12 +495,3 @@ function remove_lossy_part(tmo::ModeOccupation)
 end
 
 
-function remove_lossy_part(i::Input)
-
-    i_ = deepcopy(i)
-
-    remove_lossy_part!(i_.r)
-
-    i_
-
-end

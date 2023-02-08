@@ -7,13 +7,51 @@ m = 2n
 
 interf = Fourier(m)
 
-state = [0,0,1,1,0,0,1,1]
+state = [0,0,1,0,0,0,1,1]
 o = ThresholdFockDetection(ThresholdModeOccupation(state))
 i = Input{Bosonic}(first_modes(n,m))
 
 ev = Event(i, o, interf)
 
 compute_probability!(ev)
+
+possible_threshold_detections(ev)
+
+### with loss ###
+
+
+n = 2
+m = 2
+η_loss = 0.9
+
+interf = LossyBeamSplitter(1/sqrt(2), η_loss)
+
+# giving the state in the lossy bin size
+state = [1,0,0,0]
+o = ThresholdFockDetection(ThresholdModeOccupation(state))
+i = Input{Bosonic}(first_modes(n,m))
+
+ev_full_size_state = Event(i, o, interf)
+
+compute_probability!(ev_full_size_state)
+
+# giving it in the non lossy bin size
+
+state = [1,0]
+o = ThresholdFockDetection(ThresholdModeOccupation(state))
+i = Input{Bosonic}(first_modes(n,m))
+
+ev_physical_bins = Event(i, o, interf)
+
+compute_probability!(ev_physical_bins)
+
+@test ev_full_size_state.proba_params.probability ≈ ev_physical_bins.proba_params.probability
+
+
+
+
+
+
 
 
 

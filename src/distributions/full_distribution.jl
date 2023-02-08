@@ -41,7 +41,9 @@ function full_threshold_distribution(i::Input, interf::Interferometer)
             probas[j] = ev.proba_params.probability
         
         end
+        
     else
+
         outputs = all_threshold_mode_occupations(i.n,interf.m_real, only_photon_number_conserving = false)
 
         probas = zeros(length(outputs))
