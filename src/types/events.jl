@@ -152,11 +152,13 @@ function possible_threshold_detections(ev::Event)
 
     @argcheck ev.output_measurement isa ThresholdFockDetection
 
-    lossy = is_lossy(ev.interferometer)
-
     n = ev.input_state.r.n
 
-    possible_threshold_detections(n,ev.output_measurement, lossy = lossy)
+	if is_lossless(ev)
+    	return possible_threshold_detections(n,ev.output_measurement, lossy = false)
+	else
+		return possible_threshold_detections(n, remove_lossy_part(ev.output_measurement.s).state, lossy = true)
+	end
 
 end
 

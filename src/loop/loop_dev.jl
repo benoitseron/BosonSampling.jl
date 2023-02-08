@@ -35,6 +35,8 @@ ev_full_size_state = Event(i, o, interf)
 
 compute_probability!(ev_full_size_state)
 
+########### fails - should we define it as a test? 
+
 # giving it in the non lossy bin size
 
 state = [1,0]
@@ -62,6 +64,21 @@ ThresholdFockDetection(o)
 compute_probability!(ev)
 
 possible_threshold_detections(ev)
+
+n = ev.input_state.n
+state_physical = remove_lossy_part(ev.output_measurement.s).state
+
+possible_threshold_detections(n, state_physical, lossy = true)
+
+possible_threshold_detections(n, [0,0], lossy = true)
+
+###### edge case of no detection needs to be fixed
+
+
+
+remove_lossy_part(ev.output_measurement.s).state
+
+ev.output_measurement.s.state
 
 possible_threshold_detections(n,ev.output_measurement, lossy = is_lossy(ev))
 
