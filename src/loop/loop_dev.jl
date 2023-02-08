@@ -26,16 +26,16 @@ m = 2
 
 interf = LossyBeamSplitter(1/sqrt(2), η_loss)
 
-# giving the state in the lossy bin size
-state = [1,0,0,0]
-o = ThresholdFockDetection(ThresholdModeOccupation(state))
-i = Input{Bosonic}(first_modes(n,m))
+# # giving the state in the lossy bin size
+# state = [1,0,0,1]
+# o = ThresholdFockDetection(ThresholdModeOccupation(state))
+# i = Input{Bosonic}(first_modes(n,m))
 
-ev_full_size_state = Event(i, o, interf)
+# ev_full_size_state = Event(i, o, interf)
 
-compute_probability!(ev_full_size_state)
+# compute_probability!(ev_full_size_state)
 
-########### fails - should we define it as a test? 
+# ########### fails - should we define it as a test? 
 
 # giving it in the non lossy bin size
 
@@ -55,52 +55,6 @@ ev = ev_physical_bins
 
 full_threshold_distribution(ev.input_state, ev.interferometer) 
 
-
-###### edge case of no detection needs to be fixed
-
-possible_threshold_detections_lossless(0, [0,0])
-
-m_physical = length(state_physical)
-all_mode_configurations(n, m_physical, only_photon_number_conserving = true)
-
-
-remove_lossy_part(ev.output_measurement.s).state
-
-ev.output_measurement.s.state
-
-possible_threshold_detections(n,ev.output_measurement, lossy = is_lossy(ev))
-
-state = ev.output_measurement.s.state
-
-m = length(state)
-@argcheck iseven(m) "The number of modes must be even"
-
-m_half = div(m,2)
-
-n = 2
-state_physical = [1,0] #state[1:m_half]
-
-result = possible_threshold_detections(n, state_physical, lossy = true)
-
-@test result == Any[[1, 0, 1, 0], [1, 0, 0, 1], [2, 0, 0, 0]]
-
-n = 3
-state_physical = [1,0,1] #state[1:m_half]
-
-result = possible_threshold_detections(n, state_physical, lossy = true)
-
-print(result)
-
-@test result == Any[[1, 0, 1, 1, 0, 0], [1, 0, 1, 0, 1, 0], [1, 0, 1, 0, 0, 1], [2, 0, 1, 0, 0, 0], [1, 0, 2, 0, 0, 0]]
-
-@showprogress for (j, o) in enumerate(outputs)
-
-    ev = Event(i, ThresholdFockDetection(o), interf)
-    compute_probability!(ev)
-
-    probas[j] = ev.proba_params.probability
-
-end
 
 
 

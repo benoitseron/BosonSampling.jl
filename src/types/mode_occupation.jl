@@ -504,3 +504,10 @@ function remove_lossy_part(tmo::ModeOccupation)
 end
 
 
+function to_threshold(tmo::ThresholdModeOccupation)
+    tmo
+end
+
+function to_threshold!(tmo::ThresholdModeOccupation)
+    tmo
+end

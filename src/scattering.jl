@@ -404,6 +404,18 @@ function compute_threshold_detection_probability(ev::Event{<:InputType,<:Thresho
 
 end
 
+
+"""
+	compute_probability!(ev::Event{TIn, TOut}) where {TIn<:InputType, TOut<:ThresholdFockDetection}
+
+Like other functions oths the same name, but for threshold detection.
+
+!!! Warning
+	This computes the probability linked to a physical, threshold detection: if n = 2 and giving a threshold detection such as state = [1,0,0,1] (specifying where the lost photons are in the environment modes, which are not physically accessible in general), the information on the last two modes will be disregarded and give the same probability as if passing state = [1,0,0,0] as it will sum over all possible configurations of the last two modes.
+
+	This is so because of the way the lossy modes are stored.
+
+"""
 function compute_probability!(ev::Event{TIn, TOut}) where {TIn<:InputType, TOut<:ThresholdFockDetection}
 
 	proba = compute_threshold_detection_probability(ev)

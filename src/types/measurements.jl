@@ -326,6 +326,10 @@ function to_threshold(mc::MultipleCounts)
 
         counts = Vector{PartitionOccupancy}()
 
+    elseif eltype(mc.counts) == ThresholdModeOccupation
+
+        counts = Vector{ThresholdModeOccupation}()
+
     else
 
         error("to_threshold not implemented for this type of MultipleCounts counts: ($(eltype(mc.counts)))")

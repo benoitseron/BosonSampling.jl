@@ -16,14 +16,26 @@ function check_full_threshold_distribution(ev::Event)
     compute_probability!(ev_full_distribution)
 
     mc = ev_full_distribution.proba_params.probability
-    mc_thresholdised = to_threshold(mc)
+
+    @show mc
+
+    if is_lossy(interf)
+        println("Forgetting environment modes")
+        mc_thresholdised = to_threshold_lossy_full_distribution(mc)
+    else
+        mc_thresholdised = to_threshold(mc)
+    end
 
     mc_threshold = ev_full_distribution_threshold.proba_params.probability
 
     sort!(mc_thresholdised) 
     sort!(mc_threshold)
 
+    @show mc_thresholdised
+    @show mc_threshold
+
     mc_thresholdised.proba ≈ mc_threshold.proba
+
 
 end
 
@@ -128,7 +140,7 @@ end
 
 
 n = 3
-sparsity = 2
+sparsity = 1
 m = sparsity * n
 
 # x = 0.9
@@ -189,26 +201,30 @@ possible_threshold_detections(ev)
 
 all_threshold_mode_occupations(i.n,interf.m_real, only_photon_number_conserving = false)
 
-# check_full_threshold_distribution(ev)
+check_full_threshold_distribution(ev)
 
 
-# @test check_full_threshold_distribution(ev)
-
-# full_threshold_distribution(i::Input{Bosonic}, interf::LossyCircuit)
-
-is_lossy(ev)
-
-remove_lossy_part(ev.input_state)
-
-ev.input_state
-i
-
-full_threshold_distribution(ev.input_state, ev.interferometer)
-
-####### there is a double counting of events that are physically equivalent... we only want to pass the actual detector readings I believe, not including the loss modes
-ev
-ev.output_measurement
 
 
-compute_probability!(ev)
 
+function to_threshold_lossy_full_distribution(mc::MultipleCounts)
+
+    mc = mc_thresholdised
+
+    mc = to_threshold(mc)
+
+    mc_physical = deepcopy(mc)
+
+    for (i, count) in enumerate(mc.counts)
+        mc_physical.counts[i] = remove_lossy_part(count)
+    end
+
+    sum_duplicates!(mc_physical)
+
+    @test sum(mc_physical.proba) ≈ 1 atol = ATOL
+
+    return mc_physical
+
+end
+
+to_threshold_lossy_full_distribution(mc)
