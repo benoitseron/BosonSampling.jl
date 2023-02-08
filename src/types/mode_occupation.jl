@@ -287,7 +287,7 @@ function possible_threshold_detections_lossless(n::Int, state::Vector{Int})
 
     if n_detected == 0
 
-
+        @show n, state
         error("no compatible lossless detections for this state")
         return []
 

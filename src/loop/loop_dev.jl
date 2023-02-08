@@ -47,11 +47,95 @@ compute_probability!(ev_physical_bins)
 
 @test ev_full_size_state.proba_params.probability ≈ ev_physical_bins.proba_params.probability
 
+possible_threshold_detections(ev_physical_bins)
+
+ev = ev_physical_bins
+
+full_threshold_distribution(ev.input_state, ev.interferometer) 
+
+outputs = all_threshold_mode_occupations(i.n,interf.m_real, only_photon_number_conserving = false)
+
+probas = zeros(length(outputs))
+
+o = outputs[1]
+ThresholdFockDetection(o)
+compute_probability!(ev)
+
+possible_threshold_detections(ev)
+
+possible_threshold_detections(n,ev.output_measurement, lossy = is_lossy(ev))
+
+state = ev.output_measurement.s.state
+
+m = length(state)
+@argcheck iseven(m) "The number of modes must be even"
+
+m_half = div(m,2)
+
+n = 3
+state_physical = [1,0,1] #state[1:m_half]
+m_physical = length(state_physical)
 
 
+# find possible physical detections that were thresholdised, ex. 
+# [1,0] gives [1,0] and [2,0]
+
+physical_fock_detections_compatible = []
+
+n_detected = sum(state_physical)
+n_lost = n - n_detected
+
+if n_lost == 0
+    physical_fock_detections_compatible = [state_physical]
+elseif n_lost < 0
+    error("invalid state, n combinaison")
+else
+    for n_collision in 0:n_lost
+
+        possible_states_this_collision = possible_threshold_detections_lossless(n_detected + n_collision, state_physical)
+
+        physical_fock_detections_compatible = vcat(physical_fock_detections_compatible, possible_states_this_collision)
+
+    end
+end
+
+physical_fock_detections_compatible
+
+fock_detections = []
+
+for physical_fock_detection in physical_fock_detections_compatible
+
+    n_lost_this_detection = n - sum(physical_fock_detection)
+
+    if n_lost_this_detection == 0
+
+        possible_loss_patterns = [zeros(Int,m_physical)]
+
+    else
+
+        possible_loss_patterns = all_mode_configurations(n_lost_this_detection, m_physical, only_photon_number_conserving = true)
+
+    end
+
+    fock_detections_this_physical_detection = [vcat(physical_fock_detection, possible_loss_pattern) for possible_loss_pattern in possible_loss_patterns]
+
+    fock_detections = vcat(fock_detections, fock_detections_this_physical_detection)
+
+end
+
+fock_detections
+
+@argcheck all([sum(fock_detection) == n for fock_detection in fock_detections]) "photon number not conserved"
 
 
+@showprogress for (j, o) in enumerate(outputs)
 
+    ev = Event(i, ThresholdFockDetection(o), interf)
+    compute_probability!(ev)
+
+    probas[j] = ev.proba_params.probability
+
+end
 
 
 
