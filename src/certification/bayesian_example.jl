@@ -28,9 +28,9 @@ using HypothesisTests
 # first we generate a series of bosonic events
 
 n_events = 200
-n = 3
-m = 8
-interf = RandHaar(m)
+n = 2
+m = 2
+interf = Fourier(m)
 TIn = Bosonic
 input_state = Input{TIn}(first_modes(n,m))
 

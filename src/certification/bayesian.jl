@@ -12,7 +12,7 @@ function update_confidence(event, p_q, p_a, χ)
     if isapprox(p_a_, 0) 
         return Inf
     else
-        χ *= p_q(event)/p_a(event)
+        χ *= p_q_/p_a_
         return χ
     end
 
@@ -28,6 +28,7 @@ Q is right compared to the alternative hypothesis A.
 function compute_confidence(events,p_q, p_a)
 
     confidence(compute_χ(events,p_q, p_a))
+
 end
 
 """
