@@ -1,43 +1,6 @@
 ### full threshold distribution ###
 
-function check_full_threshold_distribution(ev::Event)
 
-    i = ev.input_state
-    interf = ev.interferometer
-
-    o = BosonSamplingThresholdDistribution()
-    ev_full_distribution_threshold = Event(i, o, interf)
-
-    compute_probability!(ev_full_distribution_threshold)
-
-    o = BosonSamplingDistribution()
-    ev_full_distribution = Event(i, o, interf)
-
-    compute_probability!(ev_full_distribution)
-
-    mc = ev_full_distribution.proba_params.probability
-
-    @show mc
-
-    if is_lossy(interf)
-        println("Forgetting environment modes")
-        mc_thresholdised = to_threshold_lossy_full_distribution(mc)
-    else
-        mc_thresholdised = to_threshold(mc)
-    end
-
-    mc_threshold = ev_full_distribution_threshold.proba_params.probability
-
-    sort!(mc_thresholdised) 
-    sort!(mc_threshold)
-
-    @show mc_thresholdised
-    @show mc_threshold
-
-    mc_thresholdised.proba ≈ mc_threshold.proba
-
-
-end
 
 @testset "Possible threshold detections with loss" begin
     
@@ -139,92 +102,34 @@ end
 end
 
 
-n = 3
-sparsity = 1
-m = sparsity * n
+@testset "OneLoop full threshold distribution with loss" begin
 
-# x = 0.9
-# T = OneParameterInterpolation
-T = Bosonic
-mode_occ = equilibrated_input(sparsity, m)
+    n = 2
+    sparsity = 1
+    m = sparsity * n
 
-d = Uniform(0,2pi)
-ϕ = nothing # rand(d,m)
-η_loss_lines = nothing # 0.86 * ones(m)
-η_loss_bs = nothing #0.93 * ones(m-1)
-η_loss_source = nothing # get_η_loss_source(m, QuantumDot(13.5/80))
+    # x = 0.9
+    # T = OneParameterInterpolation
+    T = Bosonic
+    mode_occ = equilibrated_input(sparsity, m)
 
-η = rand(m-1)
+    d = Uniform(0,2pi)
+    ϕ = nothing # rand(d,m)
+    η_loss_lines =  0.86 * ones(m)
+    η_loss_bs = 0.93 * ones(m-1)
+    η_loss_source = get_η_loss_source(m, QuantumDot(13.5/80))
 
-params = LoopSamplingParameters(n=n, m=m, η = η, η_loss_bs = η_loss_bs, η_loss_lines = η_loss_lines, η_loss_source = η_loss_source, ϕ = ϕ,T=T, mode_occ = mode_occ)
+    η = rand(m-1)
 
-interf = build_loop!(params)
+    params = LoopSamplingParameters(n=n, m=m, η = η, η_loss_bs = η_loss_bs, η_loss_lines = η_loss_lines, η_loss_source = η_loss_source, ϕ = ϕ,T=T, mode_occ = mode_occ)
 
-i = Input{T}(mode_occ)
-o = ThresholdFockDetection(ThresholdModeOccupation(zeros(Int, m)))
-ev = Event(i, o, interf)
+    interf = build_loop!(params)
 
-@test check_full_threshold_distribution(ev)
-
-
-n = 2
-sparsity = 1
-m = sparsity * n
-
-# x = 0.9
-# T = OneParameterInterpolation
-T = Bosonic
-mode_occ = equilibrated_input(sparsity, m)
-
-d = Uniform(0,2pi)
-ϕ = nothing # rand(d,m)
-η_loss_lines =  0.86 * ones(m)
-η_loss_bs = 0.93 * ones(m-1)
-η_loss_source = get_η_loss_source(m, QuantumDot(13.5/80))
-
-η = rand(m-1)
-
-params = LoopSamplingParameters(n=n, m=m, η = η, η_loss_bs = η_loss_bs, η_loss_lines = η_loss_lines, η_loss_source = η_loss_source, ϕ = ϕ,T=T, mode_occ = mode_occ)
-
-interf = build_loop!(params)
-
-i = Input{T}(mode_occ)
-o = ThresholdFockDetection(ThresholdModeOccupation(zeros(Int, m)))
-ev = Event(i, o, interf)
-
-ev
-
-compute_probability!(ev)
-
-possible_threshold_detections(ev)
+    i = Input{T}(mode_occ)
+    o = ThresholdFockDetection(ThresholdModeOccupation(zeros(Int, m)))
+    ev = Event(i, o, interf)
 
 
-all_threshold_mode_occupations(i.n,interf.m_real, only_photon_number_conserving = false)
-
-check_full_threshold_distribution(ev)
-
-
-
-
-
-function to_threshold_lossy_full_distribution(mc::MultipleCounts)
-
-    mc = mc_thresholdised
-
-    mc = to_threshold(mc)
-
-    mc_physical = deepcopy(mc)
-
-    for (i, count) in enumerate(mc.counts)
-        mc_physical.counts[i] = remove_lossy_part(count)
-    end
-
-    sum_duplicates!(mc_physical)
-
-    @test sum(mc_physical.proba) ≈ 1 atol = ATOL
-
-    return mc_physical
+    @test check_full_threshold_distribution(ev)
 
 end
-
-to_threshold_lossy_full_distribution(mc)

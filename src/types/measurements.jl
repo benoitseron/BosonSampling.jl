@@ -543,3 +543,21 @@ function tvd_weighted_by_samples(mc::MultipleCounts, samples::MultipleCounts)
     tvd_weighted(mc, samples, samples.proba)
 
 end
+
+function to_threshold_lossy_full_distribution(mc::MultipleCounts)
+
+    mc = to_threshold(mc)
+
+    mc_physical = deepcopy(mc)
+
+    for (i, count) in enumerate(mc.counts)
+        mc_physical.counts[i] = remove_lossy_part(count)
+    end
+
+    sum_duplicates!(mc_physical)
+
+    @test sum(mc_physical.proba) ≈ 1 atol = ATOL
+
+    return mc_physical
+
+end

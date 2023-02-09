@@ -531,3 +531,49 @@ function is_collisionless(r::ThresholdModeOccupation, n_in::Int)
 	sum(r) == n_in
 
 end
+
+
+"""
+
+	check_full_threshold_distribution(ev::Event)
+
+
+Computes the full Boson Sampling distribution encompassed by the parameters held in `ev` (regardless of the detection information). Used the method of the `ThresholdDetection` listed and computed one by one, and does the same by considering every possible `FockDetection` and only then thresholdising and grouping into equivalent threshdold detections. Is used as a safety check for the functions computing the `ThreshdoldDetections`.
+"""
+function check_full_threshold_distribution(ev::Event)
+
+    i = ev.input_state
+    interf = ev.interferometer
+
+    o = BosonSamplingThresholdDistribution()
+    ev_full_distribution_threshold = Event(i, o, interf)
+
+    compute_probability!(ev_full_distribution_threshold)
+
+    o = BosonSamplingDistribution()
+    ev_full_distribution = Event(i, o, interf)
+
+    compute_probability!(ev_full_distribution)
+
+    mc = ev_full_distribution.proba_params.probability
+
+    @show mc
+
+    if is_lossy(interf)
+        println("Forgetting environment modes")
+        mc_thresholdised = to_threshold_lossy_full_distribution(mc)
+    else
+        mc_thresholdised = to_threshold(mc)
+    end
+
+    mc_threshold = ev_full_distribution_threshold.proba_params.probability
+
+    sort!(mc_thresholdised) 
+    sort!(mc_threshold)
+
+    @show mc_thresholdised
+    @show mc_threshold
+
+    mc_thresholdised.proba ≈ mc_threshold.proba
+
+end
