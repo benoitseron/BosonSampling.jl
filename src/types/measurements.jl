@@ -267,6 +267,8 @@ function initialise_to_empty_vectors!(mc::MultipleCounts, type_proba, type_count
 	mc.proba = Vector{type_proba}()
 	mc.counts = Vector{type_counts}()
 
+    mc
+
 end
 
 Base.show(io::IO, pb::MultipleCounts) = begin
@@ -359,10 +361,28 @@ function to_threshold!(mc::MultipleCounts)
 
 end
 
+"""
+
+    to_proba!(mc::MultipleCounts)
+
+Converts a `MultipleCounts` which has count values (Int) of detector observations into a relative proba of each observation (renormalize).
+"""
+function to_proba!(mc::MultipleCounts)
+
+    if eltype(mc.proba) != Int 
+        @warn "expected Int, probably already a proba: "
+        @show eltype(mc.proba)
+    end
+
+    mc.proba /= sum(mc.proba)
+
+end
+
 # write a function that takes as argument a MultipleCounts and sums the probability associated for all events who have the same mode occupation
 # return a MultipleCounts with only the unique mode occupation
 
 function sum_duplicates!(mc::MultipleCounts)
+    
     count_proba = Dict()
 
     for (count, proba) in zip(mc.counts, mc.proba)
