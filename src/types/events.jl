@@ -96,6 +96,28 @@ mutable struct Event{TIn<:InputType, TOut<:OutputMeasurementType}
 
 end
 
+"""
+
+    assert_compatible_events(events)
+
+Verifies that the events are compatible, i.e. that they have the same input state, interferometer and output measurement type. They can have different detections of course, but the idea is to check that the come from the same experimental setup.
+"""
+function assert_compatible_events(events::Vector{Event})
+
+    for i in 1:length(events)
+        for j in (i+1):length(events)
+            
+            @argcheck events[i].interferometer == events[j].interferometer
+            @argcheck events[i].input_state == events[j].input_state
+            @argcheck typeof(events[i].output_measurement) == typeof(events[j].output_measurement)
+            
+        end
+    end
+
+    true
+
+end
+
 # Base.show(io::IO, ev::Event) = begin
 # 	println("Event:\n")
 # 	println("input state: ", ev.input_state.r, " (",get_parametric_type(ev.input_state)[1],")", "\n")

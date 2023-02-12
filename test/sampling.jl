@@ -65,4 +65,54 @@
         runs_without_errors(loop_tests)
     end
 
+    @testset "closeness of sampling with ideal distribution" begin
+        
+        n_events = 1000
+        n = 2
+        m = 2
+        interf = Fourier(m)
+        TIn = Bosonic
+        input_state = Input{TIn}(first_modes(n,m))
+
+        events = generate_experimental_data(n_events = n_events, n = n, m = m, interf = interf, TIn = TIn)
+
+    end
+
+
 end
+
+n_events = 10000
+n = 2
+m = 2
+interf = Fourier(m)
+TIn = Bosonic
+input_state = Input{TIn}(first_modes(n,m))
+
+events = generate_experimental_data(n_events = n_events, n = n, m = m, interf = interf, TIn = TIn)
+
+@test tvd_sampled_versus_exact_distribution(events)[1] < 0.05
+
+for n in [2,4,6]
+
+    n_events = 10000
+    m = n
+    interf = RandHaar(m)
+    TIn = Bosonic
+    input_state = Input{TIn}(first_modes(n,m))
+
+    events = generate_experimental_data(n_events = n_events, n = n, m = m, interf = interf, TIn = TIn)
+
+    @test tvd_sampled_versus_exact_distribution(events)[1] < 0.05
+
+end
+
+n = 4
+n_events = 1000000
+m = n
+interf = RandHaar(m)
+TIn = Bosonic
+input_state = Input{TIn}(first_modes(n,m))
+
+events = generate_experimental_data(n_events = n_events, n = n, m = m, interf = interf, TIn = TIn)
+
+tvd_sampled_versus_exact_distribution(events)[1] 

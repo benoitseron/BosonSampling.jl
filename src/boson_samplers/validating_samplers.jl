@@ -10,57 +10,91 @@ input_state = Input{TIn}(first_modes(n,m))
 
 events = generate_experimental_data(n_events = n_events, n = n, m = m, interf = interf, TIn = TIn)
 
-typeof(events[1].output_measurement.s)
+"""
 
-# need to write a function that takes events and converts them into an approximate full distribution
+    tvd_sampled_versus_exact_distribution(events)
 
-mc = MultipleCounts()
-initialise_to_empty_vectors!(mc, Int, typeof(events[1].output_measurement.s))
+From a list of events, compute the total variation distance between the sampled distribution and the exact distribution.
 
-for ev in events
+Returns
 
-    push!(mc.proba, 1)
-    push!(mc.counts, ev.output_measurement.s)
+- the total variation distance
+- the sampled distribution (normalized)
+- the exact distribution
+"""
+function tvd_sampled_versus_exact_distribution(events::Vector{Event})
 
-end
+    # need to write a function that takes events and converts them into an approximate full distribution
 
-sum_duplicates!(mc)
+    @argcheck length(events) > 0 "events must be non-empty"
 
-to_proba!(mc)
+    @argcheck assert_compatible_events(events)
 
-mc_sampled = mc
+    mc = MultipleCounts()
+    initialise_to_empty_vectors!(mc, Int, typeof(events[1].output_measurement.s))
 
-# generating the full distribution
+    for ev in events
 
-ev = events[1]
-i = ev.input_state
-interf = ev.interferometer
+        push!(mc.proba, 1)
+        push!(mc.counts, ev.output_measurement.s)
 
-o = BosonSamplingDistribution()
-ev_full_distribution_threshold = Event(i, o, interf)
-compute_probability!(ev_full_distribution_threshold)
+    end
 
-mc_full_proba = ev_full_distribution_threshold.proba_params.probability
+    sum_duplicates!(mc)
 
-# convert the sampled case with the events that were not observed
+    to_proba!(mc)
 
-mc_sampled_all_events = deepcopy(mc_full_proba)
+    mc_sampled = mc
 
-for i in 1:length(mc_sampled_all_events.proba) # empty probas
-    mc_sampled_all_events.proba[i] = 0
-end
+    # generating the full distribution
 
-for (i, count) in enumerate(mc_sampled_all_events.counts)
-    for (proba_sampled, count_sampled) in zip(mc_sampled.proba, mc_sampled.counts)
-        if count == count_sampled
-            mc_sampled_all_events.proba[i] = proba_sampled
+    ev = events[1]
+    i = ev.input_state
+    interf = ev.interferometer
+
+    if typeof(ev.output_measurement.s) == ModeOccupation
+
+        o = BosonSamplingDistribution()
+
+    elseif typeof(ev.output_measurement.s) == ThresholdModeOccupation
+
+        o = BosonSamplingThresholdDistribution()
+
+    else
+
+        error("$(typeof(ev.output_measurement.s)) not implemented")
+
+    end
+
+    ev_full_distribution_threshold = Event(i, o, interf)
+    compute_probability!(ev_full_distribution_threshold)
+
+    mc_full_proba = ev_full_distribution_threshold.proba_params.probability
+
+    # convert the sampled case with the events that were not observed
+
+    mc_sampled_all_events = deepcopy(mc_full_proba)
+
+    for i in 1:length(mc_sampled_all_events.proba) # empty probas
+        mc_sampled_all_events.proba[i] = 0
+    end
+
+    for (i, count) in enumerate(mc_sampled_all_events.counts)
+        for (proba_sampled, count_sampled) in zip(mc_sampled.proba, mc_sampled.counts)
+            if count == count_sampled
+                mc_sampled_all_events.proba[i] = proba_sampled
+            end
         end
     end
+
+    mc_sampled_all_events
+
+    sort!(mc_full_proba)
+    sort!(mc_sampled_all_events)
+
+    tvd(mc_full_proba, mc_sampled_all_events), mc_sampled_all_events, mc_full_proba
+
 end
 
-mc_sampled_all_events
+tvd_sampled_versus_exact_distribution(events)
 
-sort!(mc_full_proba)
-sort!(mc_sampled_all_events)
-
-tvd(mc_full_proba, mc_sampled_all_events)
