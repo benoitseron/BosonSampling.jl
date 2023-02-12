@@ -27,10 +27,10 @@ using HypothesisTests
 
 # first we generate a series of bosonic events
 
-n_events = 500
+n_events = 1000
 n = 4
-m = 128
-interf = Hadamard(m)
+m = 4
+interf = RandHaar(m)
 TIn = Bosonic
 input_state = Input{TIn}(first_modes(n,m))
 
@@ -98,7 +98,7 @@ p_q = HypothesisFunction(p_B)
 p_a = HypothesisFunction(p_D)
 
 certif = Bayesian(events, p_q, p_a)
-BosonSampling.certify!(certif, max_χ = 10000)
+BosonSampling.certify!(certif, max_χ = Inf)
 certif.confidence
 
 scatter(certif.probabilities)
@@ -114,8 +114,11 @@ scatter(certif.probabilities)
 # this can be extracted from experimental if given it but here we have to generate it
 
 # generate what would be experimental data
-m = 14
-n = 2
+
+
+n = 4
+sparsity = 2 
+m = n * sparsity
 
 TIn = Bosonic
 mode_occ = equilibrated_input(sparsity, m)
@@ -128,7 +131,7 @@ d = Uniform(0,2pi)
 
 η = rand(m-1)
 
-params = LoopSamplingParameters(n=n, m=m, η = η, η_loss_bs = η_loss_bs, η_loss_lines = η_loss_lines, η_loss_source = η_loss_source, ϕ = ϕ,T=T, mode_occ = mode_occ)
+params = LoopSamplingParameters(n=n, m=m, η = η, η_loss_bs = η_loss_bs, η_loss_lines = η_loss_lines, η_loss_source = η_loss_source, ϕ = ϕ,T=TIn, mode_occ = mode_occ)
 
 interf = build_loop!(params)
 
@@ -137,7 +140,7 @@ interf = build_loop!(params)
 events = generate_experimental_data(n_events = 1000, n = n,m = m, interf = build_loop!(params), TIn = Bosonic)
 
 
-n_subsets = 4
+n_subsets = 2
 part = equilibrated_partition(m,n_subsets)
 certif = BayesianPartition(events, Bosonic(), Distinguishable(), is_lossy(interf) ? to_lossy(part) : part)
 
