@@ -107,7 +107,7 @@ for n in [2,4,6]
 end
 
 n = 4
-n_events = 1000000
+n_events = 10000
 m = n
 interf = RandHaar(m)
 TIn = Bosonic
@@ -116,3 +116,4 @@ input_state = Input{TIn}(first_modes(n,m))
 events = generate_experimental_data(n_events = n_events, n = n, m = m, interf = interf, TIn = TIn)
 
 tvd_sampled_versus_exact_distribution(events)[1] 
+

@@ -98,3 +98,47 @@ end
 
 tvd_sampled_versus_exact_distribution(events)
 
+
+# re writing the clifford samplers
+
+using Permanents
+
+n = 4
+m = n
+
+A = RandHaar(m).U
+
+r = []
+
+# randomly permute the first n columns of A
+function permute_columns(A,n)
+
+    perm = randperm(n)
+    for i in 1:n
+        A[:,i] = A[:,perm[i]]
+    end
+    A
+end
+
+A = permute_columns(A,n)
+
+weights = [abs(A[i,1])^2 for i in 1:m]
+
+x = wsample(1:m, weights)
+
+push!(r,x)
+
+r
+
+indexes_remove(r,k) = [i for i in 1:k if i ∉ r]
+
+k = 2
+B_k = A[indexes_remove(r,k), 1:k]
+
+permanents = [permanent(B_k[:, [i for i in 1:k if i != l]]) for l in 1:k]
+
+l = 1
+B_k[:, [i for i in 1:k if i != l]]
+
+for k in 2:n
+    B_k
