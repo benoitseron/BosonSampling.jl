@@ -99,46 +99,63 @@ end
 tvd_sampled_versus_exact_distribution(events)
 
 
-# re writing the clifford samplers
+###### re writing the clifford samplers #####
 
 using Permanents
 
-n = 4
-m = n
+function clifford_unoptimised(A, n; occupancy_vector = true)
 
-A = RandHaar(m).U
+    # most basic sampler
 
-r = []
+    m = size(A,1)
 
-# randomly permute the first n columns of A
-function permute_columns(A,n)
+    r = Vector{Int}()
 
-    perm = randperm(n)
-    for i in 1:n
-        A[:,i] = A[:,perm[i]]
+    # randomly permute the first n columns of A
+    function permute_columns(A,n)
+
+        perm = randperm(n)
+        B = zeros(eltype(A),m,n)
+        for i in 1:n
+            B[:,i] = A[:,perm[i]]
+        end
+        B
     end
-    A
+
+    A = permute_columns(A,n)
+
+    weights = [abs(A[i,1])^2 for i in 1:m]
+
+    x = wsample(1:m, weights)
+
+    push!(r,x)
+
+    r
+
+    indexes_remove(r,k) = [i for i in 1:k if i ∉ r]
+
+    for k in 2:n
+
+        B_k = A[r, 1:k]
+
+        removed_index(l,k) = [i for i in 1:k if i != l]
+        perm_array = [permanent(B_k[:,removed_index(l,k)]) for l in 1:k]
+
+        weights = [abs(sum([A[i,l] * perm_array[l] for l in 1:k]))^2 for i in 1:m]
+
+        x = wsample(1:m, weights)
+
+        push!(r,x)
+
+    end
+
+    occupancy_vector ? mode_occupancy_to_occupancy_vector(r, m) : r
+
 end
 
-A = permute_columns(A,n)
+n = 2
+m = n
 
-weights = [abs(A[i,1])^2 for i in 1:m]
+A = Fourier(m).U
 
-x = wsample(1:m, weights)
-
-push!(r,x)
-
-r
-
-indexes_remove(r,k) = [i for i in 1:k if i ∉ r]
-
-k = 2
-B_k = A[indexes_remove(r,k), 1:k]
-
-permanents = [permanent(B_k[:, [i for i in 1:k if i != l]]) for l in 1:k]
-
-l = 1
-B_k[:, [i for i in 1:k if i != l]]
-
-for k in 2:n
-    B_k
+clifford_unoptimised(A, n, occupancy_vector = true)
