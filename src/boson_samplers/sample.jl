@@ -11,7 +11,7 @@ function sample!(ev::Event{TIn, TOut}) where {TIn<:InputType, TOut <: FockSample
     if TIn == Distinguishable
         ev.output_measurement.s = ModeOccupation(classical_sampler(ev))
     elseif TIn == Bosonic
-        ev.output_measurement.s = ModeOccupation(cliffords_sampler(ev))
+        ev.output_measurement.s = ModeOccupation(clifford_sampler_unoptimised(ev))
     elseif TIn == OneParameterInterpolation
         ev.output_measurement.s = ModeOccupation(noisy_sampler(ev,1))
     else

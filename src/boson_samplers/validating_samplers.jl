@@ -1,12 +1,14 @@
 # there seems to have been strange bugs with the Bayesian validation, working sometimes only for highly symmetric interferometers but not for RandHaar
 # here we try to check the validity of the samplers in both cases
 
-n_events = 1000
+n_events = 10000
 n = 2
-m = 2
-interf = Fourier(m)
+m = n
+interf = RandHaar(m)
 TIn = Bosonic
 input_state = Input{TIn}(first_modes(n,m))
+i = input_state
+
 
 events = generate_experimental_data(n_events = n_events, n = n, m = m, interf = interf, TIn = TIn)
 
@@ -96,66 +98,30 @@ function tvd_sampled_versus_exact_distribution(events::Vector{Event})
 
 end
 
-tvd_sampled_versus_exact_distribution(events)
+results = tvd_sampled_versus_exact_distribution(events)
+
+results[1]
+
+bar(results[2].proba, label = "sampled", alpha = 0.5)
+bar!(results[3].proba, label = "exact", alpha = 0.5)
+
+ev = events[1]
+i = ev.input_state
+interf = ev.interferometer
 
 
-###### re writing the clifford samplers #####
+outputs = ModeOccupation.(all_mode_configurations(i.n,i.m; only_photon_number_conserving = true))
 
-using Permanents
+probas = zeros(length(outputs))
 
-function clifford_unoptimised(A, n; occupancy_vector = true)
+@showprogress for (j, output) in enumerate(outputs)
 
-    # most basic sampler
+    o = FockDetection(output)
+    ev = Event(i, o, interf)
 
-    m = size(A,1)
-
-    r = Vector{Int}()
-
-    # randomly permute the first n columns of A
-    function permute_columns(A,n)
-
-        perm = randperm(n)
-        B = zeros(eltype(A),m,n)
-        for i in 1:n
-            B[:,i] = A[:,perm[i]]
-        end
-        B
-    end
-
-    A = permute_columns(A,n)
-
-    weights = [abs(A[i,1])^2 for i in 1:m]
-
-    x = wsample(1:m, weights)
-
-    push!(r,x)
-
-    r
-
-    indexes_remove(r,k) = [i for i in 1:k if i ∉ r]
-
-    for k in 2:n
-
-        B_k = A[r, 1:k]
-
-        removed_index(l,k) = [i for i in 1:k if i != l]
-        perm_array = [permanent(B_k[:,removed_index(l,k)]) for l in 1:k]
-
-        weights = [abs(sum([A[i,l] * perm_array[l] for l in 1:k]))^2 for i in 1:m]
-
-        x = wsample(1:m, weights)
-
-        push!(r,x)
-
-    end
-
-    occupancy_vector ? mode_occupancy_to_occupancy_vector(r, m) : r
+    compute_probability!(ev)
+    probas[j] = ev.proba_params.probability
 
 end
 
-n = 2
-m = n
-
-A = Fourier(m).U
-
-clifford_unoptimised(A, n, occupancy_vector = true)
+MultipleCounts(outputs, probas)

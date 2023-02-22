@@ -16,7 +16,8 @@ function full_distribution(i::Input, interf::Interferometer)
         o = FockDetection(output)
         ev = Event(i, o, interf)
 
-        probas[j] = compute_probability!(ev)
+        compute_probability!(ev)
+        probas[j] = ev.proba_params.probability
 
     end
 
