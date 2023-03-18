@@ -24,6 +24,7 @@ Measuring the probability of getting the [`ModeOccupation`](@ref) `s` at the out
 mutable struct FockDetection <: OutputMeasurementType
     s::ModeOccupation
     FockDetection(s::ModeOccupation) = new(s) #at_most_one_photon_per_bin(s) ? new(s) : error("more than one detector per more")
+    FockDetection(v::Vector{Int}) = FockDetection(ModeOccupation(v))
 end
 
 StateMeasurement(::Type{FockDetection}) = FockStateMeasurement()
@@ -60,22 +61,38 @@ function possible_threshold_detections(n, state::ThresholdFockDetection; lossy =
 
 end
 
-# # write possible_threshold_detections for an Event
-# # extract n from the input_state
 
-# function possible_threshold_detections(ev::Event)
 
-#     # check that the output_measurement is a ThresholdFockDetection
+"""
 
-#     @argcheck ev.output_measurement isa ThresholdFockDetection
+    function all_threshold_mode_occupations(n, m; only_photon_number_conserving = true)
 
-#     lossy = is_lossy(ev.interferometer)
+Return all possible [`ThresholdModeOccupation`](@ref) for `n` modes and `m` photons.
 
-#     n = ev.input_state.r.n
+"""
+function all_threshold_mode_occupations(n, m; only_photon_number_conserving = true)
 
-#     possible_threshold_detections(n,ev.output_measurement, lossy = lossy)
+    array = all_mode_configurations(n,m, only_photon_number_conserving = only_photon_number_conserving, threshold = true)
 
-# end
+    return [ThresholdModeOccupation(x) for x in array]
+
+end
+
+
+"""
+
+    function all_threshold_detections(n, m; only_photon_number_conserving = true)
+
+Return all possible [`ThresholdFockDetection`](@ref) for `n` modes and `m` photons.
+
+"""
+function all_threshold_detections(n, m; only_photon_number_conserving = true)
+
+    array = all_threshold_mode_occupations(n, m, only_photon_number_conserving = only_photon_number_conserving)
+
+    return [ThresholdFockDetection(x) for x in array]
+
+
 
 
 """
@@ -205,7 +222,7 @@ mutable struct PartitionSample <: OutputMeasurementType
     part_occ::Union{PartitionOccupancy, Nothing}
     PartitionSample() = new(nothing)
     PartitionSample(p::PartitionOccupancy) = new(p)
-end
+endregards
 
 
 StateMeasurement(::Type{PartitionSample}) = PartitionMeasurement()
@@ -249,6 +266,8 @@ function initialise_to_empty_vectors!(mc::MultipleCounts, type_proba, type_count
 
 	mc.proba = Vector{type_proba}()
 	mc.counts = Vector{type_counts}()
+
+    mc
 
 end
 
@@ -301,7 +320,23 @@ function to_threshold(mc::MultipleCounts)
     # println("######")
     # @show count_proba
 
-    counts = Vector{typeof(mc.counts[1])}()
+    if eltype(mc.counts) == ModeOccupation
+
+        counts = Vector{ThresholdModeOccupation}()
+
+    elseif eltype(mc.counts) == PartitionOccupancy
+
+        counts = Vector{PartitionOccupancy}()
+
+    elseif eltype(mc.counts) == ThresholdModeOccupation
+
+        counts = Vector{ThresholdModeOccupation}()
+
+    else
+
+        error("to_threshold not implemented for this type of MultipleCounts counts: ($(eltype(mc.counts)))")
+
+    end
     probas = Vector{typeof(mc.proba[1])}()
 
     for key in keys(count_proba)
@@ -320,10 +355,78 @@ end
 
 function to_threshold!(mc::MultipleCounts)
 
-    mc = to_threshold(mc)
+    mc_copy = to_threshold(mc)
+    mc.counts = mc_copy.counts
+    mc.proba = mc_copy.proba
 
 end
 
+"""
+
+    to_proba!(mc::MultipleCounts)
+
+Converts a `MultipleCounts` which has count values (Int) of detector observations into a relative proba of each observation (renormalize).
+"""
+function to_proba!(mc::MultipleCounts)
+
+    if eltype(mc.proba) != Int 
+        @warn "expected Int, probably already a proba: "
+        @show eltype(mc.proba)
+    end
+
+    mc.proba /= sum(mc.proba)
+
+end
+
+# write a function that takes as argument a MultipleCounts and sums the probability associated for all events who have the same mode occupation
+# return a MultipleCounts with only the unique mode occupation
+
+function sum_duplicates!(mc::MultipleCounts)
+    
+    count_proba = Dict()
+
+    for (count, proba) in zip(mc.counts, mc.proba)
+        new_count = count
+
+        if new_count in keys(count_proba)
+            count_proba[new_count] += proba
+        else
+            count_proba[new_count] = proba
+        end
+
+    end
+
+    # println("######")
+    # @show count_proba
+
+    counts = Vector{typeof(mc.counts[1])}()
+    probas = Vector{typeof(mc.proba[1])}()
+
+    for key in keys(count_proba)
+
+        push!(counts, key)
+        push!(probas, count_proba[key])
+
+    end
+
+    # @show counts
+    # @show probas
+
+    mc.counts = counts
+    mc.proba = probas
+    mc
+end
+
+
+# apply the remove_lossy_part to all counts of a `MultipleCounts` object
+
+function remove_lossy_part!(mc::MultipleCounts)
+    for i in 1:length(mc.counts)
+        remove_lossy_part!(mc.counts[i])
+    end
+    sum_duplicates!(mc)
+    mc
+end
 
 """
     BosonSamplingDistribution <: OutputMeasurementType
@@ -339,3 +442,142 @@ mutable struct BosonSamplingDistribution <: OutputMeasurementType
 end
 
 StateMeasurement(::Type{BosonSamplingDistribution}) = CompleteDistribution()
+
+"""
+mutable struct BosonSamplingThresholdDistribution <: OutputMeasurementType
+    <: OutputMeasurementType
+
+Container holding the entire boson sampling distribution for a given type of parameters, input, etc with threshold detectors.
+"""
+mutable struct BosonSamplingThresholdDistribution <: OutputMeasurementType
+
+    mc::Union{MultipleCounts, Nothing}
+	BosonSamplingThresholdDistribution() = new(nothing)
+	BosonSamplingThresholdDistribution(mc) = new(mc)
+
+end
+
+StateMeasurement(::Type{BosonSamplingThresholdDistribution}) = CompleteDistribution()
+
+
+
+function convert_samples_to_probabilities!(samples::MultipleCounts)
+
+    # convert the proba to the probabilities
+    proba = samples.proba ./ sum(samples.proba)
+
+    samples.proba = proba
+
+    samples
+end
+
+
+
+
+"""
+
+convert_state_to_n_ary_number(state::Vector{Int64}, n)
+
+Convert a vector of integers into a binary number. The first element of the vector is the least significant bit. This gives a hash function for a vector of integers.
+
+Need to give n = the number of input photons.
+
+"""
+function convert_state_to_n_ary_number(state::Vector{Int64}, n)
+
+    # invert the state order
+
+    state = reverse(state)
+    nary_number = 0
+
+    for i in 1:length(state)
+        nary_number += state[i] * (n+1)^(i-1)
+    end
+
+    nary_number
+end
+
+# write a function to sort a `MultipleCounts`
+# restrict to counts of type `ThresholdModeOccupation`
+# convert the state of each count into a binary number
+# sort the counts by the binary number
+# sort the probabilities accordingly
+
+function sort_samples!(samples::MultipleCounts)
+    # scan the counts
+    # look at each state
+    # find the overall number of photons
+
+    n_max = 0
+    for count in samples.counts
+        if sum(count.state) > n_max
+            n_max = sum(count.state)
+        end
+    end
+    
+
+    # sort the counts  of the samples using their binary number as key
+
+    sorted = sort(collect(zip(samples.counts, samples.proba)), by = x -> convert_state_to_n_ary_number(x[1].state, n_max))
+
+    counts = [sorted[i][1] for i in 1:length(sorted)]
+    proba = [sorted[i][2] for i in 1:length(sorted)]
+
+    samples.counts = counts
+    samples.proba = proba
+
+    samples
+end
+
+function Base.sort!(samples::MultipleCounts)
+    sort_samples!(samples)
+end
+
+function Base.sort(samples::MultipleCounts)
+    samples = deepcopy(samples)
+    sort_samples!(samples)
+end
+
+function tvd(mc::MultipleCounts, samples::MultipleCounts)
+    # find the tvd between the samples and the mc by computing the tvd between their field proba
+
+    sort_samples!(mc)
+    sort_samples!(samples)
+
+    tvd(mc.proba, samples.proba)
+end
+
+
+
+function tvd_weighted(mc::MultipleCounts, samples::MultipleCounts, weights)
+    # weighted tvd function 
+
+    sort_samples!(mc)
+    sort_samples!(samples)
+
+    sum(weights[i] * abs(mc.proba[i] - samples.proba[i]) for i in 1:length(weights))
+end
+
+function tvd_weighted_by_samples(mc::MultipleCounts, samples::MultipleCounts)
+
+    tvd_weighted(mc, samples, samples.proba)
+
+end
+
+function to_threshold_lossy_full_distribution(mc::MultipleCounts)
+
+    mc = to_threshold(mc)
+
+    mc_physical = deepcopy(mc)
+
+    for (i, count) in enumerate(mc.counts)
+        mc_physical.counts[i] = remove_lossy_part(count)
+    end
+
+    sum_duplicates!(mc_physical)
+
+    @test sum(mc_physical.proba) ≈ 1 atol = ATOL
+
+    return mc_physical
+
+end

@@ -27,12 +27,39 @@ using HypothesisTests
 
 # first we generate a series of bosonic events
 
-n_events = 200
-n = 3
-m = 8
+n_events = 1000
+n = 4
+m = 4
 interf = RandHaar(m)
 TIn = Bosonic
 input_state = Input{TIn}(first_modes(n,m))
+
+    # n = 2
+    # sparsity = 3
+    # m = sparsity * n
+
+    # # x = 0.9
+    # # T = OneParameterInterpolation
+    # TIn = Bosonic
+    # mode_occ = equilibrated_input(sparsity, m)
+
+    # d = Uniform(0,2pi)
+    # ϕ = nothing # rand(d,m)
+    # η_loss_lines =  0.86 * ones(m)
+    # η_loss_bs = 0.93 * ones(m-1)
+    # η_loss_source = get_η_loss_source(m, QuantumDot(13.5/80))
+
+    # η = rand(m-1)
+
+    # params = LoopSamplingParameters(n=n, m=m, η = η, η_loss_bs = η_loss_bs, η_loss_lines = η_loss_lines, η_loss_source = η_loss_source, ϕ = ϕ,T=T, mode_occ = mode_occ)
+
+    # interf = build_loop!(params)
+    # input_state = Input{TIn}(first_modes(n,m))
+
+    
+
+
+interf
 
 events = []
 
@@ -43,7 +70,7 @@ for i in 1:n_events
     # of counts
 
     ev = Event(input_state, FockSample(), interf)
-    sample!(ev)
+    BosonSampling.sample!(ev)
 
     ev = convert(Event{TIn, FockDetection}, ev)
 
@@ -56,7 +83,7 @@ end
 
 events
 
-events[1]
+events[100].interferometer
 
 # next, from events, recover the probabilities under both
 # hypothesis for instance
@@ -71,10 +98,15 @@ p_q = HypothesisFunction(p_B)
 p_a = HypothesisFunction(p_D)
 
 certif = Bayesian(events, p_q, p_a)
-BosonSampling.certify!(certif)
+BosonSampling.certify!(certif, max_χ = Inf)
 certif.confidence
 
 scatter(certif.probabilities)
+
+######## it looks like everything goes bad as soon as using RandHaar while it works for Fourier, Hadamard... it looks like the sampler is bad... maybe not even sampling but having random_mode_occupation_collisionless or something alike
+####### this doesn't seem to impact the partition validator nor the full bunching
+
+
 
 ###### Bayesian tests for partitions ######
 
@@ -82,19 +114,39 @@ scatter(certif.probabilities)
 # this can be extracted from experimental if given it but here we have to generate it
 
 # generate what would be experimental data
-m = 14
-n = 5
-events = generate_experimental_data(n_events = 1000, n = n,m = m, interf = RandHaar(m), TIn = Bosonic)
 
 
-n_subsets = 3
+n = 4
+sparsity = 2 
+m = n * sparsity
+
+TIn = Bosonic
+mode_occ = equilibrated_input(sparsity, m)
+
+d = Uniform(0,2pi)
+ϕ = nothing # rand(d,m)
+η_loss_lines =  nothing#0.86 * ones(m)
+η_loss_bs = nothing#0.93 * ones(m-1)
+η_loss_source = nothing#get_η_loss_source(m, QuantumDot(13.5/80))
+
+η = rand(m-1)
+
+params = LoopSamplingParameters(n=n, m=m, η = η, η_loss_bs = η_loss_bs, η_loss_lines = η_loss_lines, η_loss_source = η_loss_source, ϕ = ϕ,T=TIn, mode_occ = mode_occ)
+
+interf = build_loop!(params)
+
+
+
+events = generate_experimental_data(n_events = 1000, n = n,m = m, interf = build_loop!(params), TIn = Bosonic)
+
+
+n_subsets = 2
 part = equilibrated_partition(m,n_subsets)
-certif = BayesianPartition(events, Bosonic(), Distinguishable(), part)
+certif = BayesianPartition(events, Bosonic(), Distinguishable(), is_lossy(interf) ? to_lossy(part) : part)
 
-certify!(certif)
+certify!(certif, max_χ = Inf, min_χ  = 0.0001)
 plot(certif.probabilities)
 
-part
 
 # full bunching
 

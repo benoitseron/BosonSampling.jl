@@ -34,6 +34,21 @@ To use the package, write
 
 in your file.
 
+## Citation
+
+Please cite this work if you use it 
+
+```tex
+
+@article{seron2022bosonsampling,
+  title={BosonSampling. jl: A Julia package for quantum multi-photon interferometry},
+  author={Seron, Benoit and Restivo, Antoine},
+  journal={arXiv preprint arXiv:2212.09537},
+  year={2022}
+}
+
+```
+
 ## Authors
 
 This package is written by Benoit Seron and Antoine Restivo. The original research presented in the package is done in collaboration with Dr. Leonardo Novo, Prof. Nicolas Cerf.

@@ -382,9 +382,11 @@ function compute_threshold_detection_probability(ev::Event{<:InputType,<:Thresho
 	state = ev.output_measurement.s.state
 	n = ev.input_state.r.n
 
-	possible_threshold_detections(n, state, lossy = true)
-
 	possible_outputs = possible_threshold_detections(ev)
+
+	if length(possible_outputs) == 0
+		return 0
+	end
 
 	ev_ = Event(ev.input_state, FockDetection(possible_outputs[1]), ev.interferometer)
 
@@ -402,6 +404,18 @@ function compute_threshold_detection_probability(ev::Event{<:InputType,<:Thresho
 
 end
 
+
+"""
+	compute_probability!(ev::Event{TIn, TOut}) where {TIn<:InputType, TOut<:ThresholdFockDetection}
+
+Like other functions oths the same name, but for threshold detection.
+
+!!! Warning
+	This computes the probability linked to a physical, threshold detection: if n = 2 and giving a threshold detection such as state = [1,0,0,1] (specifying where the lost photons are in the environment modes, which are not physically accessible in general), the information on the last two modes will be disregarded and give the same probability as if passing state = [1,0,0,0] as it will sum over all possible configurations of the last two modes.
+
+	This is so because of the way the lossy modes are stored.
+
+"""
 function compute_probability!(ev::Event{TIn, TOut}) where {TIn<:InputType, TOut<:ThresholdFockDetection}
 
 	proba = compute_threshold_detection_probability(ev)
@@ -515,5 +529,51 @@ is_collisionless(i::Input) = is_collisionless(i.r.state)
 function is_collisionless(r::ThresholdModeOccupation, n_in::Int)
 
 	sum(r) == n_in
+
+end
+
+
+"""
+
+	check_full_threshold_distribution(ev::Event)
+
+
+Computes the full Boson Sampling distribution encompassed by the parameters held in `ev` (regardless of the detection information). Used the method of the `ThresholdDetection` listed and computed one by one, and does the same by considering every possible `FockDetection` and only then thresholdising and grouping into equivalent threshdold detections. Is used as a safety check for the functions computing the `ThreshdoldDetections`.
+"""
+function check_full_threshold_distribution(ev::Event)
+
+    i = ev.input_state
+    interf = ev.interferometer
+
+    o = BosonSamplingThresholdDistribution()
+    ev_full_distribution_threshold = Event(i, o, interf)
+
+    compute_probability!(ev_full_distribution_threshold)
+
+    o = BosonSamplingDistribution()
+    ev_full_distribution = Event(i, o, interf)
+
+    compute_probability!(ev_full_distribution)
+
+    mc = ev_full_distribution.proba_params.probability
+
+    @show mc
+
+    if is_lossy(interf)
+        println("Forgetting environment modes")
+        mc_thresholdised = to_threshold_lossy_full_distribution(mc)
+    else
+        mc_thresholdised = to_threshold(mc)
+    end
+
+    mc_threshold = ev_full_distribution_threshold.proba_params.probability
+
+    sort!(mc_thresholdised) 
+    sort!(mc_threshold)
+
+    @show mc_thresholdised
+    @show mc_threshold
+
+    mc_thresholdised.proba ≈ mc_threshold.proba
 
 end

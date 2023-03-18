@@ -38,3 +38,31 @@ function generate_experimental_data(;n_events, n, m, interf, TIn, x = nothing, i
 
     events
 end
+
+function generate_experimental_data(params::LoopSamplingParameters, n_events::Int)
+
+    @unpack n, m, interferometer, T, x, i = params
+
+
+    generate_experimental_data(;n_events = n_events, n = n, m = m, interf = interferometer, TIn = T, x = x, input_mode_occupation = i.r)
+end
+
+function generate_experimental_data(loaded_experiment::OneLoopData, n_events::Int)
+
+    @unpack n, m, interferometer, T, x, i = loaded_experiment.params
+
+    data = generate_experimental_data(loaded_experiment.params, n_events)
+
+    if loaded_experiment.sample_type == ThresholdModeOccupation
+
+        data_threshold = []
+        println("converting to threshold mode occupation")
+        for ev in data
+            push!(data_threshold, to_threshold(ev))
+            
+        end
+        return data_threshold
+    end
+
+    data
+end

@@ -24,7 +24,19 @@ function build_loop!(data::OneLoopData)
     build_loop!(data.params)
 end
 
+"""
 
+    set_uniform_losses!(η_lines, η_bs, params)
+
+Set the losses to be uniform for all the lines and beamsplitters. Rebuild the loop. Used for estimation of the losses.
+
+"""
+function set_uniform_losses!(η_lines, η_bs, params)
+    params.η_loss_lines = η_lines * ones(params.m)
+    params.η_loss_bs = η_bs * ones(params.m-1)
+
+    build_loop!(params)
+end
 
 """
     save(data::OneLoopData; path_to_file::String = "data/one_loop/", recompile_interferometer = true)

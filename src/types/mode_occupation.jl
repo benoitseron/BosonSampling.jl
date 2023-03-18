@@ -8,7 +8,7 @@ A list of the size of the number of modes `m`, with entry `j` of `state` being t
          - m::Int
          - state::Vector{Int}
 """
-@auto_hash_equals struct ModeOccupation
+@auto_hash_equals mutable struct ModeOccupation
     n::Int
     m::Int
     state::Vector{Int}
@@ -72,8 +72,9 @@ end
 """
     to_threshold(v::Vector{Int})
     to_threshold(mo::ModeOccupation)
+    to_threshold!(mo::ModeOccupation)
 
-Converts a `ModeOccupation` into threshold detection.
+Converts a `ModeOccupation` into threshold detection. Converts it into a `ThresholdModeOccupation` if not using the inplace version.
 """
 function to_threshold(v::Vector{Int})
 
@@ -83,7 +84,7 @@ end
 
 function to_threshold(mo::ModeOccupation)
 
-    ModeOccupation(to_threshold(mo.state))
+    ThresholdModeOccupation(to_threshold(mo.state))
 
 end
 
@@ -284,13 +285,30 @@ function possible_threshold_detections_lossless(n::Int, state::Vector{Int})
 
     n_detected = sum(state)
 
+    # if n_detected == 0
+
+    #     @show n, state
+    #     error("no compatible lossless detections for this state")
+    #     return []
+
+    # end
+
+    if n_detected > n
+
+        @show n, state
+        error("incoherence: n_detected > n")
+
+    end
+
     # if no loss, nothing to do 
     if n_detected == n
         return [state]
     end
 
     # finding the position of possible colliding photons
-    mode_configs_colliding_photons = all_mode_configurations(n - n_detected, n_detected, only_photon_number_conserving = false)
+
+    @show n, n_detected
+    mode_configs_colliding_photons = all_mode_configurations(n - n_detected, n_detected, only_photon_number_conserving = true)
 
     possible_states = []
 
@@ -299,16 +317,23 @@ function possible_threshold_detections_lossless(n::Int, state::Vector{Int})
 
     for mode_config in mode_configs_colliding_photons
 
+        # @show mode_config
+     
+        new_state = copy(state)
+    
+            # @show new_state
+            # @show indexes
+    
         for i in 1:length(indexes)
-
-            new_state = copy(state)
-
+    
             new_state[indexes[i]] += mode_config[i]
-
-            push!(possible_states, new_state)
-
+    
         end
-
+    
+            # @show new_state
+    
+            push!(possible_states, new_state)
+    
     end
 
     unique(possible_states)
@@ -319,8 +344,9 @@ end
 
     possible_threshold_detections(n::Int, state::Vector{Int}; lossy::Bool = false)
 
-Returns a list of all possible states that can be obtained from `state`, the state resulting from a threshold detection. If `lossy` is true, then the number of photons lost is also taken into account. This means computing all possible repartition of the lost photons among the last half of the output modes.
+Returns a list of all possible states that can be obtained from `state`, the state resulting from a threshold detection. 
 
+If `lossy` is true: you need to feed in the physical detected state, for instance with lossy HOM it would be [1,0]. The function will output a vector with length doubled, with all possible configurations of collisions/lost photons.
 """
 function possible_threshold_detections(n::Int, state::Vector{Int}; lossy::Bool = false)
 
@@ -330,70 +356,78 @@ function possible_threshold_detections(n::Int, state::Vector{Int}; lossy::Bool =
 
     else
 
-        # find the number of modes
+        state_physical = state
+        m_physical = length(state_physical)
 
-        m = length(state)
 
-        # verify that the number of modes is even using @argcheck
+        # find possible physical detections that were thresholdised, ex. 
+        # [1,0] gives [1,0] and [2,0]
 
-        @argcheck iseven(m) "The number of modes must be even"
+        physical_fock_detections_compatible = []
 
-        # find half the number of modes as an Integer
+        n_detected = sum(state_physical)
+        n_lost = n - n_detected
 
-        m_half = div(m,2)
+        if n_lost == 0
+            physical_fock_detections_compatible = [state_physical]
+        elseif n_lost < 0
+            error("invalid state, n combinaison")
+        else
+            if n_detected > 0
 
-        possible_states_lossless = possible_threshold_detections_lossless(n, state) 
+                # this condition is required: if there is not a single count, then there cannot be a collision
 
-        # get number of photons in the first half of each possible state
+                for n_collision in 0:n_lost
 
-        n_not_lost_array = [sum(state[1:div(length(state),2)]) for state in possible_states_lossless]
+                    # @show n_detected, n_collision
+                    # @show n_detected + n_collision, state_physical
+                        
+                    possible_states_this_collision = possible_threshold_detections_lossless(n_detected + n_collision, state_physical)
 
-        # get the number of lost photons for each possible state from n_not_lost_array
-
-        n_lost_array = [n - n_not_lost for n_not_lost in n_not_lost_array]
-
-        possible_states_lossy = []
-
-        for possible_state_lossless in possible_states_lossless
-
-            # @show "starting state: $possible_state_lossless"
-
-            # get the number of lost photons for this possible state by counting the number of photon in the last half of this state
-
-            n_lost = n - sum(possible_state_lossless[1:div(length(possible_state_lossless),2)])
+                    physical_fock_detections_compatible = vcat(physical_fock_detections_compatible, possible_states_this_collision)
+                end                    
             
-            # generate possible mode configurations in the last half of the state for n_lost photons
+            else 
 
-            if n_lost == 0
+                # it means that we are measuring physically only zeros
+                # @show state_physical
+                possible_states_this_collision = [state_physical]
+                # all_mode_configurations(n, m_physical, only_photon_number_conserving = true)
 
-                # @show "no lost photons"
+                physical_fock_detections_compatible = vcat(physical_fock_detections_compatible, possible_states_this_collision)
+            end
+        end
 
-                push!(possible_states_lossy, possible_state_lossless)
+        # physical_fock_detections_compatible
+
+        fock_detections = []
+
+        for physical_fock_detection in physical_fock_detections_compatible
+
+            n_lost_this_detection = n - sum(physical_fock_detection)
+
+            if n_lost_this_detection == 0
+
+                possible_loss_patterns = [zeros(Int,m_physical)]
 
             else
-                    
-                mode_configs_lost_photons = all_mode_configurations(n_lost, m_half, only_photon_number_conserving = true)
 
-                # add each possible configuration of lost photons to the possible state
-                # push to possible_states_lossy
-
-                # @show mode_configs_lost_photons
-
-                for mode_config in mode_configs_lost_photons
-
-                    new_state = copy(possible_state_lossless)
-
-                    new_state[div(length(possible_state_lossless),2)+1:end] = mode_config
-
-                    push!(possible_states_lossy, new_state)
-
-                end
+                possible_loss_patterns = all_mode_configurations(n_lost_this_detection, m_physical, only_photon_number_conserving = true)
 
             end
 
+            fock_detections_this_physical_detection = [vcat(physical_fock_detection, possible_loss_pattern) for possible_loss_pattern in possible_loss_patterns]
+
+            fock_detections = vcat(fock_detections, fock_detections_this_physical_detection)
+
         end
+
+        fock_detections
+
+        @argcheck all([sum(fock_detection) == n for fock_detection in fock_detections]) "photon number not conserved"
+
             
-        return unique(possible_states_lossy)
+        return unique(fock_detections)
 
     end
 
@@ -417,4 +451,63 @@ function possible_threshold_detections(n::Int,state::ThresholdModeOccupation; lo
 
     possible_mode_occupations
 
+end
+
+
+# remove the lossy part of a ThresholdModeOccupation by removing the last half of the output modes and dividing m by two
+
+function remove_lossy_part!(tmo::ThresholdModeOccupation)
+
+    # check that the number of modes is even
+    if tmo.m % 2 != 0
+        error("The number of modes is not even")
+    end
+
+    tmo.m = tmo.m ÷ 2
+    tmo.state = tmo.state[1:tmo.m]
+    tmo.n_detected = sum(tmo.state)
+    tmo
+end
+
+function remove_lossy_part(tmo::ThresholdModeOccupation)
+
+    tmo_ = deepcopy(tmo)
+
+    remove_lossy_part!(tmo_)
+
+    tmo_
+
+end
+
+# write the same function for a ModeOccupation
+
+function remove_lossy_part!(mo::ModeOccupation)
+
+    # check that the number of modes is even
+    if mo.m % 2 != 0
+        error("The number of modes is not even")
+    end
+
+    mo.m = mo.m ÷ 2
+    mo.state = mo.state[1:mo.m]
+    mo
+end
+
+function remove_lossy_part(tmo::ModeOccupation)
+
+    tmo_ = deepcopy(tmo)
+
+    remove_lossy_part!(tmo_)
+
+    tmo_
+
+end
+
+
+function to_threshold(tmo::ThresholdModeOccupation)
+    tmo
+end
+
+function to_threshold!(tmo::ThresholdModeOccupation)
+    tmo
 end

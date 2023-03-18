@@ -96,6 +96,28 @@ mutable struct Event{TIn<:InputType, TOut<:OutputMeasurementType}
 
 end
 
+"""
+
+    assert_compatible_events(events)
+
+Verifies that the events are compatible, i.e. that they have the same input state, interferometer and output measurement type. They can have different detections of course, but the idea is to check that the come from the same experimental setup.
+"""
+function assert_compatible_events(events::Vector{Event})
+
+    for i in 1:length(events)
+        for j in (i+1):length(events)
+            
+            @argcheck events[i].interferometer == events[j].interferometer
+            @argcheck events[i].input_state == events[j].input_state
+            @argcheck typeof(events[i].output_measurement) == typeof(events[j].output_measurement)
+            
+        end
+    end
+
+    true
+
+end
+
 # Base.show(io::IO, ev::Event) = begin
 # 	println("Event:\n")
 # 	println("input state: ", ev.input_state.r, " (",get_parametric_type(ev.input_state)[1],")", "\n")
@@ -154,7 +176,11 @@ function possible_threshold_detections(ev::Event)
 
     n = ev.input_state.r.n
 
-    possible_threshold_detections(n,ev.output_measurement)
+	if is_lossless(ev)
+    	return possible_threshold_detections(n,ev.output_measurement, lossy = false)
+	else
+		return possible_threshold_detections(n, remove_lossy_part(ev.output_measurement.s).state, lossy = true)
+	end
 
 end
 
@@ -171,6 +197,19 @@ function Base.copy(ev::Event)
 
 end
 
+function to_threshold(ev::Event{TIn, FockDetection}) where {TIn <: InputType}
+
+	input_state = deepcopy(ev.input_state)
+	output_measurement = deepcopy(ev.output_measurement)
+	interferometer = deepcopy(ev.interferometer)
+	proba_params = deepcopy(ev.proba_params)
+
+	output_measurement = convert(ThresholdFockDetection, output_measurement)
+
+	Event(input_state, output_measurement, interferometer, proba_params)
+
+end
 
 
-
+n_clicks(ev::Event) = sum(ev.output_measurement.s.state)
+max_possibly_lost_photons(ev::Event) = ev.input_state.n - n_clicks(ev)

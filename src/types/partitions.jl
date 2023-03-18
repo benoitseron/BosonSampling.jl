@@ -193,7 +193,7 @@ end
         - m::Int
 """
 @auto_hash_equals struct PartitionOccupancy
-        counts::ModeOccupation
+        counts::Union{ModeOccupation, ThresholdModeOccupation}
         partition::Partition
         n::Int
         m::Int
@@ -204,6 +204,15 @@ end
                 if occupies_all_modes(partition)
                         @argcheck sum(counts.state) == n "photons lost in a partition that occupies all modes"
                 end
+
+                new(counts, partition, n, partition.subsets[1].m)
+
+        end
+
+        function PartitionOccupancy(counts::ThresholdModeOccupation, n::Int, partition::Partition)
+
+                @argcheck counts.m == partition.n_subset "counts do not have as many modes as parition has subsets"
+                @argcheck sum(counts.state) <= n "more photons at the output than input"
 
                 new(counts, partition, n, partition.subsets[1].m)
 
