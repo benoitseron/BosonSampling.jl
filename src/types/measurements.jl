@@ -62,6 +62,7 @@ function possible_threshold_detections(n, state::ThresholdFockDetection; lossy =
 end
 
 
+
 """
 
     function all_threshold_mode_occupations(n, m; only_photon_number_conserving = true)
@@ -91,7 +92,6 @@ function all_threshold_detections(n, m; only_photon_number_conserving = true)
 
     return [ThresholdFockDetection(x) for x in array]
 
-end
 
 
 
@@ -222,7 +222,7 @@ mutable struct PartitionSample <: OutputMeasurementType
     part_occ::Union{PartitionOccupancy, Nothing}
     PartitionSample() = new(nothing)
     PartitionSample(p::PartitionOccupancy) = new(p)
-end
+endregards
 
 
 StateMeasurement(::Type{PartitionSample}) = PartitionMeasurement()
