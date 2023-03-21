@@ -115,15 +115,77 @@ end
 # Λ -
 # δ -
 # λ - thermal parameters
+# V = U_round
 
 # the lambdas are created page 24
 # Q page 23
 # C just above
 
-m = 4
+### interferometer ###
+m = 2
+physical_interferometer = RandHaar(m)
+U = physical_interferometer.U
+
+### squeezing ###
 r = 1.5 * ones(m)
 λ = 1 * ones(m)
 
-C_array = [0.5 - 1/(1+ λ[j] * exp(2*r[j])) for j in 1:m]
+### useful matrices ###
 
+C_array = [0.5 - 1/(1+ λ[j] * exp(2*r[j])) for j in 1:m]
 C = diagm(C_array)
+
+### partition ###
+
+part = equilibrated_partition(m, 2)
+
+### cutoff ###
+
+n_max = 10
+@warn "arbitrary cutoff"
+
+
+### virtual interferometer matrix ###
+
+fourier_indexes = all_mode_configurations(n_max,part.n_subset, only_photon_number_conserving = false)
+# probas_fourier = Array{ComplexF64}(undef, length(fourier_indexes))
+virtual_interferometer_matrix = similar(U)
+
+index_fourier_array = 1
+fourier_index = fourier_indexes[index_fourier_array]
+
+# for (index_fourier_array, fourier_index) in enumerate(fourier_indexes)
+
+        # for each fourier index, we recompute the virtual interferometer
+        virtual_interferometer_matrix  = conj(physical_interferometer.U)
+
+        diag = [0.0 + 0im for i in 1:m] # previously 1.0 + 0im
+        
+        for (i,fourier_element) in enumerate(fourier_index)
+
+                this_phase = exp(2*pi*1im/(n_max+1) * fourier_element)
+
+                for j in 1:length(diag)
+
+                        if part.subsets[i].subset[j] == 1
+
+                                diag[j] = this_phase - 1 # previously multiply by phase
+
+                        end
+
+                end
+
+        end
+
+        virtual_interferometer_matrix *= Diagonal(diag)
+        virtual_interferometer_matrix *= conj(physical_interferometer.U') # more practical than the transpose function 
+
+
+        # beware, only the modes corresponding to the
+        # virtual_interferometer_matrix[input_config,input_config]
+        # must be taken into account !
+        #probas_fourier[index_fourier_array] = permanent(virtual_interferometer_matrix[mode_occupation_list,mode_occupation_list] .* S)
+# end
+
+@warn "check if this is actually what we want or the definition of Gabrielle in U_round"
+
