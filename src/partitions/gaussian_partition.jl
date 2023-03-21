@@ -129,7 +129,7 @@ U = physical_interferometer.U
 ### squeezing ###
 r = 1.5 * ones(m)
 λ = 1 * ones(m)
-displacement = (0.5 + 0.1im) * ones(m)
+displacement = (0.1 + 0.1im) * ones(m)
 delta_x = real.(displacement)
 delta_y = imag.(displacement)
 
@@ -137,6 +137,13 @@ delta_y = imag.(displacement)
 
 C_array = [0.5 - 1/(1+ λ[j] * exp(2*r[j])) for j in 1:m]
 C = diagm(C_array)
+
+### Lambda matrices ###
+
+Λ_plus = [2 * delta_x[j] /(1+ λ[j] * exp(2*r[j])) for j in 1:m]
+Λ_minus = [2 * delta_y[j] /(1+ λ[j] * exp(-2*r[j])) for j in 1:m]
+
+Λ = vcat(Λ_plus , Λ_minus, Λ_plus, - Λ_minus)
 
 ### partition ###
 
@@ -151,13 +158,10 @@ n_max = 10
 ### virtual interferometer matrix ###
 
 fourier_indexes = all_mode_configurations(n_max,part.n_subset, only_photon_number_conserving = false)
-# probas_fourier = Array{ComplexF64}(undef, length(fourier_indexes))
+probas_fourier = Array{ComplexF64}(undef, length(fourier_indexes))
 virtual_interferometer_matrix = similar(U)
 
-index_fourier_array = 3
-fourier_index = fourier_indexes[index_fourier_array]
-
-# for (index_fourier_array, fourier_index) in enumerate(fourier_indexes)
+for (index_fourier_array, fourier_index) in enumerate(fourier_indexes)
 
         # for each fourier index, we recompute the virtual interferometer
         virtual_interferometer_matrix  = conj(physical_interferometer.U)
@@ -183,49 +187,37 @@ fourier_index = fourier_indexes[index_fourier_array]
         virtual_interferometer_matrix *= Diagonal(diag)
         virtual_interferometer_matrix *= conj(physical_interferometer.U') # more practical than the transpose function 
 
+        ### matrix Q ###
 
-        # beware, only the modes corresponding to the
-        # virtual_interferometer_matrix[input_config,input_config]
-        # must be taken into account !
-        #probas_fourier[index_fourier_array] = permanent(virtual_interferometer_matrix[mode_occupation_list,mode_occupation_list] .* S)
-# end
+        Q = zeros(ComplexF64, 4 .* size(C))
 
-@warn "check if this is actually what we want and the definition of Gabrielle in U_round"
+        Q[1:m, 1:m] = I - C 
+        Q[1:m, 2m+1:3m] = - C - virtual_interferometer_matrix
+        Q[1:m, 3m+1:4m] = -1im .* virtual_interferometer_matrix
 
-### matrix Q ###
+        Q[m+1:2m, m+1:2m] = I + C 
+        Q[m+1:2m, 2m+1:3m] = -1im .* virtual_interferometer_matrix
+        Q[m+1:2m, 3m+1:4m] = - C + virtual_interferometer_matrix
 
-Q = zeros(ComplexF64, 4 .* size(C))
+        Q[2m+1:3m, 1:m] = - C - virtual_interferometer_matrix
+        Q[2m+1:3m, m+1:2m] = -1im .* virtual_interferometer_matrix
+        Q[2m+1:3m, 2m+1:3m] = I - C
 
-Q[1:m, 1:m] = I - C 
-Q[1:m, 2m+1:3m] = - C - virtual_interferometer_matrix
-Q[1:m, 3m+1:4m] = -1im .* virtual_interferometer_matrix
+        Q[3m+1:4m, 1:m] = -1im .* virtual_interferometer_matrix
+        Q[3m+1:4m, m+1:2m] = - C + virtual_interferometer_matrix
+        Q[3m+1:4m, 3m+1:4m] = I + C
 
-Q[m+1:2m, m+1:2m] = I + C 
-Q[m+1:2m, 2m+1:3m] = -1im .* virtual_interferometer_matrix
-Q[m+1:2m, 3m+1:4m] = - C + virtual_interferometer_matrix
+        probas_fourier[index_fourier_array] = prod([2 / sqrt((1+ λ[j] * exp(2*r[j]))*(1+ λ[j] * exp(-2*r[j]))) for j in 1:m]) * (det(Q))^(-0.5) * 0.5 * dot(Λ, Q^(-1) * Λ) - dot(Λ_plus, delta_x) - dot(Λ_minus, delta_y) 
+        
+end
 
-Q[2m+1:3m, 1:m] = - C - virtual_interferometer_matrix
-Q[2m+1:3m, m+1:2m] = -1im .* virtual_interferometer_matrix
-Q[2m+1:3m, 2m+1:3m] = I - C
+physical_indexes = copy(fourier_indexes)
 
-Q[3m+1:4m, 1:m] = -1im .* virtual_interferometer_matrix
-Q[3m+1:4m, m+1:2m] = - C + virtual_interferometer_matrix
-Q[3m+1:4m, 3m+1:4m] = I + C
-
-Q
-
-### Lambda matrices ###
-
-Λ_plus = [2 * delta_x[j] /(1+ λ[j] * exp(2*r[j])) for j in 1:m]
-Λ_minus = [2 * delta_y[j] /(1+ λ[j] * exp(-2*r[j])) for j in 1:m]
-
-Λ = vcat(Λ_plus , Λ_minus, Λ_plus, - Λ_minus)
-
-###
-
-prod([2 / sqrt((1+ λ[j] * exp(2*r[j]))*(1+ λ[j] * exp(-2*r[j]))) for j in 1:m]) * (det(Q))^(-0.5) * 0.5 * dot(Λ, Q^(-1) * Λ) - dot(Λ_plus, delta_x) - dot(Λ_minus, delta_y) 
+probas_physical(physical_index) = 1/(n_max+1)^(part.n_subset) * sum(probas_fourier[i] * exp(-2pi*1im/(n_max+1) * dot(physical_index, fourier_index)) for (i,fourier_index) in enumerate(fourier_indexes))
 
 
+pdf = [probas_physical(physical_index) for physical_index in physical_indexes]
 
+# pdf = clean_pdf(pdf)
 
-
+bar(real(pdf))
