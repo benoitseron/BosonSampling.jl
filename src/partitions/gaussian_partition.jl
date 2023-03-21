@@ -129,6 +129,9 @@ U = physical_interferometer.U
 ### squeezing ###
 r = 1.5 * ones(m)
 λ = 1 * ones(m)
+displacement = (0.5 + 0.1im) * ones(m)
+delta_x = real.(displacement)
+delta_y = imag.(displacement)
 
 ### useful matrices ###
 
@@ -151,7 +154,7 @@ fourier_indexes = all_mode_configurations(n_max,part.n_subset, only_photon_numbe
 # probas_fourier = Array{ComplexF64}(undef, length(fourier_indexes))
 virtual_interferometer_matrix = similar(U)
 
-index_fourier_array = 1
+index_fourier_array = 3
 fourier_index = fourier_indexes[index_fourier_array]
 
 # for (index_fourier_array, fourier_index) in enumerate(fourier_indexes)
@@ -187,5 +190,42 @@ fourier_index = fourier_indexes[index_fourier_array]
         #probas_fourier[index_fourier_array] = permanent(virtual_interferometer_matrix[mode_occupation_list,mode_occupation_list] .* S)
 # end
 
-@warn "check if this is actually what we want or the definition of Gabrielle in U_round"
+@warn "check if this is actually what we want and the definition of Gabrielle in U_round"
+
+### matrix Q ###
+
+Q = zeros(ComplexF64, 4 .* size(C))
+
+Q[1:m, 1:m] = I - C 
+Q[1:m, 2m+1:3m] = - C - virtual_interferometer_matrix
+Q[1:m, 3m+1:4m] = -1im .* virtual_interferometer_matrix
+
+Q[m+1:2m, m+1:2m] = I + C 
+Q[m+1:2m, 2m+1:3m] = -1im .* virtual_interferometer_matrix
+Q[m+1:2m, 3m+1:4m] = - C + virtual_interferometer_matrix
+
+Q[2m+1:3m, 1:m] = - C - virtual_interferometer_matrix
+Q[2m+1:3m, m+1:2m] = -1im .* virtual_interferometer_matrix
+Q[2m+1:3m, 2m+1:3m] = I - C
+
+Q[3m+1:4m, 1:m] = -1im .* virtual_interferometer_matrix
+Q[3m+1:4m, m+1:2m] = - C + virtual_interferometer_matrix
+Q[3m+1:4m, 3m+1:4m] = I + C
+
+Q
+
+### Lambda matrices ###
+
+Λ_plus = [2 * delta_x[j] /(1+ λ[j] * exp(2*r[j])) for j in 1:m]
+Λ_minus = [2 * delta_y[j] /(1+ λ[j] * exp(-2*r[j])) for j in 1:m]
+
+Λ = vcat(Λ_plus , Λ_minus, Λ_plus, - Λ_minus)
+
+###
+
+prod([2 / sqrt((1+ λ[j] * exp(2*r[j]))*(1+ λ[j] * exp(-2*r[j]))) for j in 1:m]) * (det(Q))^(-0.5) * 0.5 * dot(Λ, Q^(-1) * Λ) - dot(Λ_plus, delta_x) - dot(Λ_minus, delta_y) 
+
+
+
+
 
