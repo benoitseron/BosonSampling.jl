@@ -20,6 +20,7 @@ begin
     using LinearRegression
     
     using DataStructures
+    using FFTW
 end
 
 
@@ -38,8 +39,8 @@ end
 # C just above
 
 ### interferometer ###
-m = 10
-physical_interferometer = Fourier(m)
+m = 1
+physical_interferometer = RandHaar(m)
 U = physical_interferometer.U
 # U = Diagonal(ones(m))
 
@@ -66,7 +67,7 @@ C = diagm(C_array)
 
 ### partition ###
 
-part = equilibrated_partition(m, 2)
+part = equilibrated_partition(m, 1)
 
 # part = Partition(Subset(first_modes(1, m)))
 # part.subsets[1].subset
@@ -74,7 +75,7 @@ part = equilibrated_partition(m, 2)
 
 ### cutoff ###
 
-n_max = 10
+n_max = 10 #div(2m, part.n_subset) 
 @warn "arbitrary cutoff"
 
 
@@ -160,6 +161,28 @@ bar(real(pdf))
 sort_samples_total_photon_number_in_partition!(mc)
 
 bar(mc.proba)
+
+### fft ###
+
+using FFTW
+
+probas_fourier
+
+probas_fourier_matrix = reshape(probas_fourier, (div(length(probas_fourier), (n_max + 1)), (n_max + 1)))
+
+pdf_matrix = ifft(probas_fourier_matrix)
+
+pdf = reshape(pdf_matrix, (length(probas_fourier),))
+
+clean_pdf(pdf)
+
+bar(real.(pdf))
+
+(n_max + 1) ^ part.n_subset 
+
+
+
+ifft()
 
 
 # ### test case with one mode ###
