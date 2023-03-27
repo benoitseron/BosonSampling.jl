@@ -122,14 +122,15 @@ end
 # C just above
 
 ### interferometer ###
-m = 1
+m = 2
 #physical_interferometer = Fourier(m)
-#U = physical_interferometer.U
-U = ones(ComplexF64, m,m)
+# U = physical_interferometer.U
+U = Diagonal(ones(m))
 
+U
 
 ### squeezing ###
-r = 0.5 * ones(m)
+r = [0.5, 1] # 0.5 * ones(m)
 λ = 1 * ones(m) # no thermal noise is 1
 displacement = (0.0 + 0.0im) * ones(m)
 delta_x = real.(displacement)
@@ -149,9 +150,12 @@ C = diagm(C_array)
 
 ### partition ###
 
-#part = equilibrated_partition(m, 2)
-
 part = equilibrated_partition(m, 1)
+
+# part = BosonSampling.Partition(Subset([1]))
+# part.subsets[1].subset
+
+
 
 ### cutoff ###
 
@@ -175,18 +179,18 @@ for (index_fourier_array, fourier_index) in enumerate(fourier_indexes)
         
         for (i,fourier_element) in enumerate(fourier_index)
 
-                @show fourier_element
+                # @show fourier_element
 
                 this_phase = exp(2*pi*1im/(n_max+1) * fourier_element)
 
-                @show this_phase
+                # @show this_phase
 
                 for j in 1:length(diag)
-
+                        # @show i,j
                         if part.subsets[i].subset[j] == 1
 
                                 diag[j] = this_phase - 1 # previously multiply by phase
-                                @show diag[j]
+                                # @show diag[j]
 
                         end
 
@@ -194,7 +198,7 @@ for (index_fourier_array, fourier_index) in enumerate(fourier_indexes)
 
         end
 
-        @show diag 
+        # @show diag 
 
         virtual_interferometer_matrix *= Diagonal(diag)
         virtual_interferometer_matrix *= conj(U') # more practical than the transpose function 
@@ -230,32 +234,33 @@ physical_indexes = copy(fourier_indexes)
 
 probas_physical(physical_index) = 1/(n_max+1)^(part.n_subset) * sum(probas_fourier[i] * exp(-2pi*1im/(n_max+1) * dot(physical_index, fourier_index)) for (i,fourier_index) in enumerate(fourier_indexes))
 
-
 pdf = [probas_physical(physical_index) for physical_index in physical_indexes]
 
-# pdf = clean_pdf(pdf)
+pdf = clean_pdf(pdf)
 
-bar(real(pdf), alpha = 0.5)
+mc = MultipleCounts(ModeOccupation.(physical_indexes), pdf)
 
-pdf
-
-### test case with one mode ###
-
-# check if n is even
+bar(real(pdf))
 
 
-pdf_one_mode(n,r::Real) = begin
-        if n % 2 == 1
-                return 0.0
-        else
 
-                μ = cosh(r)
-                ν = sinh(r)
+# ### test case with one mode ###
 
-                return 1/μ * (ν/μ)^(n) * factorial(n) / (2^(div(n,2)) * factorial(div(n,2)))^2
-        end
-end
+# # check if n is even
 
-pdf_one_mode_array = [pdf_one_mode(i,r[1]) for i in 0:n_max]
 
-bar!(real(pdf_one_mode_array), alpha = 0.5)
+# pdf_one_mode(n,r::Real) = begin
+#         if n % 2 == 1
+#                 return 0.0
+#         else
+
+#                 μ = cosh(r)
+#                 ν = sinh(r)
+
+#                 return 1/μ * (ν/μ)^(n) * factorial(n) / (2^(div(n,2)) * factorial(div(n,2)))^2
+#         end
+# end
+
+# pdf_one_mode_array = [pdf_one_mode(i,r[1]) for i in 0:n_max]
+
+# bar!(real(pdf_one_mode_array), alpha = 0.5)
