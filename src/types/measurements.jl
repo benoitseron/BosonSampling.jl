@@ -528,6 +528,22 @@ function sort_samples!(samples::MultipleCounts)
     samples
 end
 
+function sort_samples_total_photon_number_in_partition!(samples::MultipleCounts)
+
+    # sort the counts  of the samples using the total number of photons in the partition
+    
+    sorted = sort(collect(zip(samples.counts, samples.proba)), by = x -> sum(x[1].state))
+    
+    counts = [sorted[i][1] for i in 1:length(sorted)]
+    proba = [sorted[i][2] for i in 1:length(sorted)]
+    
+    samples.counts = counts
+    samples.proba = proba
+    
+    samples
+end
+
+
 function Base.sort!(samples::MultipleCounts)
     sort_samples!(samples)
 end
@@ -536,6 +552,7 @@ function Base.sort(samples::MultipleCounts)
     samples = deepcopy(samples)
     sort_samples!(samples)
 end
+
 
 function tvd(mc::MultipleCounts, samples::MultipleCounts)
     # find the tvd between the samples and the mc by computing the tvd between their field proba

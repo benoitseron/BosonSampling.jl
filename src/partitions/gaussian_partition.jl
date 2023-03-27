@@ -38,15 +38,15 @@ end
 # C just above
 
 ### interferometer ###
-m = 2
-#physical_interferometer = Fourier(m)
-# U = physical_interferometer.U
-U = Diagonal(ones(m))
+m = 10
+physical_interferometer = Fourier(m)
+U = physical_interferometer.U
+# U = Diagonal(ones(m))
 
 U
 
 ### squeezing ###
-r = [0.5, 1] # 0.5 * ones(m)
+r = 0.5 * ones(m)
 λ = 1 * ones(m) # no thermal noise is 1
 displacement = (0.0 + 0.0im) * ones(m)
 delta_x = real.(displacement)
@@ -66,16 +66,15 @@ C = diagm(C_array)
 
 ### partition ###
 
-part = equilibrated_partition(m, 1)
+part = equilibrated_partition(m, 2)
 
-part = Partition(Subset(first_modes(1, m)))
-part.subsets[1].subset
-
+# part = Partition(Subset(first_modes(1, m)))
+# part.subsets[1].subset
 
 
 ### cutoff ###
 
-n_max = 40
+n_max = 10
 @warn "arbitrary cutoff"
 
 
@@ -158,6 +157,9 @@ mc = MultipleCounts(ModeOccupation.(physical_indexes), pdf)
 
 bar(real(pdf))
 
+sort_samples_total_photon_number_in_partition!(mc)
+
+bar(mc.proba)
 
 
 # ### test case with one mode ###
@@ -180,3 +182,4 @@ bar(real(pdf))
 # pdf_one_mode_array = [pdf_one_mode(i,r[1]) for i in 0:n_max]
 
 # bar!(real(pdf_one_mode_array), alpha = 0.5)
+
