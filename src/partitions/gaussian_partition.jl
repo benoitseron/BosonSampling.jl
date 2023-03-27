@@ -122,14 +122,16 @@ end
 # C just above
 
 ### interferometer ###
-m = 2
-physical_interferometer = RandHaar(m)
-U = physical_interferometer.U
+m = 1
+#physical_interferometer = Fourier(m)
+#U = physical_interferometer.U
+U = ones(ComplexF64, m,m)
+
 
 ### squeezing ###
-r = 1.5 * ones(m)
-λ = 1 * ones(m)
-displacement = (0.1 + 0.1im) * ones(m)
+r = 0.5 * ones(m)
+λ = 1 * ones(m) # no thermal noise is 1
+displacement = (0.0 + 0.0im) * ones(m)
 delta_x = real.(displacement)
 delta_y = imag.(displacement)
 
@@ -147,7 +149,9 @@ C = diagm(C_array)
 
 ### partition ###
 
-part = equilibrated_partition(m, 2)
+#part = equilibrated_partition(m, 2)
+
+part = equilibrated_partition(m, 1)
 
 ### cutoff ###
 
@@ -161,22 +165,28 @@ fourier_indexes = all_mode_configurations(n_max,part.n_subset, only_photon_numbe
 probas_fourier = Array{ComplexF64}(undef, length(fourier_indexes))
 virtual_interferometer_matrix = similar(U)
 
+
 for (index_fourier_array, fourier_index) in enumerate(fourier_indexes)
 
         # for each fourier index, we recompute the virtual interferometer
-        virtual_interferometer_matrix  = conj(physical_interferometer.U)
+        virtual_interferometer_matrix  = conj(U)
 
         diag = [0.0 + 0im for i in 1:m] # previously 1.0 + 0im
         
         for (i,fourier_element) in enumerate(fourier_index)
 
+                @show fourier_element
+
                 this_phase = exp(2*pi*1im/(n_max+1) * fourier_element)
+
+                @show this_phase
 
                 for j in 1:length(diag)
 
                         if part.subsets[i].subset[j] == 1
 
                                 diag[j] = this_phase - 1 # previously multiply by phase
+                                @show diag[j]
 
                         end
 
@@ -184,8 +194,10 @@ for (index_fourier_array, fourier_index) in enumerate(fourier_indexes)
 
         end
 
+        @show diag 
+
         virtual_interferometer_matrix *= Diagonal(diag)
-        virtual_interferometer_matrix *= conj(physical_interferometer.U') # more practical than the transpose function 
+        virtual_interferometer_matrix *= conj(U') # more practical than the transpose function 
 
         ### matrix Q ###
 
@@ -207,7 +219,10 @@ for (index_fourier_array, fourier_index) in enumerate(fourier_indexes)
         Q[3m+1:4m, m+1:2m] = - C + virtual_interferometer_matrix
         Q[3m+1:4m, 3m+1:4m] = I + C
 
-        probas_fourier[index_fourier_array] = prod([2 / sqrt((1+ λ[j] * exp(2*r[j]))*(1+ λ[j] * exp(-2*r[j]))) for j in 1:m]) * (det(Q))^(-0.5) * 0.5 * dot(Λ, Q^(-1) * Λ) - dot(Λ_plus, delta_x) - dot(Λ_minus, delta_y) 
+
+        coeffs = prod([2 / sqrt((1+ λ[j] * exp(2*r[j]))*(1+ λ[j] * exp(-2*r[j]))) for j in 1:m])
+
+        probas_fourier[index_fourier_array] = coeffs * (det(Q))^(-0.5) * exp(0.5 * dot(Λ, Q^(-1) * Λ) - dot(Λ_plus, delta_x) - dot(Λ_minus, delta_y))
         
 end
 
@@ -220,4 +235,27 @@ pdf = [probas_physical(physical_index) for physical_index in physical_indexes]
 
 # pdf = clean_pdf(pdf)
 
-bar(real(pdf))
+bar(real(pdf), alpha = 0.5)
+
+pdf
+
+### test case with one mode ###
+
+# check if n is even
+
+
+pdf_one_mode(n,r::Real) = begin
+        if n % 2 == 1
+                return 0.0
+        else
+
+                μ = cosh(r)
+                ν = sinh(r)
+
+                return 1/μ * (ν/μ)^(n) * factorial(n) / (2^(div(n,2)) * factorial(div(n,2)))^2
+        end
+end
+
+pdf_one_mode_array = [pdf_one_mode(i,r[1]) for i in 0:n_max]
+
+bar!(real(pdf_one_mode_array), alpha = 0.5)
