@@ -164,8 +164,16 @@ function compute_probabilities_partition_gaussian(physical_interferometer::Inter
 
         pdf = [probas_physical(physical_index) for physical_index in physical_indexes]
 
-        pdf = clean_pdf(pdf)
-
+        @warn "skipping cleaning of probabilities and health checks"
+        try
+                pdf = clean_pdf(pdf)
+        catch
+                @warn "invalid pdf, skipping cleaning"
+                println("press any key to continue")
+                readline()
+                pdf = real.(pdf)
+        end
+        
         mc = MultipleCounts(ModeOccupation.(physical_indexes), pdf)
 
         mc
@@ -174,15 +182,15 @@ end
 
 begin
 
-        m = 20
-        input_state = GeneralGaussian(m = m, r = 0.4 * ones(m))
+        m = 4
+        input_state = GeneralGaussian(m = m, r = 1.5 * ones(m))
         interferometer = RandHaar(m)
         part = equilibrated_partition(m, 2)
 
         # part = Partition(Subset(first_modes(1, m)))
         # part.subsets[1].subset
 
-        n_max = 20
+        n_max = 80
         mc = compute_probabilities_partition_gaussian(interferometer, part, input_state, n_max)
 
         # bar(real(pdf))
@@ -200,9 +208,10 @@ end
     
 sorted_counts = sort_by_detected_photons(mc)
 
-n_detected = 10
+n_detected = 20
 
 bar(sorted_counts[n_detected].proba)
+
 
 
 
@@ -230,36 +239,11 @@ foo()
 # ifft(fft(a))
 
 
-### test case with one mode ###
-
-# check if n is even
-
-"""
-
-        pdf_one_mode(n,r)
-
-Returns the probability of having n photons in one mode, given the displacement r. Input of 1 mode squeezed sttate.
-"""
-pdf_one_mode(n,r::Real) = begin
-        if n % 2 == 1
-                return 0.0
-        else
-
-                μ = cosh(r)
-                ν = sinh(r)
-
-                return 1/μ * (ν/μ)^(n) * factorial(n) / (2^(div(n,2)) * factorial(div(n,2)))^2
-        end
-end
-
-pdf_one_mode_array = [pdf_one_mode(i,r[1]) for i in 0:n_max]
-
-bar!(real(pdf_one_mode_array), alpha = 0.5)
 
 ### mean photon number ###
 
-r_array = 0.5:0.01:1.5
-mean_photon_number(r::Real) = (sinh(r))^2
-plot(r_array,mean_photon_number.(r_array))
+# r_array = 0.5:0.01:1.5
+# mean_photon_number(r::Real) = (sinh(r))^2
+# plot(r_array,mean_photon_number.(r_array))
 
-mean_photon_number(1.5)/mean_photon_number(0.5)
+# mean_photon_number(1.5)/mean_photon_number(0.5)
