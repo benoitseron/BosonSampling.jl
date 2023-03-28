@@ -69,22 +69,18 @@ A generalized input of a multimode gaussian state.
 end
 
 input_state = GeneralGaussian(m = m)
-
-
-
 interferometer = RandHaar(m)
-
-
-
-### partition ###
-
 part = equilibrated_partition(m, 1)
 
 # part = Partition(Subset(first_modes(1, m)))
 # part.subsets[1].subset
 
-# function compute_probabilities_partition_gaussian(physical_interferometer::Interferometer, part::Partition, input_state::Input)
+function compute_probabilities_partition_gaussian(physical_interferometer::Interferometer, part::Partition, input_state::GeneralGaussian)
 
+
+        # unpack the parameters of the input state
+
+        @unpack m, r, λ, delta_x, delta_y = input_state
         
         U = physical_interferometer.U
         
@@ -186,8 +182,10 @@ part = equilibrated_partition(m, 1)
 
         mc
 
-# end
+end
 
+mc = compute_probabilities_partition_gaussian(interferometer, part, input_state)
+pdf = mc.proba
 
 bar(real(pdf))
 
