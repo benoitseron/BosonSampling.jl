@@ -62,3 +62,38 @@ function sort_by_coincidence_counts(samples::MultipleCounts)
     sorted_samples
 
 end
+
+
+function get_fixed_number_photons(mc::MultipleCounts, n_photons_detected::Int)
+
+        proba = Vector{Real}()
+        counts = Vector{eltype(mc.counts)}()
+
+        for (p, count) in zip(mc.proba, mc.counts)
+
+                if sum(count) == n_photons_detected
+                        push!(proba, p)
+                        push!(counts, count)
+                end
+
+        end
+
+        MultipleCounts(counts, proba)
+
+end
+
+function sort_by_detected_photons(samples::MultipleCounts)
+
+        sorted_samples = Dict{Int, MultipleCounts}()
+    
+        n_max = max_coincidences(samples)
+    
+        for n_coincidences in 1:n_max
+    
+            sorted_samples[n_coincidences] = get_fixed_number_photons(samples, n_coincidences)
+    
+        end
+    
+        sorted_samples
+    
+end

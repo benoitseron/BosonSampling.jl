@@ -68,15 +68,10 @@ A generalized input of a multimode gaussian state.
 
 end
 
-input_state = GeneralGaussian(m = m)
-interferometer = RandHaar(m)
-part = equilibrated_partition(m, 1)
 
-# part = Partition(Subset(first_modes(1, m)))
-# part.subsets[1].subset
+function compute_probabilities_partition_gaussian(physical_interferometer::Interferometer, part::Partition, input_state::GeneralGaussian, n_max = 10)
 
-function compute_probabilities_partition_gaussian(physical_interferometer::Interferometer, part::Partition, input_state::GeneralGaussian)
-
+        @warn "arbitrary cutoff"
 
         # unpack the parameters of the input state
 
@@ -95,13 +90,6 @@ function compute_probabilities_partition_gaussian(physical_interferometer::Inter
         Λ_minus = [2 * delta_y[j] /(1+ λ[j] * exp(-2*r[j])) for j in 1:m]
 
         Λ = vcat(Λ_plus , Λ_minus, Λ_plus, - Λ_minus)
-
-
-        ### cutoff ###
-
-        n_max = 10 #div(2m, part.n_subset) 
-        @warn "arbitrary cutoff"
-
 
         ### virtual interferometer matrix ###
 
@@ -184,14 +172,42 @@ function compute_probabilities_partition_gaussian(physical_interferometer::Inter
 
 end
 
-mc = compute_probabilities_partition_gaussian(interferometer, part, input_state)
-pdf = mc.proba
+begin
 
-bar(real(pdf))
+        m = 20
+        input_state = GeneralGaussian(m = m, r = 0.4 * ones(m))
+        interferometer = RandHaar(m)
+        part = equilibrated_partition(m, 2)
 
-sort_samples_total_photon_number_in_partition!(mc)
+        # part = Partition(Subset(first_modes(1, m)))
+        # part.subsets[1].subset
 
-bar(mc.proba)
+        n_max = 20
+        mc = compute_probabilities_partition_gaussian(interferometer, part, input_state, n_max)
+
+        # bar(real(pdf))
+
+        sort_samples_total_photon_number_in_partition!(mc)
+
+        @show mc
+
+        bar(mc.proba)
+
+end
+
+
+### separating events by photon number ###
+    
+sorted_counts = sort_by_detected_photons(mc)
+
+n_detected = 10
+
+bar(sorted_counts[n_detected].proba)
+
+
+
+
+foo()
 
 ### fft ###
 
@@ -240,3 +256,10 @@ pdf_one_mode_array = [pdf_one_mode(i,r[1]) for i in 0:n_max]
 
 bar!(real(pdf_one_mode_array), alpha = 0.5)
 
+### mean photon number ###
+
+r_array = 0.5:0.01:1.5
+mean_photon_number(r::Real) = (sinh(r))^2
+plot(r_array,mean_photon_number.(r_array))
+
+mean_photon_number(1.5)/mean_photon_number(0.5)
