@@ -70,16 +70,24 @@ A generalized input of a multimode gaussian state.
 end
 
 
-function compute_probabilities_partition_gaussian(physical_interferometer::Interferometer, part::Partition, input_state::GeneralGaussian, n_max = 10)
+function compute_probabilities_partition_gaussian(physical_interferometer::Interferometer, part::Partition, input_state::GeneralGaussian, n_max = 11)
+
+        if n_max % 2 == 0
+                @warn "n_max must be odd for FFT purposes, converting"
+                n_max = n_max +1
+        end
+
+        physical_interferometer = interferometer
+        ### function ###
 
         @warn "arbitrary cutoff"
 
         # unpack the parameters of the input state
 
         @unpack m, r, λ, delta_x, delta_y = input_state
-        
+
         U = physical_interferometer.U
-        
+
         ### useful matrices ###
 
         C_array = [0.5 - 1/(1+ λ[j] * exp(2*r[j])) for j in 1:m]
@@ -161,20 +169,22 @@ function compute_probabilities_partition_gaussian(physical_interferometer::Inter
 
         physical_indexes = copy(fourier_indexes)
 
-        probas_physical(physical_index) = 1/(n_max+1)^(part.n_subset) * sum(probas_fourier[i] * exp(-2pi*1im/(n_max+1) * dot(physical_index, fourier_index)) for (i,fourier_index) in enumerate(fourier_indexes))
+        probas_fourier_matrix = reshape(probas_fourier, ((n_max + 1), div(length(probas_fourier), (n_max + 1))))
 
-        pdf = [probas_physical(physical_index) for physical_index in physical_indexes]
+        shifted_probas_fourier_matrix = fftshift(probas_fourier_matrix)
+        pdf_matrix = fft(shifted_probas_fourier_matrix) / (n_max + 1)^part.n_subset
 
-        @warn "skipping cleaning of probabilities and health checks"
+        pdf = reshape(pdf_matrix, (length(probas_fourier),))
+
         try
                 pdf = clean_pdf(pdf)
         catch
                 @warn "invalid pdf, skipping cleaning"
-                println("press any key to continue")
-                readline()
+                # println("press any key to continue")
+                # readline()
                 pdf = real.(pdf)
         end
-        
+
         mc = MultipleCounts(ModeOccupation.(physical_indexes), pdf)
 
         mc

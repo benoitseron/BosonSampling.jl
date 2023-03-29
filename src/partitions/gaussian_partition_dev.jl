@@ -4,14 +4,14 @@ include("gaussian_partition.jl")
 begin
 
     m = 20
-    input_state = GeneralGaussian(m = m, r = 0.4 * ones(m))
+    input_state = GeneralGaussian(m = m, r = 0.40 * ones(m))
     interferometer = RandHaar(m)
     part = equilibrated_partition(m, 2)
 
     # part = Partition(Subset(first_modes(1, m)))
     # part.subsets[1].subset
 
-    n_max = 20
+    n_max = 50
     mc = compute_probabilities_partition_gaussian(interferometer, part, input_state, n_max)
 
     # bar(real(pdf))
