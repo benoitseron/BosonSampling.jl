@@ -247,3 +247,5 @@ foo()
 # plot(r_array,mean_photon_number.(r_array))
 
 # mean_photon_number(1.5)/mean_photon_number(0.5)
+
+
