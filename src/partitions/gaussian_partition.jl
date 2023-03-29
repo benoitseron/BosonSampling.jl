@@ -23,6 +23,7 @@ begin
     using FFTW
     # include package using @with_kw
     using Parameters
+    using Roots
 
 end
 
@@ -182,15 +183,15 @@ end
 
 begin
 
-        m = 4
-        input_state = GeneralGaussian(m = m, r = 1.5 * ones(m))
+        m = 20
+        input_state = GeneralGaussian(m = m, r = 0.4 * ones(m))
         interferometer = RandHaar(m)
         part = equilibrated_partition(m, 2)
 
         # part = Partition(Subset(first_modes(1, m)))
         # part.subsets[1].subset
 
-        n_max = 80
+        n_max = 20
         mc = compute_probabilities_partition_gaussian(interferometer, part, input_state, n_max)
 
         # bar(real(pdf))
@@ -208,44 +209,43 @@ end
     
 sorted_counts = sort_by_detected_photons(mc)
 
-n_detected = 20
+n_detected = 14
 
 bar(sorted_counts[n_detected].proba)
 
 
+### cutoff ###
 
+m = 300
+input_state = GeneralGaussian(m = m, r = 1.5 * ones(m))
 
+"""
 
-foo()
+        find_cutoff(input_state::GeneralGaussian; atol = ATOL)
 
-### fft ###
+Given a value `atol`, finds the number of photons that is less likely to be detected than `atol`. Follows S3 in 2110.0156. 
+"""
+function find_cutoff(input_state::GeneralGaussian; atol = ATOL)
 
-# using FFTW
+        n_in = input_state.m
+        # check that all the elements of r are the same
+        @argcheck all(input_state.r .== input_state.r[1]) "r must be the same for all modes"
+        r = input_state.r[1]
 
-# probas_fourier
+        @show n_in,r
+        cutoff(α, n_in::Int, r::Real) = α * n_in * sech(r)^2
 
-# probas_fourier_matrix = reshape(probas_fourier, ((n_max + 1), div(length(probas_fourier), (n_max + 1))))
+        bound(α) = exp(-0.5 *α * n_in * (1-1/α)^2)
 
-# pdf_matrix = ifft(probas_fourier_matrix)
+        f = x -> bound(x) - atol
 
-# pdf = reshape(pdf_matrix, (length(probas_fourier),))
+        α = find_zero(f, 1.) 
 
-# clean_pdf(pdf)
+        bound(α)
+        cutoff(α, n_in, r)
 
-# bar(real.(pdf), alpha = 0.5)
+end
 
-# a = randn(20)
+find_cutoff(input_state; atol = 1e-10)
 
-# ifft(fft(a))
-
-
-
-### mean photon number ###
-
-# r_array = 0.5:0.01:1.5
-# mean_photon_number(r::Real) = (sinh(r))^2
-# plot(r_array,mean_photon_number.(r_array))
-
-# mean_photon_number(1.5)/mean_photon_number(0.5)
-
-
+input_state.m

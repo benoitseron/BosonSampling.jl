@@ -35,6 +35,8 @@ using Dates
 using JLD
 using DelimitedFiles
 using ColorSchemes
+using Roots
+using FFTW
 
 # using Distributed
 # using SharedArrays
