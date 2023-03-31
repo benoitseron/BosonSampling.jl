@@ -56,6 +56,6 @@ end
 
 sorted_counts = sort_by_detected_photons(mc)
 
-n_detected = 30
+n_detected = 24
 
 bar(sorted_counts[n_detected].proba)

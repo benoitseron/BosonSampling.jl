@@ -117,12 +117,12 @@ end
 
 ###### zero padding ######
 
-m = 20
-input_state = GeneralGaussian(m = m, r = 0.42 * ones(m))
+m = 2
+input_state = GeneralGaussian(m = m, r = 0.1 * ones(m))
 interferometer = RandHaar(m)
-part = equilibrated_partition(m, 1)
+part = equilibrated_partition(m, 2)
 
-n_max = 30
+n_max = 5
 
 if n_max % 2 == 0
     @warn "n_max must be odd for FFT purposes, converting"
@@ -155,9 +155,14 @@ C = diagm(C_array)
 ### virtual interferometer matrix ###
 
 fourier_indexes = all_mode_configurations(n_max,part.n_subset, only_photon_number_conserving = false)
-probas_fourier = Array{ComplexF64}(undef, length(fourier_indexes))
+# probas_fourier = Array{ComplexF64}(undef, length(fourier_indexes))
+
+probas_fourier_matrix_padded = zeros(ComplexF64, 2(n_max + 1), div(length(fourier_indexes), (n_max + 1)))
+# choose to pad with 2 times the number of modes with zeros (instead of the necessary 1.5)
+############ improvement possible
 virtual_interferometer_matrix = similar(U)
 
+fourier_indexes
 
 for (index_fourier_array, fourier_index) in enumerate(fourier_indexes)
 
@@ -218,6 +223,12 @@ for (index_fourier_array, fourier_index) in enumerate(fourier_indexes)
     probas_fourier[index_fourier_array] = coeffs * (det(Q))^(-0.5) * exp(0.5 * dot(Λ, Q^(-1) * Λ) - dot(Λ_plus, delta_x) - dot(Λ_minus, delta_y))
     
 end
+
+fourier_indexes
+
+
+
+
 
 physical_indexes = copy(fourier_indexes)
 
