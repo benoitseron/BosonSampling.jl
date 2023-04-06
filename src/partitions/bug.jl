@@ -1,3 +1,4 @@
+include("gaussian_partition.jl")
 
 ### does not fail ###
 begin
@@ -118,11 +119,11 @@ end
 ###### zero padding ######
 
 m = 2
-input_state = GeneralGaussian(m = m, r = 0.1 * ones(m))
+input_state = GeneralGaussian(m = m, r = 0.05 * ones(m))
 interferometer = RandHaar(m)
-part = equilibrated_partition(m, 2)
+part = equilibrated_partition(m, 1)
 
-n_max = 5
+n_max = 1
 
 if n_max % 2 == 0
     @warn "n_max must be odd for FFT purposes, converting"
@@ -163,6 +164,7 @@ probas_fourier_matrix_padded = zeros(ComplexF64, 2(n_max + 1), div(length(fourie
 virtual_interferometer_matrix = similar(U)
 
 fourier_indexes
+
 
 for (index_fourier_array, fourier_index) in enumerate(fourier_indexes)
 
@@ -220,28 +222,50 @@ for (index_fourier_array, fourier_index) in enumerate(fourier_indexes)
 
     coeffs = prod([2 / sqrt((1+ λ[j] * exp(2*r[j]))*(1+ λ[j] * exp(-2*r[j]))) for j in 1:m])
 
-    probas_fourier[index_fourier_array] = coeffs * (det(Q))^(-0.5) * exp(0.5 * dot(Λ, Q^(-1) * Λ) - dot(Λ_plus, delta_x) - dot(Λ_minus, delta_y))
+    
+
+    # probas_fourier[index_fourier_array] = coeffs * (det(Q))^(-0.5) * exp(0.5 * dot(Λ, Q^(-1) * Λ) - dot(Λ_plus, delta_x) - dot(Λ_minus, delta_y))
+
+    @show index_fourier_array
+    @show index_fourier_array % (n_max + 1 + 1) , index_fourier_array ÷ (n_max + 1 + 1) + 1
+
+    probas_fourier_matrix_padded[index_fourier_array % (n_max + 1 + 1), index_fourier_array ÷ (n_max + 1 + 1) + 1] = coeffs * (det(Q))^(-0.5) * exp(0.5 * dot(Λ, Q^(-1) * Λ) - dot(Λ_plus, delta_x) - dot(Λ_minus, delta_y))
     
 end
 
 fourier_indexes
 
+probas_fourier_matrix_padded
 
-
-
+size(probas_fourier_matrix_padded)
 
 physical_indexes = copy(fourier_indexes)
 
-probas_fourier_matrix = reshape(probas_fourier, ((n_max + 1), div(length(probas_fourier), (n_max + 1))))
+# probas_fourier_matrix = reshape(probas_fourier, ((n_max + 1), div(length(probas_fourier), (n_max + 1))))
 
-padded_length = Int(ceil(3(n_max + 1) / 2))
+# probas_fourier_matrix = zeros(eltype(probas_fourier_matrix_padded), size(probas_fourier_matrix_padded))
 
-probas_fourier_padded = zeros(eltype(probas_fourier), (padded_length, div(length(probas_fourier), (n_max + 1))))
+# padded_length = Int(ceil(3(n_max + 1) / 2))
 
-probas_fourier_padded[1:(n_max + 1), :] = probas_fourier_matrix
+# probas_fourier_padded = zeros(eltype(probas_fourier), (padded_length, div(length(probas_fourier), (n_max + 1))))
 
-shifted_probas_fourier_matrix = fftshift(probas_fourier_matrix)
+# probas_fourier_padded[1:(n_max + 1), :] = probas_fourier_matrix
+
+shifted_probas_fourier_matrix = similar(probas_fourier_matrix_padded)
+
+# shifted_probas_fourier_matrix[1:div(size(probas_fourier_matrix_padded)[1], 2), :] = fftshift(probas_fourier_matrix_padded[1:div(size(probas_fourier_matrix_padded)[1], 2), :])
+
+shifted_probas_fourier_matrix = fftshift(probas_fourier_matrix_padded)
+
+# shifted_probas_fourier_matrix = probas_fourier_matrix_padded
+
+# pdf_matrix = fft(shifted_probas_fourier_matrix) / (n_max + 1)^part.n_subset
+
 pdf_matrix = fft(shifted_probas_fourier_matrix) / (n_max + 1)^part.n_subset
+
+pdf_matrix 
+
+bar(real.(pdf_matrix))
 
 pdf = reshape(pdf_matrix, (length(probas_fourier),))
 
@@ -258,4 +282,152 @@ end
 
 mc = MultipleCounts(ModeOccupation.(physical_indexes), pdf)
 
+mcfunction compute_probabilities_partition_gaussian(physical_interferometer::Interferometer, part::Partition, input_state::GeneralGaussian, n_max = 11, padding_factor = 2)
+
+if n_max % 2 == 0
+    @warn "n_max must be odd for FFT purposes, converting"
+    n_max = n_max + 1
+end
+
+...
+
+fourier_indexes = all_mode_configurations(n_max, part.n_subset, only_photon_number_conserving = false)
+probas_fourier = Array{ComplexF64}(undef, length(fourier_indexes))
+virtual_interferometer_matrix = similar(U)
+
+...
+
+probas_fourier_matrix = reshape(probas_fourier, ((n_max + 1), div(length(probas_fourier), (n_max + 1))))
+
+# Create a new matrix with the desired padded size
+padded_probas_fourier_matrix = zeros(ComplexF64, (n_max + 1) * padding_factor, div(length(probas_fourier), (n_max + 1)))
+
+# Copy the elements from the original matrix to the center of the new matrix
+half_padding = div((n_max + 1) * (padding_factor - 1), 2)
+padded_probas_fourier_matrix[half_padding + 1 : half_padding + n_max + 1, :] = probas_fourier_matrix
+
+shifted_padded_probas_fourier_matrix = fftshift(padded_probas_fourier_matrix)
+pdf_matrix = fft(shifted_padded_probas_fourier_matrix) / ((n_max + 1) * padding_factor)^part.n_subset
+
+...
+
+mc = MultipleCounts(ModeOccupation.(physical_indexes), pdf)
+
 mc
+
+end
+
+
+### gpt4 ###
+
+padding_factor = 2
+
+# function compute_probabilities_partition_gaussian(physical_interferometer::Interferometer, part::Partition, input_state::GeneralGaussian, n_max = 11, padding_factor = 2)
+
+    if n_max % 2 == 0
+        @warn "n_max must be odd for FFT purposes, converting"
+        n_max = n_max + 1
+    end
+
+    physical_interferometer = interferometer
+    ### function ###
+
+    @warn "arbitrary cutoff"
+
+    # unpack the parameters of the input state
+
+    @unpack m, r, λ, delta_x, delta_y = input_state
+
+    U = physical_interferometer.U
+
+    ### useful matrices ###
+
+    C_array = [0.5 - 1/(1+ λ[j] * exp(2*r[j])) for j in 1:m]
+    C = diagm(C_array)
+
+    ### Lambda matrices ###
+
+    Λ_plus = [2 * delta_x[j] /(1+ λ[j] * exp(2*r[j])) for j in 1:m]
+    Λ_minus = [2 * delta_y[j] /(1+ λ[j] * exp(-2*r[j])) for j in 1:m]
+
+    Λ = vcat(Λ_plus , Λ_minus, Λ_plus, - Λ_minus)
+
+    ### virtual interferometer matrix ###
+
+    fourier_indexes = all_mode_configurations(n_max, part.n_subset, only_photon_number_conserving = false)
+    probas_fourier = Array{ComplexF64}(undef, length(fourier_indexes))
+    virtual_interferometer_matrix = similar(U)
+
+    for (index_fourier_array, fourier_index) in enumerate(fourier_indexes)
+
+        # for each fourier index, we recompute the virtual interferometer
+        virtual_interferometer_matrix  = conj(U)
+
+        diag = [0.0 + 0im for i in 1:m] # previously 1.0 + 0im
+
+        for (i, fourier_element) in enumerate(fourier_index)
+
+            this_phase = exp(2*pi*1im/(n_max+1) * fourier_element)
+
+            for j in 1:length(diag)
+                if part.subsets[i].subset[j] == 1
+                    diag[j] = this_phase - 1
+                end
+            end
+        end
+
+        virtual_interferometer_matrix *= Diagonal(diag)
+        virtual_interferometer_matrix *= conj(U')
+
+        ### matrix Q ###
+
+        Q = zeros(ComplexF64, 4 .* size(C))
+
+        Q[1:m, 1:m] = I - C 
+        Q[1:m, 2m+1:3m] = - C - virtual_interferometer_matrix
+        Q[1:m, 3m+1:4m] = -1im .* virtual_interferometer_matrix
+
+        Q[m+1:2m, m+1:2m] = I + C 
+        Q[m+1:2m, 2m+1:3m] = -1im .* virtual_interferometer_matrix
+        Q[m+1:2m, 3m+1:4m] = - C + virtual_interferometer_matrix
+
+        Q[2m+1:3m, 1:m] = - C - virtual_interferometer_matrix
+        Q[2m+1:3m, m+1:2m] = -1im .* virtual_interferometer_matrix
+        Q[2m+1:3m, 2m+1:3m] = I - C
+
+        Q[3m+1:4m, 1:m] = -1im .* virtual_interferometer_matrix
+        Q[3m+1:4m, m+1:2m] = - C + virtual_interferometer_matrix
+        Q[3m+1:4m, 3m+1:4m] = I + C
+
+        coeffs = prod([2 / sqrt((1+ λ[j] * exp(2*r[j]))*(1+ λ[j] * exp(-2*r[j]))) for j in 1:m])
+
+        probas_fourier[index_fourier_array] = coeffs * (det(Q))^(-0.5) * exp(0.5 * dot(Λ, Q^(-1) * Λ) - dot(Λ_plus, delta_x) - dot(Λ_minus, delta_y))
+
+    end
+
+    physical_indexes = copy(fourier_indexes)
+
+    probas_fourier_matrix = reshape(probas_fourier, ((n_max + 1) * padding_factor, div(length(probas_fourier), (n_max + 1))))
+
+    shifted_probas_fourier_matrix = fftshift(probas_fourier_matrix)
+    pdf_matrix = ifft(shifted_probas_fourier_matrix) / ((n_max + 1) * padding_factor)^part.n_subset
+
+    pdf = reshape(pdf_matrix, (length(probas_fourier),))
+
+    try
+        pdf = clean_pdf(pdf)
+    catch
+        @warn "invalid pdf, skipping cleaning"
+        pdf = real.(pdf)
+    end
+
+    mc = MultipleCounts(ModeOccupation.(physical_indexes), pdf)
+
+    mc
+
+# end
+
+
+
+
+
