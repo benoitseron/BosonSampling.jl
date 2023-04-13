@@ -13,6 +13,8 @@ function full_distribution(i::Input, interf::Interferometer)
 
     @showprogress for (j, output) in enumerate(outputs)
 
+        println("j / length(outputs) = $(j) / $(length(outputs))")
+
         o = FockDetection(output)
         ev = Event(i, o, interf)
 

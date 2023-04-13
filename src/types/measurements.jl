@@ -168,6 +168,22 @@ StateMeasurement(::Type{FockSample}) = FockStateMeasurement()
 
 Base.convert(::Type{FockDetection}, fs::FockSample) = FockDetection(fs.s)
 
+"""
+    ThresholdFockSample <: OutputMeasurementType
+
+Container holding a sample from typical boson sampler.
+"""
+mutable struct ThresholdFockSample <: OutputMeasurementType
+    s::Union{ThresholdModeOccupation, Nothing}
+    ThresholdFockSample() = new(nothing)
+    ThresholdFockSample(s::Vector) = FockSample(ThresholdModeOccupation(s))
+    ThresholdFockSample(s::ThresholdModeOccupation) = new(s)
+end
+
+StateMeasurement(::Type{ThresholdFockSample}) = FockStateMeasurement()
+
+Base.convert(::Type{ThresholdFockDetection}, fs::ThresholdFockSample) = ThresholdFockSample(fs.s)
+
 
 
 """
