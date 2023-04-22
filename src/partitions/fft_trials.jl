@@ -1,5 +1,5 @@
 x_range = 0:1:10
-f(x) = sech(x)
+f(x) = (x)^2 - 2x + 10
 
 f_array = f.(x_range)
 
@@ -31,3 +31,25 @@ plot!(f_array_recovered)
 plot!(f_array_recovered_padded)
 
 f_array_recovered
+
+
+### padding with zeros the signal ###
+
+f_array_padded = zeros(eltype(f_array), 2 .* length(f_array))
+f_array_padded[1:length(f_array)] = f_array
+
+plt_real = plot(f_array_padded, label="padded")
+
+ft_array_padded = fft(f_array_padded)
+
+plt_fourier = plot(real.(fft(ft_array_padded)))
+plot!(plt_fourier, imag.(fft(ft_array_padded)))
+
+f_array_recovered_padded = real.(ifft(ft_array_padded))
+
+plot!(plt_real, f_array_recovered_padded, label="recovered")
+
+### padding with zeros only the fourier transform ###
+
+# we obtain the fourier coefficients in our theoretical calculations
+

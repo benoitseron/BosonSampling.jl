@@ -142,6 +142,8 @@ function compute_probabilities_partition_gaussian(physical_interferometer::Inter
 
                 ### matrix Q ###
 
+                virtual_interferometer_matrix_transpose = conj(virtual_interferometer_matrix')
+
                 Q = zeros(ComplexF64, 4 .* size(C))
 
                 Q[1:m, 1:m] = I - C 
@@ -152,12 +154,12 @@ function compute_probabilities_partition_gaussian(physical_interferometer::Inter
                 Q[m+1:2m, 2m+1:3m] = -1im .* virtual_interferometer_matrix
                 Q[m+1:2m, 3m+1:4m] = - C + virtual_interferometer_matrix
 
-                Q[2m+1:3m, 1:m] = - C - virtual_interferometer_matrix
-                Q[2m+1:3m, m+1:2m] = -1im .* virtual_interferometer_matrix
+                Q[2m+1:3m, 1:m] = - C - virtual_interferometer_matrix_transpose
+                Q[2m+1:3m, m+1:2m] = -1im .* virtual_interferometer_matrix_transpose
                 Q[2m+1:3m, 2m+1:3m] = I - C
 
-                Q[3m+1:4m, 1:m] = -1im .* virtual_interferometer_matrix
-                Q[3m+1:4m, m+1:2m] = - C + virtual_interferometer_matrix
+                Q[3m+1:4m, 1:m] = -1im .* virtual_interferometer_matrix_transpose
+                Q[3m+1:4m, m+1:2m] = - C + virtual_interferometer_matrix_transpose
                 Q[3m+1:4m, 3m+1:4m] = I + C
 
 
