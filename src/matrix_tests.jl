@@ -3,7 +3,8 @@ function is_hermitian(M; atol = ATOL)
 end
 
 function is_positive_semidefinite(M; atol = ATOL)
-	!any(eigvals(M) .< - atol)
+	eigenvalues = eigvals(M)
+	!any(real.(eigenvalues) .< - atol) && !any(abs.(imag.(eigenvalues)) .> atol)
 end
 
 function is_a_gram_matrix(M; atol = ATOL)
