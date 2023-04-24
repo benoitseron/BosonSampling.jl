@@ -120,13 +120,14 @@ end
 
 plt_failure = plot()
 
+log(3)/2
 
-m = 20
-input_state = GeneralGaussian(m = m, r = 0.42 * ones(m))
+m = 1
+input_state = GeneralGaussian(m = m, r = log(3)/2 * ones(m))
 interferometer = RandHaar(m)
 part = equilibrated_partition(m, 1)
 
-n_max = 16
+n_max = 1
 
 
 # begin
@@ -144,6 +145,8 @@ physical_interferometer = interferometer
 # unpack the parameters of the input state
 
 @unpack m, r, λ, delta_x, delta_y = input_state
+
+λ
 
 U = physical_interferometer.U
 
@@ -233,7 +236,10 @@ store_Q = nothing
         probas_fourier[index_fourier_array] = coeffs * (det(Q))^(-0.5) * exp(0.5 * dot(Λ, Q^(-1) * Λ) - dot(Λ_plus, delta_x) - dot(Λ_minus, delta_y))
 
         @show is_positive_semidefinite(Q)
-        
+        @show coeffs
+        @show (det(Q))^(-0.5)
+        @show exp(0.5 * dot(Λ, Q^(-1) * Λ) - dot(Λ_plus, delta_x) - dot(Λ_minus, delta_y))
+
         store_eigvals = eigvals(Q)
         store_Q = Q
         
@@ -243,9 +249,7 @@ store_Q = nothing
 
 store_Q
 
-is_positive_semidefinite(store_Q)
-
-fourier_indexes[3]
+is_positive_semidefinite(store_Q, atol = 1e-5)
 
 store_eigvals
 eigenvalues = store_eigvals
@@ -253,6 +257,15 @@ real.(eigenvalues)
 
 abs.(imag.(eigenvalues))
 
+n_max
+
+exp(2*pi*1im/(n_max+1) * fourier_indexes[end][1])
+
+2*pi*1im/(n_max+1) * fourier_indexes[end][1]
+
+2*pi*1im/(n_max+1) * fourier_indexes[1][1]
+
+C
 
 plt_failure = plot()
 
