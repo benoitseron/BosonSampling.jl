@@ -11,7 +11,7 @@ begin
     # part = Partition(Subset(first_modes(1, m)))
     # part.subsets[1].subset
 
-    n_max = 50
+    n_max = 10
     mc = compute_probabilities_partition_gaussian(interferometer, part, input_state, n_max)
 
     # bar(real(pdf))
@@ -76,7 +76,7 @@ begin
     # part = Partition(Subset(first_modes(1, m)))
     # part.subsets[1].subset
 
-    n_max = 15
+    n_max = 32
     mc = compute_probabilities_partition_gaussian(interferometer, part, input_state, n_max)
 
     # bar(real(pdf))
@@ -94,15 +94,15 @@ end
 
 begin
 
-    m = 1
-    input_state = GeneralGaussian(m = m, r = 1.5 * ones(m))
+    m = 4
+    input_state = GeneralGaussian(m = m, r = 0.8 * ones(m))
     interferometer = RandHaar(m)
     part = equilibrated_partition(m, 1)
 
     # part = Partition(Subset(first_modes(1, m)))
     # part.subsets[1].subset
 
-    n_max = 50
+    n_max = 500
     mc = compute_probabilities_partition_gaussian(interferometer, part, input_state, n_max)
 
     # bar(real(pdf))
