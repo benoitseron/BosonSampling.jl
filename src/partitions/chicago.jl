@@ -2,12 +2,18 @@ include("gaussian_partition.jl")
 
 # using the formalism of Quantum-inspired classical algorithm for molecular vibronic spectra
 
-m = 10
-input_state = GeneralGaussian(m = m, r = 0.4 * ones(m))
+m = 1
+input_state = GeneralGaussian(m = m, r = log(3)/2 * ones(m)) 
 interferometer = RandHaar(m)
-part = equilibrated_partition(m, 1)
-n_max = 25
+part = equilibrated_partition(m, 2)
+n_max = 1
 
+# buggy case:
+# m = 10
+# input_state = GeneralGaussian(m = m, r = 0.65 * ones(m)) 
+# interferometer = RandHaar(m)
+# part = equilibrated_partition(m, 2)
+# n_max = 25
 
 if !all(input_state.displacement .== 0.0)
     error("displacement not implemented")
@@ -34,7 +40,12 @@ U = physical_interferometer.U
 ### useful matrices ###
 
 Γ = diagm(γ)
-N = prod(@. sqrt(1+ γ) / (π * γ)) 
+N = prod(@. sqrt(1+ γ) / (π * γ))
+
+γ[1]
+sqrt(1+ γ[1]) / (π * γ[1])
+
+sqrt(1+ 2) / (π * 2)
 
 ### virtual interferometer matrix ###
 
@@ -90,8 +101,8 @@ for (index_fourier_array, fourier_index) in enumerate(fourier_indexes)
     Q[m+1:2m, 1:m] = bottom_left_matrix
     Q[m+1:2m, m+1:2m] = 2 * Γ^(-1) + diagm([1.0 + 0im for i in 1:m])
 
-    if !is_positive_semidefinite(Q)
-        @warn "Q is not positive semidefinite for fourier index $fourier_index"
+    if !is_positive_semidefinite(real.(Q))
+        @warn "real part of Q is not positive semidefinite for fourier index $fourier_index"
         push!(Q_non_psd, Q)
     end
 
@@ -99,8 +110,8 @@ for (index_fourier_array, fourier_index) in enumerate(fourier_indexes)
     
 end
 
-Q = Q_non_psd[1]
-eigvals(Q)
+# Q = Q_non_psd[1]
+# eigvals(Q)
 
 physical_indexes = copy(fourier_indexes)
 
