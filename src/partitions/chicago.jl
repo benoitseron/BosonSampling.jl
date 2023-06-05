@@ -2,8 +2,8 @@ include("gaussian_partition.jl")
 
 # using the formalism of Quantum-inspired classical algorithm for molecular vibronic spectra
 
-m = 4
-input_state = GeneralGaussian(m = m, r = 0.42 * ones(m))
+m = 10
+input_state = GeneralGaussian(m = m, r = 0.4 * ones(m))
 interferometer = RandHaar(m)
 part = equilibrated_partition(m, 1)
 n_max = 25
@@ -42,6 +42,8 @@ fourier_indexes = all_mode_configurations(n_max,part.n_subset, only_photon_numbe
 probas_fourier = Array{ComplexF64}(undef, length(fourier_indexes))
 top_right_matrix = similar(U)
 bottom_left_matrix = similar(U)
+
+Q_non_psd = []
 
 for (index_fourier_array, fourier_index) in enumerate(fourier_indexes)
 
@@ -88,9 +90,17 @@ for (index_fourier_array, fourier_index) in enumerate(fourier_indexes)
     Q[m+1:2m, 1:m] = bottom_left_matrix
     Q[m+1:2m, m+1:2m] = 2 * Γ^(-1) + diagm([1.0 + 0im for i in 1:m])
 
+    if !is_positive_semidefinite(Q)
+        @warn "Q is not positive semidefinite for fourier index $fourier_index"
+        push!(Q_non_psd, Q)
+    end
+
     probas_fourier[index_fourier_array] = N * (2\pi)^(m) * det(Q)^(-0.5)
     
 end
+
+Q = Q_non_psd[1]
+eigvals(Q)
 
 physical_indexes = copy(fourier_indexes)
 
@@ -113,3 +123,5 @@ end
 mc = MultipleCounts(ModeOccupation.(physical_indexes), pdf)
 
 bar(real.(mc.proba))
+
+sum(mc.proba)
