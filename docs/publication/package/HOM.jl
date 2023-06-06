@@ -5,7 +5,7 @@ using Plots
 Δω = 1
 # Set the model of partial distinguishability
 T = OneParameterInterpolation
-# Define the unbalanced beams-plitter
+# Define the beam-splitter
 B = BeamSplitter(1/sqrt(2))
 # Set each particle in a different mode
 r_i = ModeOccupation([1,1])
@@ -18,7 +18,7 @@ o = FockDetection(r_f)
 events = []
 
 for Δt in -4:0.01:4
-    # distinguishability
+    # Distinguishability
     dist = exp(-(Δω * Δt)^2)
     i = Input{T}(r_i,dist)
 
