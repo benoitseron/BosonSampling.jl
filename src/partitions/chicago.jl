@@ -2,11 +2,11 @@ include("gaussian_partition.jl")
 
 # using the formalism of Quantum-inspired classical algorithm for molecular vibronic spectra
 
-m = 1
-input_state = GeneralGaussian(m = m, r = log(3)/2 * ones(m)) 
+m = 2
+input_state = GeneralGaussian(m = m, r = 0.2 * ones(m)) 
 interferometer = RandHaar(m)
-part = equilibrated_partition(m, 2)
-n_max = 1
+part = equilibrated_partition(m, 1)
+n_max = 40
 
 # buggy case:
 # m = 10
@@ -90,7 +90,7 @@ for (index_fourier_array, fourier_index) in enumerate(fourier_indexes)
     bottom_left_matrix *= Diagonal(diag)
 
     top_right_matrix *= - conj(U') # more practical than the transpose function 
-    bottom_left_matrix *= - U'
+    bottom_left_matrix *= - U' ################ check minus sign
 
     ### matrix Q ###
 
@@ -136,3 +136,8 @@ mc = MultipleCounts(ModeOccupation.(physical_indexes), pdf)
 bar(real.(mc.proba))
 
 sum(mc.proba)
+
+1/(4^2)
+
+
+1/4^m
