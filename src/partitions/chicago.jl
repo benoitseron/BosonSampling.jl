@@ -149,7 +149,6 @@ end
 # part = equilibrated_partition(m, 2)
 # n_max = 25
 
-
 # another buggy case
 
 # m = 10
@@ -169,8 +168,6 @@ mc = compute_probabilities_partition_gaussian_chicago(interferometer, part, inpu
 bar(real.(mc.proba))
 
 sum(mc.proba)
-
-
 
 @testset "gaussian partition - chicago algorithm" begin
     

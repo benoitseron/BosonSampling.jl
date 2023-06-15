@@ -59,28 +59,32 @@ end
         # part = Partition(Subset(first_modes(1, m)))
         # part.subsets[1].subset
 
-        n_max = 50
+        n_max = 51
         mc = compute_probabilities_partition_gaussian(interferometer, part, input_state, n_max)
 
         pdf = mc.proba
 
         pdf_one_mode_array = [pdf_one_mode(i,input_state.r[1]) for i in 0:n_max]
 
-        bar(pdf, alpha = 0.5)
-        bar!(pdf_one_mode_array, alpha = 0.5)
+        # bar(pdf, alpha = 0.5)
+        # bar!(pdf_one_mode_array, alpha = 0.5)
 
-        bar(pdf .- pdf_one_mode_array)
+        # bar(pdf .- pdf_one_mode_array)
 
-        @test pdf ≈ pdf_one_mode_array atol = 1e-10
+        if length(pdf) != length(pdf_one_mode_array)
+            error("lengths are not equal")
+        else
 
+            #bar(pdf .- pdf_one_mode_array)
+
+            @test pdf ≈ pdf_one_mode_array atol = 1e-10
+        end
 
 
 
     end
 
 end
-
-
 
 @testset "gaussian partition - chicago algorithm" begin
     
