@@ -42,11 +42,6 @@ function compute_probabilities_partition_gaussian_chicago(physical_interferomete
     Γ = diagm(γ)
     N = prod(@. sqrt(1+ γ) / (π * γ))
 
-    γ[1]
-    sqrt(1+ γ[1]) / (π * γ[1])
-
-    sqrt(1+ 2) / (π * 2)
-
     ### virtual interferometer matrix ###
 
     fourier_indexes = all_mode_configurations(n_max,part.n_subset, only_photon_number_conserving = false)
@@ -110,8 +105,16 @@ function compute_probabilities_partition_gaussian_chicago(physical_interferomete
         
     end
 
-    # Q = Q_non_psd[1]
-    # eigvals(Q)
+    if Q_non_psd != []
+        @warn "the real part of Q is not positive semidefinite for some fourier indexes"
+
+        for Q in Q_non_psd
+            @show Q
+            @show eigvals(Q)
+        end
+
+        return nothing
+    end
 
     physical_indexes = copy(fourier_indexes)
 
@@ -133,20 +136,11 @@ function compute_probabilities_partition_gaussian_chicago(physical_interferomete
 
     mc = MultipleCounts(ModeOccupation.(physical_indexes), pdf)
 
-    mc
+    # mc
 
 end
 
-
-
-
-m = 1
-input_state = GeneralGaussian(m = m, r = 1 * ones(m)) 
-interferometer = RandHaar(m)
-part = equilibrated_partition(m, 1)
-n_max = 40
-
-mc = compute_probabilities_partition_gaussian_chicago(interferometer, part, input_state, n_max)
+#### tests #### 
 
 # buggy case:
 # m = 10
@@ -156,7 +150,22 @@ mc = compute_probabilities_partition_gaussian_chicago(interferometer, part, inpu
 # n_max = 25
 
 
+# another buggy case
 
-bar(real.(mc.proba))
+# m = 10
+# input_state = GeneralGaussian(m = m, r = 0.7 * ones(m)) 
+# interferometer = RandHaar(m)
+# part = equilibrated_partition(m, 1)
+# n_max = 100
+
+m = 10
+input_state = GeneralGaussian(m = m, r = 0.6 * ones(m)) 
+interferometer = RandHaar(m)
+part = equilibrated_partition(m, 2)
+n_max = 50
+
+mc = compute_probabilities_partition_gaussian_chicago(interferometer, part, input_state, n_max)
+
+bar(real.(mc.proba[100:300]))
 
 sum(mc.proba)
