@@ -182,3 +182,12 @@ begin
     bar!(plt_failure, real.(fftshift(probas_fourier)), label = "real, n = $n_max", alpha = 0.5)
     bar!(plt_failure, imag.(fftshift(probas_fourier)), label = "imag, n = $n_max" , alpha = 0.5)
 end
+
+first_half_range = 1: div(length(probas_fourier),2) + 1
+imag_fourier_first_half = (imag.(fftshift(probas_fourier)))[first_half_range]
+
+bar(imag_fourier_first_half)
+
+symmetric_part = 0.5 * (imag_fourier_first_half .+ reverse(imag_fourier_first_half))
+
+bar(symmetric_part)
