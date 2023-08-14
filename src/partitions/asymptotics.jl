@@ -59,7 +59,48 @@ scatter!(sorted_counts_dist[n_detected].proba, alpha = 0.5, label = L"Distinguis
 
 ###### to plot a mc ######
 
-x_data = ["string1", "string2", "string3"]
-y_data = [1, 2, 3]
 
-plot(y_data, xticks=(1:length(x_data), x_data), xrotation=45, legend=false, xguidefontsize=8)
+dpi_value = 600
+fig_width = 1200  # in pixels
+fig_height = 500  # in pixels
+
+
+range = 1:80
+mc_reduced = MultipleCounts(mc.counts[range], mc.proba[range])
+
+x_data = mc_reduced.counts
+y_data = mc_reduced.proba
+
+function plot_string_repr(i::ModeOccupation)
+    return string(i.state)
+end
+
+x_labels = map(plot_string_repr, x_data)
+
+plot(y_data, xticks=(1:length(x_labels), x_labels), xrotation=60, legend=false, xtickfontsize=8, dpi=dpi_value, size=(fig_width, fig_height))
+
+### large plot ###
+
+dpi_value = 600
+fig_width = 1500  # in pixels
+fig_height = 800  # in pixels
+
+range = 1:45
+
+mc_reduced = MultipleCounts(mc.counts[range], mc.proba[range])
+
+x_data = mc_reduced.counts
+y_data = mc_reduced.proba
+
+function plot_string_repr(i::ModeOccupation)
+    return string(i.state)
+end
+
+x_labels = map(plot_string_repr, x_data)
+
+# Define margins: [left, bottom, right, top]
+
+scatter(y_data, xticks=(1:length(x_labels), x_labels), xrotation=60, legend=false, xtickfontsize=8, ytickfontsize=12, dpi=dpi_value, size=(fig_width, fig_height), alpha = 0.5, label = L"Numerics")
+bar!(mc_partition_expectation_values_array_bosonic.proba[range], alpha = 0.5, label = L"Indistinguishable")
+bar!(mc_partition_expectation_values_array_dist.proba[range], alpha = 0.5, label = L"Distinguishable")
+
