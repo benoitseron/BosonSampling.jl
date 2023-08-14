@@ -147,3 +147,12 @@ function best_partition_size(;m,n, n_subsets, distance = tvd)
     part_max_ratio, max_distance
 
 end
+
+"""
+
+    PartitionOccupancy(count, part)
+
+!!! by default assumes that the partition encompasses all the output modes !!!
+
+"""
+PartitionOccupancy(count, part) = PartitionOccupancy(count, sum(count), part) 
