@@ -68,29 +68,66 @@ bar(sorted_counts[n_detected].proba)
 
 ### plotting the average number of photons distribution ###
 
-# compute partition_size_vector from part
-partition_size_vector(part::Partition) = [sum(subset.subset) for subset in part.subsets]
+
+n_max = 10
+
+if n_max % 2 == 0
+    @warn "n_max must be odd for FFT purposes, converting"
+    n_max = n_max +1
+end
+
+counts = all_mode_configurations(n_max,part.n_subset, only_photon_number_conserving = false)
 
 
-partition_expectation_values_all(part::Partition, )
 
-count = mc.counts[1]
+foo()
 
-partition_occupancy_array = [PartitionOccupancy(count, part) for count in mc.counts]
+"""
+    function partition_expectation_values_gaussian(input_state::GeneralGaussian, n_max::Int, part::Partition)
 
-# need to only compute the expectation values for even total photon number because of input gaussian states
-
-is_total_photon_number_even(partition_occupancy::PartitionOccupancy) = sum(partition_occupancy.counts.state) % 2 == 0
-
-is_total_photon_number_even.(partition_occupancy_array)
+Computes the asymptotic law of the expectation values of a Haar averaged partition for Gaussian input states .
+"""
+function partition_expectation_values_gaussian(input_state::GeneralGaussian, n_max::Int, part::Partition)
 
 
-################## needs to be rescaled with overall probability to observe n photons in the whole of the bins
+    #generating the list of indexes for counts 
+    if n_max % 2 == 0
+        @warn "n_max must be odd for FFT purposes, converting"
+        n_max = n_max +1
+    end
 
-partition_expectation_values_array_dist = [is_total_photon_number_even(occ) ? probability_n_photons(occ.n, input_state) * partition_expectation_values(occ)[1] : 0 for occ in partition_occupancy_array]
+    counts = all_mode_configurations(n_max,part.n_subset, only_photon_number_conserving = false)
 
-partition_expectation_values_array_bosonic = [is_total_photon_number_even(occ) ? probability_n_photons(occ.n, input_state) * partition_expectation_values(occ)[2] : 0 for occ in partition_occupancy_array]
+    partition_occupancy_array = [PartitionOccupancy(count, part) for count in counts]
 
-bar(partition_expectation_values_array_bosonic, alpha = 0.5, label = L"Indistinguishable")
-bar!(partition_expectation_values_array_dist, alpha = 0.5, label = L"Distinguishable")
+    # need to only compute the expectation values for even total photon number because of input gaussian states
 
+    is_total_photon_number_even(partition_occupancy::PartitionOccupancy) = sum(partition_occupancy.counts.state) % 2 == 0
+
+    partition_expectation_values_array_dist = [is_total_photon_number_even(occ) ? probability_n_photons(occ.n, input_state) * partition_expectation_values(occ)[1] : 0 for occ in partition_occupancy_array]
+
+    partition_expectation_values_array_bosonic = [is_total_photon_number_even(occ) ? probability_n_photons(occ.n, input_state) * partition_expectation_values(occ)[2] : 0 for occ in partition_occupancy_array]
+
+    partition_expectation_values_array_bosonic, partition_expectation_values_array_dist
+
+end
+
+
+partition_expectation_values_array_bosonic, partition_expectation_values_array_dist = partition_expectation_values_gaussian(input_state, n_max, part)
+
+bar(partition_expectation_values_array_bosonic, alpha = 0.3, label = L"Indistinguishable")
+bar!(partition_expectation_values_array_dist, alpha = 0.3, label = L"Distinguishable")
+
+##### THIS MIGHT EXPLAIN THE MISTAKE WITH THE CHICAGO PEOPLE #####
+
+# what changes compared to the previous commit is that I use 
+
+#  #generating the list of indexes for counts 
+#  if n_max % 2 == 0
+#     @warn "n_max must be odd for FFT purposes, converting"
+#     n_max = n_max +1
+# end
+
+# counts = all_mode_configurations(n_max,part.n_subset, only_photon_number_conserving = false)
+
+# and these look more like the chicago people's code, and I think it's simply because the list was no re-ordered by total photon number
