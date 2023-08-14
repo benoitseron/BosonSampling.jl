@@ -80,8 +80,6 @@ counts = all_mode_configurations(n_max,part.n_subset, only_photon_number_conserv
 
 
 
-foo()
-
 """
     function partition_expectation_values_gaussian(input_state::GeneralGaussian, n_max::Int, part::Partition)
 
@@ -108,26 +106,19 @@ function partition_expectation_values_gaussian(input_state::GeneralGaussian, n_m
 
     partition_expectation_values_array_bosonic = [is_total_photon_number_even(occ) ? probability_n_photons(occ.n, input_state) * partition_expectation_values(occ)[2] : 0 for occ in partition_occupancy_array]
 
-    partition_expectation_values_array_bosonic, partition_expectation_values_array_dist
+    mc_dist =  MultipleCounts(ModeOccupation.(counts), partition_expectation_values_array_dist)
+    mc_bosonic =  MultipleCounts(ModeOccupation.(counts), partition_expectation_values_array_bosonic)
+
+    sort_samples_total_photon_number_in_partition!(mc_dist)
+    sort_samples_total_photon_number_in_partition!(mc_bosonic)
+
+    mc_bosonic, mc_dist
 
 end
 
 
-partition_expectation_values_array_bosonic, partition_expectation_values_array_dist = partition_expectation_values_gaussian(input_state, n_max, part)
+mc_partition_expectation_values_array_bosonic, mc_partition_expectation_values_array_dist = partition_expectation_values_gaussian(input_state, n_max, part)
 
-bar(partition_expectation_values_array_bosonic, alpha = 0.3, label = L"Indistinguishable")
-bar!(partition_expectation_values_array_dist, alpha = 0.3, label = L"Distinguishable")
+bar(mc_partition_expectation_values_array_bosonic.proba, alpha = 0.5, label = L"Indistinguishable")
+bar!(mc_partition_expectation_values_array_dist.proba, alpha = 0.5, label = L"Distinguishable")
 
-##### THIS MIGHT EXPLAIN THE MISTAKE WITH THE CHICAGO PEOPLE #####
-
-# what changes compared to the previous commit is that I use 
-
-#  #generating the list of indexes for counts 
-#  if n_max % 2 == 0
-#     @warn "n_max must be odd for FFT purposes, converting"
-#     n_max = n_max +1
-# end
-
-# counts = all_mode_configurations(n_max,part.n_subset, only_photon_number_conserving = false)
-
-# and these look more like the chicago people's code, and I think it's simply because the list was no re-ordered by total photon number

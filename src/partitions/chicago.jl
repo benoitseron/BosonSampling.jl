@@ -161,13 +161,15 @@ end
 # part = equilibrated_partition(m, 1)
 # n_max = 100
 
-m = 8
-input_state = GeneralGaussian(m = m, r = 0.7 * ones(m)) 
+m = 10
+input_state = GeneralGaussian(m = m, r = 0.6 * ones(m)) 
 interferometer = RandHaar(m)
-part = equilibrated_partition(m, 1)
-n_max = 50
+part = equilibrated_partition(m, 2)
+n_max = 20
 
 mc, probas_fourier = compute_probabilities_partition_gaussian_chicago(interferometer, part, input_state, n_max, give_debug_info = true)
+
+sort_samples_total_photon_number_in_partition!(mc)
 
 bar(real.(mc.proba))
 
