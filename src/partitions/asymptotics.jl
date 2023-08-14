@@ -27,6 +27,10 @@ begin
 
 end
 
+bar(mc.proba[1:100])
+
+mc.counts
+
 # zooming
 
 begin
@@ -51,6 +55,11 @@ begin
     bar(mc.proba)
 
 end
+
+
+
+
+
 
 ### separating events by photon number ###
 
