@@ -156,3 +156,5 @@ end
 
 """
 PartitionOccupancy(count, part) = PartitionOccupancy(count, sum(count), part) 
+
+PartitionOccupancy(count::Vector{Int}, part) = PartitionOccupancy(ModeOccupation(count), sum(count), part) 
