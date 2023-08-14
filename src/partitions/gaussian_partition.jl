@@ -238,3 +238,42 @@ function find_cutoff(input_state::GeneralGaussian; atol = ATOL)
     2*Int(ceil(cutoff(α, n_in, r))) # multiplied by two because this is for photon pairs
 
 end
+
+### plotting the average number of photons distribution ###
+
+"""
+    function partition_expectation_values_gaussian(input_state::GeneralGaussian, n_max::Int, part::Partition)
+
+Computes the asymptotic law of the expectation values of a Haar averaged partition for Gaussian input states .
+"""
+function partition_expectation_values_gaussian(input_state::GeneralGaussian, n_max::Int, part::Partition)
+
+
+    #generating the list of indexes for counts 
+    if n_max % 2 == 0
+        @warn "n_max must be odd for FFT purposes, converting"
+        n_max = n_max +1
+    end
+
+    counts = all_mode_configurations(n_max,part.n_subset, only_photon_number_conserving = false)
+
+    partition_occupancy_array = [PartitionOccupancy(count, part) for count in counts]
+
+    # need to only compute the expectation values for even total photon number because of input gaussian states
+
+    is_total_photon_number_even(partition_occupancy::PartitionOccupancy) = sum(partition_occupancy.counts.state) % 2 == 0
+
+    partition_expectation_values_array_dist = [is_total_photon_number_even(occ) ? probability_n_photons(occ.n, input_state) * partition_expectation_values(occ)[1] : 0 for occ in partition_occupancy_array]
+
+    partition_expectation_values_array_bosonic = [is_total_photon_number_even(occ) ? probability_n_photons(occ.n, input_state) * partition_expectation_values(occ)[2] : 0 for occ in partition_occupancy_array]
+
+    mc_dist =  MultipleCounts(ModeOccupation.(counts), partition_expectation_values_array_dist)
+    mc_bosonic =  MultipleCounts(ModeOccupation.(counts), partition_expectation_values_array_bosonic)
+
+    sort_samples_total_photon_number_in_partition!(mc_dist)
+    sort_samples_total_photon_number_in_partition!(mc_bosonic)
+
+    mc_bosonic, mc_dist
+
+end
+
