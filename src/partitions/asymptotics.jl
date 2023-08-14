@@ -87,10 +87,10 @@ is_total_photon_number_even.(partition_occupancy_array)
 
 ################## needs to be rescaled with overall probability to observe n photons in the whole of the bins
 
-partition_expectation_values_array_dist = [ is_total_photon_number_even(occ) ? partition_expectation_values(occ)[1] : 0 for occ in partition_occupancy_array]
+partition_expectation_values_array_dist = [is_total_photon_number_even(occ) ? probability_n_photons(occ.n, input_state) * partition_expectation_values(occ)[1] : 0 for occ in partition_occupancy_array]
 
-partition_expectation_values_array_bosonic = [ is_total_photon_number_even(occ) ? partition_expectation_values(occ)[2] : 0 for occ in partition_occupancy_array]
+partition_expectation_values_array_bosonic = [is_total_photon_number_even(occ) ? probability_n_photons(occ.n, input_state) * partition_expectation_values(occ)[2] : 0 for occ in partition_occupancy_array]
 
-bar(partition_expectation_values_array_bosonic, alpha = 0.5)
-bar!(partition_expectation_values_array_dist, alpha = 0.5)
+bar(partition_expectation_values_array_bosonic, alpha = 0.5, label = L"Indistinguishable")
+bar!(partition_expectation_values_array_dist, alpha = 0.5, label = L"Distinguishable")
 
