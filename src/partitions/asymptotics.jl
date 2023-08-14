@@ -41,9 +41,9 @@ sort_samples_total_photon_number_in_partition!(mc)
 
 range = 1:50
 
-plot(real.(mc.proba[range]), alpha = 0.5, label = L"Numerics")
-plot!(mc_partition_expectation_values_array_bosonic.proba[range], alpha = 0.5, label = L"Indistinguishable")
-plot!(mc_partition_expectation_values_array_dist.proba[range], alpha = 0.5, label = L"Distinguishable")
+bar(real.(mc.proba[range]), alpha = 0.5, label = L"Numerics")
+bar!(mc_partition_expectation_values_array_bosonic.proba[range], alpha = 0.5, label = L"Indistinguishable")
+bar!(mc_partition_expectation_values_array_dist.proba[range], alpha = 0.5, label = L"Distinguishable")
 
 ### separating events by photon number ###
 
@@ -57,3 +57,9 @@ scatter(sorted_counts_numerics[n_detected].proba, alpha = 0.5, label = L"Numeric
 scatter!(sorted_counts_bosonic[n_detected].proba, alpha = 0.5, label = L"Indistinguishable")
 scatter!(sorted_counts_dist[n_detected].proba, alpha = 0.5, label = L"Distinguishable")
 
+###### to plot a mc ######
+
+x_data = ["string1", "string2", "string3"]
+y_data = [1, 2, 3]
+
+plot(y_data, xticks=(1:length(x_data), x_data), xrotation=45, legend=false, xguidefontsize=8)
