@@ -214,7 +214,8 @@ end
 
 """
 
-    find_cutoff(input_state::GeneralGaussian; atol = ATOL)
+    find_cutoff(input_state
+    include("gaussian_partition.jl")::GeneralGaussian; atol = ATOL)
 
 Given a value `atol`, finds the number of photons that is less likely to be detected than `atol`. Follows S3 in 2110.0156. 
 """
