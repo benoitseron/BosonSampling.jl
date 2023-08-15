@@ -77,7 +77,6 @@ function compute_probabilities_partition_gaussian(physical_interferometer::Inter
                 n_max = n_max +1
         end
 
-        physical_interferometer = interferometer
         ### function ###
 
         @warn "arbitrary cutoff"

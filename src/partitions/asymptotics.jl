@@ -1,5 +1,54 @@
 include("gaussian_partition.jl")
 
+using BosonSampling
+using Plots
+using ProgressMeter
+using Distributions
+using Random
+using Test
+using ArgCheck
+using StatsBase
+using ColorSchemes
+using Interpolations
+using Dierckx
+using LinearAlgebra
+using PrettyTables
+using LaTeXStrings
+using JLD
+using AutoHashEquals
+using LinearRegression
+
+using DataStructures
+
+color_map = ColorSchemes.rainbow
+
+### interpolation functions for plots ###
+
+
+"""
+
+    interpolate_data(x_data, y_data, n_points = 1000)
+
+Provides cubic spline interpolation of data for plotting.
+"""
+function interpolate_data(x_data, y_data, n_points = 1000)
+    
+    # converting x_data to numerical values
+    if !isa(x_data[1], Number)
+
+        x_data = 1:length(x_data)
+
+    end
+
+    x_spl = range(1, stop=length(x_data), length=n_points)
+    spl = Spline1D(x_data,y_data)
+    y_spl = spl(x_spl)
+
+    return x_spl, y_spl
+
+end
+
+
 ### Haar averaged binning demo ###
 
 n_iter = 10
@@ -36,8 +85,8 @@ mc_deviation = MultipleCounts(mc_array[1].counts, deviation)
 
 mc_partition_expectation_values_array_bosonic, mc_partition_expectation_values_array_dist = partition_expectation_values_gaussian(input_state, n_max, part)
 
-bar(mc_partition_expectation_values_array_bosonic.proba, alpha = 0.5, label = L"Indistinguishable")
-bar!(mc_partition_expectation_values_array_dist.proba, alpha = 0.5, label = L"Distinguishable")
+# bar(mc_partition_expectation_values_array_bosonic.proba, alpha = 0.5, label = L"Indistinguishable")
+# bar!(mc_partition_expectation_values_array_dist.proba, alpha = 0.5, label = L"Distinguishable")
 
 # ### comparison with numerics ###
 
@@ -45,11 +94,11 @@ bar!(mc_partition_expectation_values_array_dist.proba, alpha = 0.5, label = L"Di
 
 # sort_samples_total_photon_number_in_partition!(mc)
 
-# range = 1:50
+# range_values = 1:50
 
-# bar(real.(mc.proba[range]), alpha = 0.5, label = L"Numerics")
-# bar!(mc_partition_expectation_values_array_bosonic.proba[range], alpha = 0.5, label = L"Indistinguishable")
-# bar!(mc_partition_expectation_values_array_dist.proba[range], alpha = 0.5, label = L"Distinguishable")
+# bar(real.(mc.proba[range_values]), alpha = 0.5, label = L"Numerics")
+# bar!(mc_partition_expectation_values_array_bosonic.proba[range_values], alpha = 0.5, label = L"Indistinguishable")
+# bar!(mc_partition_expectation_values_array_dist.proba[range_values], alpha = 0.5, label = L"Distinguishable")
 
 # ### separating events by photon number ###
 
@@ -71,8 +120,8 @@ bar!(mc_partition_expectation_values_array_dist.proba, alpha = 0.5, label = L"Di
 # fig_height = 500  # in pixels
 
 
-# range = 1:80
-# mc_reduced = MultipleCounts(mc.counts[range], mc.proba[range])
+# range_values = 1:80
+# mc_reduced = MultipleCounts(mc.counts[range_values], mc.proba[range_values])
 
 # x_data = mc_reduced.counts
 # y_data = mc_reduced.proba
@@ -85,19 +134,30 @@ bar!(mc_partition_expectation_values_array_dist.proba, alpha = 0.5, label = L"Di
 
 # plot(y_data, xticks=(1:length(x_labels), x_labels), xrotation=60, legend=false, xtickfontsize=8, dpi=dpi_value, size=(fig_width, fig_height))
 
+
+
 ### large plot ###
+
+c1 = :cyan
+c2 = :orange
+c3 = :purple
+
+
+marker = :circle
 
 dpi_value = 600
 fig_width = 1500  # in pixels
-fig_height = 800  # in pixels
+fig_height = 900  # in pixels
 
-range = 1:45
+range_values = 1:45
 
-mc_reduced = MultipleCounts(mc.counts[range], mc.proba[range])
+mc_reduced = MultipleCounts(mc.counts[range_values], mc.proba[range_values])
 
 x_data = mc_reduced.counts
 y_data = mc_reduced.proba
-y_err_data = mc_deviation.proba[range]
+y_err_data = mc_deviation.proba[range_values]
+
+# interpolations
 
 function plot_string_repr(i::ModeOccupation)
     return string(i.state)
@@ -105,17 +165,13 @@ end
 
 x_labels = map(plot_string_repr, x_data)
 
-# Define margins: [left, bottom, right, top]
+bar(y_data, yerr = y_err_data, xticks=(1:length(x_labels), x_labels), xrotation=60, xtickfontsize=8, ytickfontsize=12, dpi=dpi_value, size=(fig_width, fig_height), alpha = 0.5, label = L"Numerics", c = c1)
 
-scatter(y_data, yerr = y_err_data, xticks=(1:length(x_labels), x_labels), xrotation=60, xtickfontsize=8, ytickfontsize=12, dpi=dpi_value, size=(fig_width, fig_height), alpha = 0.5, label = L"Numerics")
-bar!(mc_partition_expectation_values_array_bosonic.proba[range], alpha = 0.5, label = L"Indistinguishable")
-bar!(mc_partition_expectation_values_array_dist.proba[range], alpha = 0.5, label = L"Distinguishable")
+scatter!(mc_partition_expectation_values_array_bosonic.proba[range_values], alpha = 1, label = L"Indistinguishable", c = c2, m = marker)
+
+# scatter!(mc_partition_expectation_values_array_dist.proba[range_values], alpha = 1, label = L"Distinguishable", c = c3, m = marker)
 
 ### zoomed plot ###
-
-dpi_value = 600
-fig_width = 1500  # in pixels
-fig_height = 800  # in pixels
 
 sorted_counts_numerics = sort_by_detected_photons(mc)
 sorted_counts_numerics_deviation = sort_by_detected_photons(mc_deviation)
@@ -145,6 +201,25 @@ x_labels = map(plot_string_repr, x_data)
 
 # Define margins: [left, bottom, right, top]
 
-scatter(y_data, yerr = y_err_data, xticks=(1:length(x_labels), x_labels), xrotation=60, xtickfontsize=8, ytickfontsize=12, dpi=dpi_value, size=(fig_width, fig_height), alpha = 0.5, label = L"Numerics")
-bar!(mc_reduced_bosonic.proba, alpha = 0.5, label = L"Indistinguishable")
-bar!(mc_reduced_dist.proba, alpha = 0.5, label = L"Distinguishable")
+bar(y_data, yerr = y_err_data, xticks=(1:length(x_labels), x_labels), xrotation=60, xtickfontsize=8, ytickfontsize=12, dpi=dpi_value, size=(fig_width, fig_height), alpha = 0.5, label = L"Numerics", c = c1)
+
+scatter!(mc_reduced_bosonic.proba, alpha = 1, label = L"Indistinguishable" , c = c2, m = marker)
+interpolated_bosonic = interpolate_data(1:length(mc_reduced_bosonic.proba), mc_reduced_bosonic.proba)
+plot!(interpolated_bosonic[1], interpolated_bosonic[2], alpha = 1, label = L"Indistinguishable" , c = c2)
+
+# the same for distinguishable
+
+scatter!(mc_reduced_dist.proba, alpha = 1, label = L"Distinguishable", c = c3, m = marker)
+interpolated_dist = interpolate_data(1:length(mc_reduced_dist.proba), mc_reduced_dist.proba)
+plot!(interpolated_dist[1], interpolated_dist[2], alpha = 1, label = L"Distinguishable", c = c3)
+
+
+xlabel!(L"configuration")
+ylabel!(L"p")
+
+
+
+
+
+
+
