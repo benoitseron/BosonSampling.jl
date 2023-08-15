@@ -171,7 +171,7 @@ begin
 
     begin
 
-        scatter(y_data, yerr = y_err_data, xticks=(1:length(x_labels), x_labels), xrotation=60, xtickfontsize=8, ytickfontsize=12, dpi=dpi_value, size=(fig_width, fig_height), alpha = 1, label = L"Numerics", c = c1, grid=false)
+        fig_wide = scatter(y_data, yerr = y_err_data, xticks=(1:length(x_labels), x_labels), xrotation=60, xtickfontsize=8, ytickfontsize=12, dpi=dpi_value, size=(fig_width, fig_height), alpha = 1, label = L"Numerics", c = c1, grid=false)
 
         bar!(mc_partition_expectation_values_array_bosonic.proba[range_values], alpha = 0.5, label = L"Indistinguishable", c = c2)
 
@@ -180,6 +180,9 @@ begin
     end
 
 end
+
+savefig(fig_wide, "./docs/publication/gaussian/asymptotics_wide.png")
+
 ### zoomed plot ###
 
 sorted_counts_numerics = sort_by_detected_photons(mc)
@@ -211,7 +214,7 @@ fig_height = 500  # in pixels
 
 
 
-scatter(y_data, yerr = y_err_data, xticks=(1:length(x_labels), x_labels), xrotation=60, xtickfontsize=8, ytickfontsize=12, dpi=dpi_value, size=(fig_width, fig_height), alpha = 1, label = L"Numerics", c = c1, m = marker, grid=false)
+fig_zoom = scatter(y_data, yerr = y_err_data, xticks=(1:length(x_labels), x_labels), xrotation=60, xtickfontsize=8, ytickfontsize=12, dpi=dpi_value, size=(fig_width, fig_height), alpha = 1, label = L"Numerics", c = c1, m = marker, grid=false)
 
 bar!(mc_reduced_bosonic.proba, alpha = 0.5, label = L"Indistinguishable" , c = c2)
 # interpolated_bosonic = interpolate_data(1:length(mc_reduced_bosonic.proba), mc_reduced_bosonic.proba)
@@ -224,7 +227,7 @@ bar!(mc_reduced_dist.proba, alpha = 0.5, label = L"Distinguishable", c = c3)
 # plot!(interpolated_dist[1], interpolated_dist[2], alpha = 1, label = L"Distinguishable", c = c3)
 
 
-
+savefig(fig_zoom, "./docs/publication/gaussian/asymptotics_zoom.png")
 
 
 
