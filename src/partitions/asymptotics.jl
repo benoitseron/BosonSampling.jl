@@ -2,14 +2,13 @@ include("gaussian_partition.jl")
 
 ### Haar averaged binning demo ###
 
-n_iter = 100
+n_iter = 10
 
 m = 20
 input_state = GeneralGaussian(m = m, r = 0.4 * ones(m))
-
 part = equilibrated_partition(m, 2)
 
-n_max = 10
+n_max = 20
 
 begin
     
@@ -112,3 +111,40 @@ scatter(y_data, yerr = y_err_data, xticks=(1:length(x_labels), x_labels), xrotat
 bar!(mc_partition_expectation_values_array_bosonic.proba[range], alpha = 0.5, label = L"Indistinguishable")
 bar!(mc_partition_expectation_values_array_dist.proba[range], alpha = 0.5, label = L"Distinguishable")
 
+### zoomed plot ###
+
+dpi_value = 600
+fig_width = 1500  # in pixels
+fig_height = 800  # in pixels
+
+sorted_counts_numerics = sort_by_detected_photons(mc)
+sorted_counts_numerics_deviation = sort_by_detected_photons(mc_deviation)
+sorted_counts_bosonic = sort_by_detected_photons(mc_partition_expectation_values_array_bosonic)
+sorted_counts_dist = sort_by_detected_photons(mc_partition_expectation_values_array_dist)
+
+n_detected = 18
+
+scatter(sorted_counts_numerics[n_detected].proba, alpha = 0.5, label = L"Numerics")
+scatter!(sorted_counts_bosonic[n_detected].proba, alpha = 0.5, label = L"Indistinguishable")
+scatter!(sorted_counts_dist[n_detected].proba, alpha = 0.5, label = L"Distinguishable")
+
+mc_reduced = sorted_counts_numerics[n_detected]
+mc_reduced_deviation = sorted_counts_numerics_deviation[n_detected]
+mc_reduced_bosonic = sorted_counts_bosonic[n_detected]
+mc_reduced_dist = sorted_counts_dist[n_detected]
+
+x_data = mc_reduced.counts
+y_data = mc_reduced.proba
+y_err_data = mc_reduced_deviation.proba
+
+function plot_string_repr(i::ModeOccupation)
+    return string(i.state)
+end
+
+x_labels = map(plot_string_repr, x_data)
+
+# Define margins: [left, bottom, right, top]
+
+scatter(y_data, yerr = y_err_data, xticks=(1:length(x_labels), x_labels), xrotation=60, xtickfontsize=8, ytickfontsize=12, dpi=dpi_value, size=(fig_width, fig_height), alpha = 0.5, label = L"Numerics")
+bar!(mc_reduced_bosonic.proba, alpha = 0.5, label = L"Indistinguishable")
+bar!(mc_reduced_dist.proba, alpha = 0.5, label = L"Distinguishable")
