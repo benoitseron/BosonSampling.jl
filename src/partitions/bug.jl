@@ -353,16 +353,16 @@ results = Vector{ComputationResult}()
 
 begin
 
-    for m in 20:20
-        for n_max in 2:1:50
-            for r in 0:0.1:1  # You can adjust this step as needed
+    for m in 16:1:20
+        for n_max in 30:30
+            for r in 0.1:0.03:0.45  # You can adjust this step as needed
                 input_state = GeneralGaussian(m = m, r = r * ones(m))
                 interferometer = RandHaar(m)
                 part = equilibrated_partition(m, 2)
                 
                 success = true  # Assume success by default
                 try
-                    mc = compute_probabilities_partition_gaussian(interferometer, part, input_state, n_max)
+                    mc = compute_probabilities_partition_gaussian_chicago(interferometer, part, input_state, n_max)
                 catch
                     @warn "Failure for m = $m, n_max = $n_max, r = $r"
                     success = false
@@ -381,11 +381,31 @@ begin
     r_values = [res.r for res in results]
     colors = [res.success ? :green : :red for res in results]
 
-    # Plot
-    scatter(m_values, n_max_values, r_values, color=colors, markersize=5, legend=false)
-    xlabel!("m")
-    ylabel!("n_max")
-    zlabel!("r")
-    title!("Computation success (green) and failure (red)")
+   
 
 end
+
+
+scatter(m_values, n_max_values, r_values, color=colors, markersize=5, legend=false)
+xlabel!("m")
+ylabel!("n_max")
+zlabel!("r")
+
+    
+# 2d cut
+scatter(m_values, r_values, color=colors, markersize=5, legend=false)
+xlabel!("m")
+ylabel!("r")
+
+# visual testing
+
+r = 0.4
+n_max = 20
+
+input_state = GeneralGaussian(m = m, r = r * ones(m))
+interferometer = RandHaar(m)
+part = equilibrated_partition(m, 2)
+
+mc = compute_probabilities_partition_gaussian_chicago(interferometer, part, input_state, n_max)
+
+sort_samples_total_photon_number_in_partition!(mc)
