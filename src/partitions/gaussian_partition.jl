@@ -70,6 +70,44 @@ A generalized input of a multimode gaussian state.
 end
 
 
+"""
+
+    convergence_checks_gaussian_partition(mc, probas_fourier)
+
+Verifies that there is no error in the computation of a Gaussian binned counts distribution.
+"""
+function convergence_checks_gaussian_partition(mc, probas_fourier)
+
+    sort_samples_total_photon_number_in_partition!(mc) # important for symmetry checks
+
+    if any(real.(mc.proba) .< -ATOL) 
+
+        for proba in mc.proba
+            if real.(proba) .< -ATOL
+                println("negative probability: $proba")
+            end
+        end 
+        
+        error("negative probabilities")
+    
+    end
+
+    @argcheck isapprox(sum(mc.proba), 1., atol = ATOL) "not normalized"
+    
+    ### fourier symmetry checks ###
+
+    first_half_range = 1: div(length(probas_fourier),2) + 1
+    imag_fourier_first_half = (imag.(fftshift(probas_fourier)))[first_half_range]
+
+    # problems seem to arise when the imaginary part is not asymmetric - this property means that the real space coefficients have a non zero imaginary part
+
+    symmetric_part = 0.5 * (imag_fourier_first_half .+ reverse(imag_fourier_first_half))
+
+    @argcheck isapprox(symmetric_part, zeros(length(symmetric_part)), atol = ATOL) "the imaginary part of the Fourier transform is not asymmetric"
+
+end
+
+
 function compute_probabilities_partition_gaussian(physical_interferometer::Interferometer, part::Partition, input_state::GeneralGaussian, n_max = 11)
 
         if n_max % 2 == 0
@@ -187,6 +225,8 @@ function compute_probabilities_partition_gaussian(physical_interferometer::Inter
         end
 
         mc = MultipleCounts(ModeOccupation.(physical_indexes), pdf)
+
+        convergence_checks_gaussian_partition(mc, probas_fourier)
 
         mc
 
@@ -408,6 +448,8 @@ function compute_probabilities_partition_gaussian_chicago(physical_interferomete
         end
     
         mc = MultipleCounts(ModeOccupation.(physical_indexes), pdf)
+
+        convergence_checks_gaussian_partition(mc, probas_fourier)
     
         if give_debug_info
             return mc, probas_fourier, pdf_matrix, shifted_probas_fourier_matrix, pdf
