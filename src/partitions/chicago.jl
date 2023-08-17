@@ -2,9 +2,6 @@ include("gaussian_partition.jl")
 
 # using the formalism of Quantum-inspired classical algorithm for molecular vibronic spectra
 
-
-
-
 #### tests #### 
 
 # buggy case:

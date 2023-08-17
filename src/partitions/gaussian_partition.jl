@@ -82,11 +82,11 @@ function convergence_checks_gaussian_partition(mc, probas_fourier)
 
     if any(real.(mc.proba) .< -ATOL) 
 
-        for proba in mc.proba
-            if real.(proba) .< -ATOL
-                println("negative probability: $proba")
-            end
-        end 
+        # for proba in mc.proba
+        #     if real.(proba) .< -ATOL
+        #         println("negative probability: $proba")
+        #     end
+        # end 
         
         error("negative probabilities")
     
@@ -103,7 +103,7 @@ function convergence_checks_gaussian_partition(mc, probas_fourier)
 
     symmetric_part = 0.5 * (imag_fourier_first_half .+ reverse(imag_fourier_first_half))
 
-    @argcheck isapprox(symmetric_part, zeros(length(symmetric_part)), atol = ATOL) "the imaginary part of the Fourier transform is not asymmetric"
+    @argcheck isapprox(symmetric_part, zeros(length(symmetric_part)), atol = ATOL) "imaginary probabilies - the imaginary part of the Fourier transform is not asymmetric"
 
 end
 

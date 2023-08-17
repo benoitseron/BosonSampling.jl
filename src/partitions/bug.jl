@@ -1,5 +1,9 @@
 include("gaussian_partition.jl")
 
+using Random
+using Logging
+
+
 ### does not fail ###
 begin
 
@@ -306,3 +310,82 @@ bar(mc.proba)
 
 
 plt_failure
+
+
+###### failure range ######
+
+
+
+m = 20
+input_state = GeneralGaussian(m = m, r = 0.40 * ones(m))
+interferometer = RandHaar(m)
+part = equilibrated_partition(m, 2)
+
+# part = Partition(Subset(first_modes(1, m)))
+# part.subsets[1].subset
+
+n_max = 10
+
+try
+    mc = compute_probabilities_partition_gaussian(interferometer, part, input_state, n_max)
+catch
+    @warn "failure"
+end
+
+# bar(real(pdf))
+
+sort_samples_total_photon_number_in_partition!(mc)
+
+@show mc
+
+bar(mc.proba)
+
+
+struct ComputationResult
+    m::Int
+    n_max::Int
+    r::Float64
+    success::Bool  # true for success, false for failure
+end
+
+results = Vector{ComputationResult}()
+
+
+begin
+
+    for m in 20:20
+        for n_max in 2:1:50
+            for r in 0:0.1:1  # You can adjust this step as needed
+                input_state = GeneralGaussian(m = m, r = r * ones(m))
+                interferometer = RandHaar(m)
+                part = equilibrated_partition(m, 2)
+                
+                success = true  # Assume success by default
+                try
+                    mc = compute_probabilities_partition_gaussian(interferometer, part, input_state, n_max)
+                catch
+                    @warn "Failure for m = $m, n_max = $n_max, r = $r"
+                    success = false
+                end
+                
+                push!(results, ComputationResult(m, n_max, r, success))
+            end
+        end
+    end
+
+
+
+    # Extract data
+    m_values = [res.m for res in results]
+    n_max_values = [res.n_max for res in results]
+    r_values = [res.r for res in results]
+    colors = [res.success ? :green : :red for res in results]
+
+    # Plot
+    scatter(m_values, n_max_values, r_values, color=colors, markersize=5, legend=false)
+    xlabel!("m")
+    ylabel!("n_max")
+    zlabel!("r")
+    title!("Computation success (green) and failure (red)")
+
+end
