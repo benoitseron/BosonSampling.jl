@@ -69,7 +69,7 @@ end
 n_array = 2:1:12
 m_array = n_array
 n_subsets_array = 2:3
-n_iter = 100
+n_iter = 2
 
 plt = plot(dpi = 600)
 
@@ -116,10 +116,8 @@ plt
 savefig(plt, "./images/publication/spoofing_high_density.png")
 
 
-n_array = 2:1:12
 m_array = n_array .^2
-n_subsets_array = 2:3
-n_iter = 100
+
 
 plt_2 = plot(dpi = 600)
 
