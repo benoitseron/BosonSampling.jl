@@ -26,6 +26,8 @@ n_iter_each_unitary = 100
 
 
 function tvd_two_partitions(n,m,n_subsets, n_iter_each_unitary = n_iter_each_unitary)
+
+    @assert m > n "seems to bug otherwise"
     ib = Input{Bosonic}(first_modes(n,m))
     interf = RandHaar(m)
 
@@ -67,14 +69,15 @@ function variation_two_partitions(n,m, n_subsets, n_iter)
 end
 
 n_array = 2:1:12
-m_array = n_array
+m_array = 2*n_array
 n_subsets_array = 2:3
-n_iter = 2
+n_iter = 100
 
 plt = plot(dpi = 600)
 
 tvd_arrays_high_density = []
 std_tvd_arrays_high_density = []
+
 
 for n_subset in n_subsets_array
     mean_tvd_array = []
@@ -105,7 +108,7 @@ end
 
 xlabel!(plt, L"n")
 ylabel!(plt, L"tvd")
-title!(plt, "High density regime " * L"(m = n)")
+title!(plt, "High density regime " * L"(m = 2n)")
 ylims!(plt, (0,2))
 xticks!(n_array)
 plot!(plt, legend = false)
