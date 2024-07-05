@@ -34,7 +34,7 @@ function get_next_filename(base_name::String, extension::String, directory::Stri
     return filename
 end
 
-function tvd_two_partitions(n,m,n_subsets, n_iter_each_unitary = n_iter_each_unitary, plotting = false)
+function tvd_two_partitions(n,m,n_subsets, n_iter_each_unitary = n_iter_each_unitary; plotting = false)
 
     @assert m > n "seems to bug otherwise"
     ib = Input{Bosonic}(first_modes(n,m))
@@ -62,8 +62,8 @@ function tvd_two_partitions(n,m,n_subsets, n_iter_each_unitary = n_iter_each_uni
 
         if plotting
             plt = plot(dpi = 600)
-            plot!(ev_a.proba_params.probability.proba, label = "Distribution 1")
-            plot!(ev_b.proba_params.probability.proba, label = "Distribution 2")
+            plot!(0:n, ev_a.proba_params.probability.proba, label = "Distribution 1")
+            plot!(0:n, ev_b.proba_params.probability.proba, label = "Distribution 2")
             title_str = "n = $n, m = $m, n_subsets = $n_subsets, subset 1 = $part_a, subset 2 = $part_b"
             title!(title_str, titlefont=font(7))
             plot!(xlabel = "k", ylabel = "p(k)")
