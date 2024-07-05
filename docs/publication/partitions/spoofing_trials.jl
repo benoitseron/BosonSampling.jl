@@ -24,8 +24,17 @@ cd("docs/publication/partitions/")
 
 n_iter_each_unitary = 100
 
+function get_next_filename(base_name::String, extension::String, directory::String="./")
+    i = 1
+    filename = "$(directory)$(base_name)$(extension)"
+    while isfile(filename)
+        filename = "$(directory)$(base_name)_$(i)$(extension)"
+        i += 1
+    end
+    return filename
+end
 
-function tvd_two_partitions(n,m,n_subsets, n_iter_each_unitary = n_iter_each_unitary)
+function tvd_two_partitions(n,m,n_subsets, n_iter_each_unitary = n_iter_each_unitary, plotting = false)
 
     @assert m > n "seems to bug otherwise"
     ib = Input{Bosonic}(first_modes(n,m))
@@ -51,6 +60,24 @@ function tvd_two_partitions(n,m,n_subsets, n_iter_each_unitary = n_iter_each_uni
 
         tvd_array_this_unitary[i] = tvd(ev_a.proba_params.probability.proba, ev_b.proba_params.probability.proba)
 
+        if plotting
+            plt = plot(dpi = 600)
+            plot!(ev_a.proba_params.probability.proba, label = "Distribution 1")
+            plot!(ev_b.proba_params.probability.proba, label = "Distribution 2")
+            title_str = "n = $n, m = $m, n_subsets = $n_subsets, subset 1 = $part_a, subset 2 = $part_b"
+            title!(title_str, titlefont=font(7))
+            plot!(xlabel = "k", ylabel = "p(k)")
+
+            base_name = "one_unitary_two_partitions"
+            directory = "./images/publication/spoofing/"
+            extension = ".png"
+
+            filename = get_next_filename(base_name, extension, directory)
+
+            savefig(plt, filename)
+
+            display(plt)
+        end
     end
 
     return mean(tvd_array_this_unitary)
@@ -67,6 +94,12 @@ function variation_two_partitions(n,m, n_subsets, n_iter)
     std_tvd = std(tvd_array)
     return mean_tvd, std_tvd
 end
+
+### checks for Leonardo ###
+
+
+tvd_two_partitions(5,25,2, 100, plotting = true)
+
 
 n_array = 2:1:12
 m_array = 2*n_array
