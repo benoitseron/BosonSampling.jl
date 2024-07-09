@@ -132,32 +132,32 @@ function partition_from_subset_lengths(subset_lengths)
 end
 function random_partition(m::Int, n_subsets::Int)
         if n_subsets > m
-            error("Number of subsets cannot be greater than the size of the interval")
+                error("Number of subsets cannot be greater than the size of the interval")
         end
-        
+
         # Generate `n_subsets - 1` unique random cut points
         cut_points = sort(unique(rand(1:(m-1), n_subsets - 1)))
-        
+
         # Ensure we have exactly `n_subsets - 1` cut points
         while length(cut_points) < n_subsets - 1
-            new_points = sort(unique(rand(1:(m-1), n_subsets - 1 - length(cut_points))))
-            cut_points = sort(unique(vcat(cut_points, new_points)))
+                new_points = sort(unique(rand(1:(m-1), n_subsets - 1 - length(cut_points))))
+                cut_points = sort(unique(vcat(cut_points, new_points)))
         end
-    
+
         # Add the start and end points of the interval
         cut_points = [0; cut_points; m]
-        
+
         # Create the partitions based on the cut points
         partitions = [((cut_points[i] + 1):(cut_points[i+1])) for i in 1:n_subsets]
-        
+
         lengths = [length(partitions[i]) for i in 1:n_subsets]
-        
+
         try
-            return partition_from_subset_lengths(lengths)
+                return partition_from_subset_lengths(lengths)
         catch
-            error("invalid subset: $partitions")
+                error("invalid subset: $partitions")
         end
-    end
+        end
 
 """
     equilibrated_partition_vector(m,n_subsets)

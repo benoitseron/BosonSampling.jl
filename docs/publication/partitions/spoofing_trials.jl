@@ -34,6 +34,54 @@ function get_next_filename(base_name::String, extension::String, directory::Stri
     return filename
 end
 
+
+function generate_random_subset_sizes(m::Int, n_subsets::Int)
+    subset_sizes = zeros(Int, n_subsets)
+    for i in 1:n_subsets-1
+        number_modes_occupied = sum(subset_sizes)
+        subset_sizes[i] = rand(1:m - number_modes_occupied - n_subsets)
+    end
+    subset_sizes[end] = m - sum(subset_sizes)
+    return subset_sizes
+end
+
+
+function generate_partition_random_modes_fixed_subset_sizes(m::Int, subset_sizes::Vector{Int})
+    
+    n_subsets = length(subset_sizes)
+
+    subsets = Vector{Subset}()
+    subset_assignment = zeros(Int, m)
+    modes_available = collect(1:m)
+
+
+    # index by the subset size index which mode is in which subset
+    for (i,subset_size) in enumerate(subset_sizes)
+        
+        for j in 1:subset_size
+            mode_chosen = sample(modes_available)
+            # remove the mode from the available modes
+            deleteat!(modes_available, findfirst(isequal(mode_chosen), modes_available))
+            subset_assignment[mode_chosen] = i
+        end
+        
+    end
+
+
+    for i in 1:n_subsets
+        subset_vector = zeros(Int, m)
+        for j in 1:m
+            if subset_assignment[j] == i
+                subset_vector[j] = 1
+            end
+        end
+        push!(subsets, Subset(subset_vector))
+    end
+    
+    Partition(convert(Vector{Subset}, subsets))
+
+end
+
 function tvd_two_partitions(n,m,n_subsets, n_iter_each_unitary = n_iter_each_unitary; plotting = false)
 
     @assert m > n "seems to bug otherwise"
@@ -84,10 +132,69 @@ function tvd_two_partitions(n,m,n_subsets, n_iter_each_unitary = n_iter_each_uni
 
 end
 
-function variation_two_partitions(n,m, n_subsets, n_iter)
+
+
+
+function tvd_two_partitions_fixed_sized(n,m, subset_sizes, n_iter_each_unitary = n_iter_each_unitary; plotting = false)
+
+    @assert m > n "seems to bug otherwise"
+    ib = Input{Bosonic}(first_modes(n,m))
+    interf = RandHaar(m)
+
+    tvd_array_this_unitary = zeros(n_iter_each_unitary)
+
+    for i in 1:n_iter_each_unitary
+        part_a = generate_partition_random_modes_fixed_subset_sizes(m, subset_sizes)
+        part_b = part_a
+        while part_a == part_b
+            part_b = generate_partition_random_modes_fixed_subset_sizes(m, subset_sizes)
+        end
+
+        o_a = PartitionCountsAll(part_a)
+        o_b = PartitionCountsAll(part_b)
+
+        ev_a = Event(ib,o_a,interf)
+        ev_b = Event(ib,o_b,interf)
+
+        compute_probability!(ev_a)
+        compute_probability!(ev_b)
+
+        tvd_array_this_unitary[i] = tvd(ev_a.proba_params.probability.proba, ev_b.proba_params.probability.proba)
+
+        if plotting
+            plt = plot(dpi = 600)
+            plot!(0:n, ev_a.proba_params.probability.proba, label = "Distribution 1")
+            plot!(0:n, ev_b.proba_params.probability.proba, label = "Distribution 2")
+            title_str = "n = $n, m = $m, n_subsets = $n_subsets, subset 1 = $part_a, subset 2 = $part_b"
+            title!(title_str, titlefont=font(7))
+            plot!(xlabel = "k", ylabel = "p(k)")
+
+            base_name = "one_unitary_two_partitions"
+            directory = "./images/publication/spoofing/"
+            extension = ".png"
+
+            filename = get_next_filename(base_name, extension, directory)
+
+            savefig(plt, filename)
+
+            display(plt)
+        end
+    end
+
+    return mean(tvd_array_this_unitary)
+
+end
+
+
+###############TODO not what we want, we want to already declare the sizes ahead!
+
+function variation_two_partitions_fixed_subset_sizes(n,m, n_subsets, n_iter)
+
+    subset_sizes = generate_random_subset_sizes(m, n_subsets)
+
     tvd_array = zeros(n_iter)
     for i in 1:n_iter
-        tvd_array[i] = tvd_two_partitions(n,m,n_subsets)
+        tvd_array[i] =  tvd_two_partitions_fixed_sized(n,m, subset_sizes, n_iter_each_unitary)
     end
 
     mean_tvd = mean(tvd_array)
@@ -99,6 +206,10 @@ end
 
 
 tvd_two_partitions(5,25,2, 100, plotting = true)
+
+###########################
+
+##### initial plotting ####
 
 
 n_array = 2:1:12
@@ -207,3 +318,13 @@ save("spoofing_tvd_arrays_high_density.jld", "tvd_arrays_high_density", tvd_arra
 save("spoofing_std_tvd_arrays_high_density.jld", "std_tvd_arrays_high_density", std_tvd_arrays_high_density)
 save("spoofing_tvd_arrays_no_collision.jld", "tvd_arrays_no_collision", tvd_arrays_no_collision)
 save("spoofing_std_tvd_arrays_no_collision.jld", "std_tvd_arrays_no_collision", std_tvd_arrays_no_collision)
+
+######### the same but with fixed number of modes ##########
+
+
+m = 10
+n_subsets = 3
+
+
+subset_sizes = generate_random_subset_sizes(m, n_subsets)
+part = generate_partition_random_modes_fixed_subset_sizes(m, subset_sizes)
