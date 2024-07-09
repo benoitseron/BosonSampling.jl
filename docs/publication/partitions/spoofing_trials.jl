@@ -378,7 +378,7 @@ end
 xlabel!(plt, L"n")
 ylabel!(plt, L"tvd")
 title!(plt, "High density regime " * L"(m = 2n)")
-ylims!(plt, (0,2))
+ylims!(plt, (0,1))
 xticks!(n_array)
 plot!(plt, legend = false)
 # title!("spoofabilitiy - no collision regime")
@@ -431,7 +431,7 @@ xlabel!(L"n")
 ylabel!(L"tvd")
 # title!("spoofabilitiy - high density regime")
 title!("No collision regime " * L"(m = n^2)")
-ylims!(0,2)
+ylims!(0,1)
 xticks!(n_array)
 plt_2
 
