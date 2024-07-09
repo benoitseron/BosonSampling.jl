@@ -45,6 +45,14 @@ function generate_random_subset_sizes(m::Int, n_subsets::Int)
     return subset_sizes
 end
 
+function divide_equally_subset_sizes(m::Int, n_subset::Int)
+    base_size = m ÷ n_subset
+    remainder = m % n_subset
+
+    subset_sizes = [base_size + (i <= remainder ? 1 : 0) for i in 1:n_subset]
+    return subset_sizes
+end
+
 
 function generate_partition_random_modes_fixed_subset_sizes(m::Int, subset_sizes::Vector{Int})
     
@@ -144,6 +152,7 @@ function tvd_two_partitions_fixed_sized(n,m, subset_sizes, n_iter_each_unitary =
     tvd_array_this_unitary = zeros(n_iter_each_unitary)
 
     for i in 1:n_iter_each_unitary
+
         part_a = generate_partition_random_modes_fixed_subset_sizes(m, subset_sizes)
         part_b = part_a
         while part_a == part_b
@@ -186,11 +195,7 @@ function tvd_two_partitions_fixed_sized(n,m, subset_sizes, n_iter_each_unitary =
 end
 
 
-###############TODO not what we want, we want to already declare the sizes ahead!
-
-function variation_two_partitions_fixed_subset_sizes(n,m, n_subsets, n_iter)
-
-    subset_sizes = generate_random_subset_sizes(m, n_subsets)
+function variation_two_partitions_fixed_subset_sizes(n,m, subset_sizes::Vector{Int}, n_iter)
 
     tvd_array = zeros(n_iter)
     for i in 1:n_iter
@@ -321,10 +326,123 @@ save("spoofing_std_tvd_arrays_no_collision.jld", "std_tvd_arrays_no_collision", 
 
 ######### the same but with fixed number of modes ##########
 
+# n_subset = 2
+# n = 5
+# m = 11
+# subset_sizes = divide_equally_subset_sizes(m, n_subset)
 
-m = 10
-n_subsets = 3
+# variation_two_partitions_fixed_subset_sizes(n,m, subset_sizes, 100)
 
 
-subset_sizes = generate_random_subset_sizes(m, n_subsets)
-part = generate_partition_random_modes_fixed_subset_sizes(m, subset_sizes)
+
+n_array = 2:1:12
+m_array = 2*n_array
+n_subsets_array = 2:3
+n_iter = 100
+
+plt = plot(dpi = 600)
+
+tvd_arrays_high_density = []
+std_tvd_arrays_high_density = []
+
+
+for n_subset in n_subsets_array
+    mean_tvd_array = []
+    std_tvd_array = []
+
+    
+    for (i,n) in enumerate(n_array)
+        if n_subset <= n
+            
+            subset_sizes = divide_equally_subset_sizes(m_array[i], n_subset)
+
+            @show (n,m_array[i], subset_sizes, n_iter)
+            mean_tvd, std_tvd = variation_two_partitions_fixed_subset_sizes(n,m_array[i], subset_sizes, n_iter)
+            push!(mean_tvd_array, mean_tvd)
+            push!(std_tvd_array, std_tvd)
+
+        else
+
+            push!(mean_tvd_array, NaN)
+            push!(std_tvd_array, NaN)
+        end
+    end
+
+    push!(tvd_arrays_high_density, mean_tvd_array)
+    push!(std_tvd_arrays_high_density, std_tvd_array)
+
+    plot!(plt, n_array, mean_tvd_array, ribbon = std_tvd_array, label = "n_subsets = $n_subset")
+end
+
+
+xlabel!(plt, L"n")
+ylabel!(plt, L"tvd")
+title!(plt, "High density regime " * L"(m = 2n)")
+ylims!(plt, (0,2))
+xticks!(n_array)
+plot!(plt, legend = false)
+# title!("spoofabilitiy - no collision regime")
+plt
+
+# savefig(plt, "spoofing_no_collision.png")
+savefig(plt, "./images/publication/spoofing_high_density_fixed_homogenous_subsets.png")
+
+
+m_array = n_array .^2
+
+
+plt_2 = plot(dpi = 600)
+
+tvd_arrays_no_collision = []
+std_tvd_arrays_no_collision = []
+
+
+
+for n_subset in n_subsets_array
+    mean_tvd_array = []
+    std_tvd_array = []
+
+    
+    for (i,n) in enumerate(n_array)
+        if n_subset <= n
+
+            subset_sizes = divide_equally_subset_sizes(m_array[i], n_subset)
+
+            @show (n,m_array[i], subset_sizes, n_iter)
+            mean_tvd, std_tvd = variation_two_partitions_fixed_subset_sizes(n,m_array[i], subset_sizes, n_iter)
+           
+            push!(mean_tvd_array, mean_tvd)
+            push!(std_tvd_array, std_tvd)
+
+        else
+
+            push!(mean_tvd_array, NaN)
+            push!(std_tvd_array, NaN)
+        end
+    end
+
+    push!(tvd_arrays_no_collision, mean_tvd_array)
+    push!(std_tvd_arrays_no_collision, std_tvd_array)
+
+    plot!(plt_2, n_array, mean_tvd_array, ribbon = std_tvd_array, label = "n_subsets = $n_subset")
+end
+
+xlabel!(L"n")
+ylabel!(L"tvd")
+# title!("spoofabilitiy - high density regime")
+title!("No collision regime " * L"(m = n^2)")
+ylims!(0,2)
+xticks!(n_array)
+plt_2
+
+savefig(plt_2, "./images/publication/spoofing_no_collision_fixed_homogenous_subsets.png")
+# savefig(plt, "./images/publication/spoofing_high_density.png")
+
+full_plot = plot(plt, plt_2, layout = (2, 1), dpi = 600)
+
+savefig(full_plot, "./images/publication/spoofing_fixed_homogenous_subsets.png")
+
+save("spoofing_tvd_arrays_high_density_fixed_homogenous_subsets.jld", "tvd_arrays_high_density", tvd_arrays_high_density)
+save("spoofing_std_tvd_arrays_high_density_fixed_homogenous_subsets.jld", "std_tvd_arrays_high_density", std_tvd_arrays_high_density)
+save("spoofing_tvd_arrays_no_collision_fixed_homogenous_subsets.jld", "tvd_arrays_no_collision", tvd_arrays_no_collision)
+save("spoofing_std_tvd_arrays_no_collision_fixed_homogenous_subsets.jld", "std_tvd_arrays_no_collision", std_tvd_arrays_no_collision)
