@@ -378,7 +378,7 @@ end
 xlabel!(plt, L"n")
 ylabel!(plt, L"tvd")
 title!(plt, "High density regime " * L"(m = 2n)")
-ylims!(plt, (0,1))
+ylims!(plt, (0,0.7))
 xticks!(n_array)
 plot!(plt, legend = false)
 # title!("spoofabilitiy - no collision regime")
@@ -427,12 +427,12 @@ for n_subset in n_subsets_array
     plot!(plt_2, n_array, mean_tvd_array, ribbon = std_tvd_array, label = "n_subsets = $n_subset")
 end
 
-xlabel!(L"n")
-ylabel!(L"tvd")
+xlabel!(plt_2, L"n")
+ylabel!(plt_2, L"tvd")
 # title!("spoofabilitiy - high density regime")
-title!("No collision regime " * L"(m = n^2)")
-ylims!(0,1)
-xticks!(n_array)
+title!(plt_2, "No collision regime " * L"(m = n^2)")
+ylims!(plt_2, (0,0.7))
+xticks!(plt_2, n_array)
 plt_2
 
 savefig(plt_2, "./images/publication/spoofing_no_collision_fixed_homogenous_subsets.png")
