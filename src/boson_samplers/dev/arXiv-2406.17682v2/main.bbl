@@ -1,0 +1,165 @@
+\begin{thebibliography}{50}
+\expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
+\expandafter\ifx\csname bibnamefont\endcsname\relax
+  \def\bibnamefont#1{#1}\fi
+\expandafter\ifx\csname bibfnamefont\endcsname\relax
+  \def\bibfnamefont#1{#1}\fi
+\expandafter\ifx\csname citenamefont\endcsname\relax
+  \def\citenamefont#1{#1}\fi
+\expandafter\ifx\csname url\endcsname\relax
+  \def\url#1{\texttt{#1}}\fi
+\expandafter\ifx\csname urlprefix\endcsname\relax\def\urlprefix{URL }\fi
+\providecommand{\bibinfo}[2]{#2}
+\providecommand{\eprint}[2][]{\url{#2}}
+
+\bibitem[{\citenamefont{Shor}(1997)}]{Shor_prime}
+\bibinfo{author}{\bibfnamefont{P.~W.} \bibnamefont{Shor}}, \bibinfo{journal}{SIAM Journal on Computing} \textbf{\bibinfo{volume}{26}}, \bibinfo{pages}{1484} (\bibinfo{year}{1997}).
+
+\bibitem[{\citenamefont{Lloyd}(1996)}]{seth_lloyd_simulating_quantum_sys}
+\bibinfo{author}{\bibfnamefont{S.}~\bibnamefont{Lloyd}}, \bibinfo{journal}{Science} \textbf{\bibinfo{volume}{273}}, \bibinfo{pages}{1073} (\bibinfo{year}{1996}).
+
+\bibitem[{\citenamefont{Grover}(1996)}]{Grovers_algorithm}
+\bibinfo{author}{\bibfnamefont{L.~K.} \bibnamefont{Grover}}, in \emph{\bibinfo{booktitle}{Proceedings of the Twenty-Eighth Annual ACM Symposium on Theory of Computing}} (\bibinfo{publisher}{Association for Computing Machinery}, \bibinfo{year}{1996}), STOC '96, p. \bibinfo{pages}{212–219}, ISBN \bibinfo{isbn}{0897917855}.
+
+\bibitem[{\citenamefont{Harrow and Montanaro}(2017)}]{harrow2017}
+\bibinfo{author}{\bibfnamefont{A.~W.} \bibnamefont{Harrow}} \bibnamefont{and} \bibinfo{author}{\bibfnamefont{A.}~\bibnamefont{Montanaro}}, \bibinfo{journal}{Nature} \textbf{\bibinfo{volume}{549}}, \bibinfo{pages}{203–209} (\bibinfo{year}{2017}).
+
+\bibitem[{\citenamefont{Arute et~al.}(2019)\citenamefont{Arute, Arya, Babbush, Bacon, Bardin, Barends, Biswas, Boixo, Brandao, Buell et~al.}}]{arute2019quantum}
+\bibinfo{author}{\bibfnamefont{F.}~\bibnamefont{Arute}}, \bibinfo{author}{\bibfnamefont{K.}~\bibnamefont{Arya}}, \bibinfo{author}{\bibfnamefont{R.}~\bibnamefont{Babbush}}, \bibinfo{author}{\bibfnamefont{D.}~\bibnamefont{Bacon}}, \bibinfo{author}{\bibfnamefont{J.~C.} \bibnamefont{Bardin}}, \bibinfo{author}{\bibfnamefont{R.}~\bibnamefont{Barends}}, \bibinfo{author}{\bibfnamefont{R.}~\bibnamefont{Biswas}}, \bibinfo{author}{\bibfnamefont{S.}~\bibnamefont{Boixo}}, \bibinfo{author}{\bibfnamefont{F.~G.} \bibnamefont{Brandao}}, \bibinfo{author}{\bibfnamefont{D.~A.} \bibnamefont{Buell}}, \bibnamefont{et~al.}, \bibinfo{journal}{Nature} \textbf{\bibinfo{volume}{574}}, \bibinfo{pages}{505} (\bibinfo{year}{2019}).
+
+\bibitem[{\citenamefont{Wu et~al.}(2021)\citenamefont{Wu, Bao, Cao, Chen, Chen, Chen, Chung, Deng, Du, Fan et~al.}}]{Wu2021}
+\bibinfo{author}{\bibfnamefont{Y.}~\bibnamefont{Wu}}, \bibinfo{author}{\bibfnamefont{W.-S.} \bibnamefont{Bao}}, \bibinfo{author}{\bibfnamefont{S.}~\bibnamefont{Cao}}, \bibinfo{author}{\bibfnamefont{F.}~\bibnamefont{Chen}}, \bibinfo{author}{\bibfnamefont{M.-C.} \bibnamefont{Chen}}, \bibinfo{author}{\bibfnamefont{X.}~\bibnamefont{Chen}}, \bibinfo{author}{\bibfnamefont{T.-H.} \bibnamefont{Chung}}, \bibinfo{author}{\bibfnamefont{H.}~\bibnamefont{Deng}}, \bibinfo{author}{\bibfnamefont{Y.}~\bibnamefont{Du}}, \bibinfo{author}{\bibfnamefont{D.}~\bibnamefont{Fan}}, \bibnamefont{et~al.}, \bibinfo{journal}{Phys. Rev. Lett.} \textbf{\bibinfo{volume}{127}}, \bibinfo{pages}{180501} (\bibinfo{year}{2021}).
+
+\bibitem[{\citenamefont{Zhu et~al.}(2022)\citenamefont{Zhu, Cao, Chen, Chen, Chen, Chung, Deng, Du, Fan, Gong et~al.}}]{Zhu2022}
+\bibinfo{author}{\bibfnamefont{Q.}~\bibnamefont{Zhu}}, \bibinfo{author}{\bibfnamefont{S.}~\bibnamefont{Cao}}, \bibinfo{author}{\bibfnamefont{F.}~\bibnamefont{Chen}}, \bibinfo{author}{\bibfnamefont{M.-C.} \bibnamefont{Chen}}, \bibinfo{author}{\bibfnamefont{X.}~\bibnamefont{Chen}}, \bibinfo{author}{\bibfnamefont{T.-H.} \bibnamefont{Chung}}, \bibinfo{author}{\bibfnamefont{H.}~\bibnamefont{Deng}}, \bibinfo{author}{\bibfnamefont{Y.}~\bibnamefont{Du}}, \bibinfo{author}{\bibfnamefont{D.}~\bibnamefont{Fan}}, \bibinfo{author}{\bibfnamefont{M.}~\bibnamefont{Gong}}, \bibnamefont{et~al.}, \bibinfo{journal}{Science Bulletin} \textbf{\bibinfo{volume}{67}}, \bibinfo{pages}{240–245} (\bibinfo{year}{2022}), ISSN \bibinfo{issn}{2095-9273}.
+
+\bibitem[{\citenamefont{Zhong et~al.}(2020)\citenamefont{Zhong, Wang, Deng, Chen, Peng, Luo, Qin, Wu, Ding, Hu et~al.}}]{zhong2020quantum}
+\bibinfo{author}{\bibfnamefont{H.-S.} \bibnamefont{Zhong}}, \bibinfo{author}{\bibfnamefont{H.}~\bibnamefont{Wang}}, \bibinfo{author}{\bibfnamefont{Y.-H.} \bibnamefont{Deng}}, \bibinfo{author}{\bibfnamefont{M.-C.} \bibnamefont{Chen}}, \bibinfo{author}{\bibfnamefont{L.-C.} \bibnamefont{Peng}}, \bibinfo{author}{\bibfnamefont{Y.-H.} \bibnamefont{Luo}}, \bibinfo{author}{\bibfnamefont{J.}~\bibnamefont{Qin}}, \bibinfo{author}{\bibfnamefont{D.}~\bibnamefont{Wu}}, \bibinfo{author}{\bibfnamefont{X.}~\bibnamefont{Ding}}, \bibinfo{author}{\bibfnamefont{Y.}~\bibnamefont{Hu}}, \bibnamefont{et~al.}, \bibinfo{journal}{Science} \textbf{\bibinfo{volume}{370}}, \bibinfo{pages}{1460} (\bibinfo{year}{2020}).
+
+\bibitem[{\citenamefont{Wang et~al.}(2019)\citenamefont{Wang, Qin, Ding, Chen, Chen, You, He, Jiang, You, Wang et~al.}}]{wang2019}
+\bibinfo{author}{\bibfnamefont{H.}~\bibnamefont{Wang}}, \bibinfo{author}{\bibfnamefont{J.}~\bibnamefont{Qin}}, \bibinfo{author}{\bibfnamefont{X.}~\bibnamefont{Ding}}, \bibinfo{author}{\bibfnamefont{M.-C.} \bibnamefont{Chen}}, \bibinfo{author}{\bibfnamefont{S.}~\bibnamefont{Chen}}, \bibinfo{author}{\bibfnamefont{X.}~\bibnamefont{You}}, \bibinfo{author}{\bibfnamefont{Y.-M.} \bibnamefont{He}}, \bibinfo{author}{\bibfnamefont{X.}~\bibnamefont{Jiang}}, \bibinfo{author}{\bibfnamefont{L.}~\bibnamefont{You}}, \bibinfo{author}{\bibfnamefont{Z.}~\bibnamefont{Wang}}, \bibnamefont{et~al.}, \bibinfo{journal}{Phys. Rev. Lett.} \textbf{\bibinfo{volume}{123}}, \bibinfo{pages}{250503} (\bibinfo{year}{2019}).
+
+\bibitem[{\citenamefont{Zhong et~al.}(2021)\citenamefont{Zhong, Deng, Qin, Wang, Chen, Peng, Luo, Wu, Gong, Su et~al.}}]{zhong2021}
+\bibinfo{author}{\bibfnamefont{H.-S.} \bibnamefont{Zhong}}, \bibinfo{author}{\bibfnamefont{Y.-H.} \bibnamefont{Deng}}, \bibinfo{author}{\bibfnamefont{J.}~\bibnamefont{Qin}}, \bibinfo{author}{\bibfnamefont{H.}~\bibnamefont{Wang}}, \bibinfo{author}{\bibfnamefont{M.-C.} \bibnamefont{Chen}}, \bibinfo{author}{\bibfnamefont{L.-C.} \bibnamefont{Peng}}, \bibinfo{author}{\bibfnamefont{Y.-H.} \bibnamefont{Luo}}, \bibinfo{author}{\bibfnamefont{D.}~\bibnamefont{Wu}}, \bibinfo{author}{\bibfnamefont{S.-Q.} \bibnamefont{Gong}}, \bibinfo{author}{\bibfnamefont{H.}~\bibnamefont{Su}}, \bibnamefont{et~al.}, \bibinfo{journal}{Phys. Rev. Lett.} \textbf{\bibinfo{volume}{127}}, \bibinfo{pages}{180502} (\bibinfo{year}{2021}).
+
+\bibitem[{\citenamefont{Pednault et~al.}(2019)\citenamefont{Pednault, Gunnels, Nannicini, Horesh, and Wisnieff}}]{Pednault2019}
+\bibinfo{author}{\bibfnamefont{E.}~\bibnamefont{Pednault}}, \bibinfo{author}{\bibfnamefont{J.~A.} \bibnamefont{Gunnels}}, \bibinfo{author}{\bibfnamefont{G.}~\bibnamefont{Nannicini}}, \bibinfo{author}{\bibfnamefont{L.}~\bibnamefont{Horesh}}, \bibnamefont{and} \bibinfo{author}{\bibfnamefont{R.}~\bibnamefont{Wisnieff}}, \emph{\bibinfo{title}{Leveraging secondary storage to simulate deep 54-qubit sycamore circuits}} (\bibinfo{year}{2019}), \eprint{arXiv:1910.09534}.
+
+\bibitem[{\citenamefont{Pan and Zhang}(2021)}]{PanZhang2021}
+\bibinfo{author}{\bibfnamefont{F.}~\bibnamefont{Pan}} \bibnamefont{and} \bibinfo{author}{\bibfnamefont{P.}~\bibnamefont{Zhang}}, \emph{\bibinfo{title}{Simulating the sycamore quantum supremacy circuits}} (\bibinfo{year}{2021}), \eprint{arXiv:2103.03074}.
+
+\bibitem[{\citenamefont{Tindall et~al.}(2024)\citenamefont{Tindall, Fishman, Stoudenmire, and Sels}}]{Tindall2024}
+\bibinfo{author}{\bibfnamefont{J.}~\bibnamefont{Tindall}}, \bibinfo{author}{\bibfnamefont{M.}~\bibnamefont{Fishman}}, \bibinfo{author}{\bibfnamefont{E.~M.} \bibnamefont{Stoudenmire}}, \bibnamefont{and} \bibinfo{author}{\bibfnamefont{D.}~\bibnamefont{Sels}}, \bibinfo{journal}{PRX Quantum} \textbf{\bibinfo{volume}{5}}, \bibinfo{pages}{010308} (\bibinfo{year}{2024}).
+
+\bibitem[{\citenamefont{Oh et~al.}(2023{\natexlab{a}})\citenamefont{Oh, Liu, Alexeev, Fefferman, and Jiang}}]{Oh2023_1}
+\bibinfo{author}{\bibfnamefont{C.}~\bibnamefont{Oh}}, \bibinfo{author}{\bibfnamefont{M.}~\bibnamefont{Liu}}, \bibinfo{author}{\bibfnamefont{Y.}~\bibnamefont{Alexeev}}, \bibinfo{author}{\bibfnamefont{B.}~\bibnamefont{Fefferman}}, \bibnamefont{and} \bibinfo{author}{\bibfnamefont{L.}~\bibnamefont{Jiang}}, \emph{\bibinfo{title}{Classical algorithm for simulating experimental gaussian boson sampling}} (\bibinfo{year}{2023}{\natexlab{a}}), \eprint{arXiv:2306.03709}.
+
+\bibitem[{\citenamefont{Anonymous}(2024)}]{Sigbovik2024}
+\bibinfo{author}{\bibnamefont{Anonymous}}, \emph{\bibinfo{title}{Quantum disadvantage}} (\bibinfo{year}{2024}), \eprint{Proc. SIGBOVIK 2024}.
+
+\bibitem[{\citenamefont{Aaronson and Arkhipov}(2011)}]{Aaronson_Arkhipov_BS}
+\bibinfo{author}{\bibfnamefont{S.}~\bibnamefont{Aaronson}} \bibnamefont{and} \bibinfo{author}{\bibfnamefont{A.}~\bibnamefont{Arkhipov}}, in \emph{\bibinfo{booktitle}{Proceedings of the Forty-Third Annual ACM Symposium on Theory of Computing}} (\bibinfo{publisher}{Association for Computing Machinery}, \bibinfo{address}{New York, NY, USA}, \bibinfo{year}{2011}), STOC '11, p. \bibinfo{pages}{333–342}, ISBN \bibinfo{isbn}{9781450306911}.
+
+\bibitem[{\citenamefont{Brod and Oszmaniec}(2020)}]{brod2020classical}
+\bibinfo{author}{\bibfnamefont{D.~J.} \bibnamefont{Brod}} \bibnamefont{and} \bibinfo{author}{\bibfnamefont{M.}~\bibnamefont{Oszmaniec}}, \bibinfo{journal}{Quantum} \textbf{\bibinfo{volume}{4}}, \bibinfo{pages}{267} (\bibinfo{year}{2020}).
+
+\bibitem[{\citenamefont{Tichy}(2015)}]{tichy2015sampling}
+\bibinfo{author}{\bibfnamefont{M.~C.} \bibnamefont{Tichy}}, \bibinfo{journal}{Phys. Rev. A} \textbf{\bibinfo{volume}{91}}, \bibinfo{pages}{022316} (\bibinfo{year}{2015}).
+
+\bibitem[{\citenamefont{Lubasch et~al.}(2018)\citenamefont{Lubasch, Valido, Renema, Kolthammer, Jaksch, Kim, Walmsley, and Garc\'{\i}a-Patr\'on}}]{Lubasch2018}
+\bibinfo{author}{\bibfnamefont{M.}~\bibnamefont{Lubasch}}, \bibinfo{author}{\bibfnamefont{A.~A.} \bibnamefont{Valido}}, \bibinfo{author}{\bibfnamefont{J.~J.} \bibnamefont{Renema}}, \bibinfo{author}{\bibfnamefont{W.~S.} \bibnamefont{Kolthammer}}, \bibinfo{author}{\bibfnamefont{D.}~\bibnamefont{Jaksch}}, \bibinfo{author}{\bibfnamefont{M.~S.} \bibnamefont{Kim}}, \bibinfo{author}{\bibfnamefont{I.}~\bibnamefont{Walmsley}}, \bibnamefont{and} \bibinfo{author}{\bibfnamefont{R.}~\bibnamefont{Garc\'{\i}a-Patr\'on}}, \bibinfo{journal}{Phys. Rev. A} \textbf{\bibinfo{volume}{97}}, \bibinfo{pages}{062304} (\bibinfo{year}{2018}).
+
+\bibitem[{\citenamefont{Cilluffo et~al.}(2023)\citenamefont{Cilluffo, Lorenzoni, and Plenio}}]{Cilluffo2023}
+\bibinfo{author}{\bibfnamefont{D.}~\bibnamefont{Cilluffo}}, \bibinfo{author}{\bibfnamefont{N.}~\bibnamefont{Lorenzoni}}, \bibnamefont{and} \bibinfo{author}{\bibfnamefont{M.~B.} \bibnamefont{Plenio}}, \emph{\bibinfo{title}{Simulating gaussian boson sampling with tensor networks in the heisenberg picture}} (\bibinfo{year}{2023}), \eprint{arXiv:2305.11215}.
+
+\bibitem[{\citenamefont{Liu et~al.}(2023)\citenamefont{Liu, Oh, Liu, Jiang, and Alexeev}}]{Liu2023}
+\bibinfo{author}{\bibfnamefont{M.}~\bibnamefont{Liu}}, \bibinfo{author}{\bibfnamefont{C.}~\bibnamefont{Oh}}, \bibinfo{author}{\bibfnamefont{J.}~\bibnamefont{Liu}}, \bibinfo{author}{\bibfnamefont{L.}~\bibnamefont{Jiang}}, \bibnamefont{and} \bibinfo{author}{\bibfnamefont{Y.}~\bibnamefont{Alexeev}}, \bibinfo{journal}{Phys. Rev. A} \textbf{\bibinfo{volume}{108}}, \bibinfo{pages}{052604} (\bibinfo{year}{2023}).
+
+\bibitem[{\citenamefont{Villalonga et~al.}(2021)\citenamefont{Villalonga, Niu, Li, Neven, Platt, Smelyanskiy, and Boixo}}]{Villalonga2021}
+\bibinfo{author}{\bibfnamefont{B.}~\bibnamefont{Villalonga}}, \bibinfo{author}{\bibfnamefont{M.~Y.} \bibnamefont{Niu}}, \bibinfo{author}{\bibfnamefont{L.}~\bibnamefont{Li}}, \bibinfo{author}{\bibfnamefont{H.}~\bibnamefont{Neven}}, \bibinfo{author}{\bibfnamefont{J.~C.} \bibnamefont{Platt}}, \bibinfo{author}{\bibfnamefont{V.~N.} \bibnamefont{Smelyanskiy}}, \bibnamefont{and} \bibinfo{author}{\bibfnamefont{S.}~\bibnamefont{Boixo}}, \emph{\bibinfo{title}{Efficient approximation of experimental gaussian boson sampling}} (\bibinfo{year}{2021}), \eprint{arXiv:2109.11525}.
+
+\bibitem[{\citenamefont{Bulmer et~al.}(2022)\citenamefont{Bulmer, Bell, Chadwick, Jones, Moise, Rigazzi, Thorbecke, Haus, Vaerenbergh, Patel et~al.}}]{Bulmer2022}
+\bibinfo{author}{\bibfnamefont{J.~F.~F.} \bibnamefont{Bulmer}}, \bibinfo{author}{\bibfnamefont{B.~A.} \bibnamefont{Bell}}, \bibinfo{author}{\bibfnamefont{R.~S.} \bibnamefont{Chadwick}}, \bibinfo{author}{\bibfnamefont{A.~E.} \bibnamefont{Jones}}, \bibinfo{author}{\bibfnamefont{D.}~\bibnamefont{Moise}}, \bibinfo{author}{\bibfnamefont{A.}~\bibnamefont{Rigazzi}}, \bibinfo{author}{\bibfnamefont{J.}~\bibnamefont{Thorbecke}}, \bibinfo{author}{\bibfnamefont{U.-U.} \bibnamefont{Haus}}, \bibinfo{author}{\bibfnamefont{T.~V.} \bibnamefont{Vaerenbergh}}, \bibinfo{author}{\bibfnamefont{R.~B.} \bibnamefont{Patel}}, \bibnamefont{et~al.}, \bibinfo{journal}{Sci. Adv.} \textbf{\bibinfo{volume}{8}} (\bibinfo{year}{2022}).
+
+\bibitem[{\citenamefont{Rahimi-Keshari et~al.}(2016)\citenamefont{Rahimi-Keshari, Ralph, and Caves}}]{rahimikeshari2016}
+\bibinfo{author}{\bibfnamefont{S.}~\bibnamefont{Rahimi-Keshari}}, \bibinfo{author}{\bibfnamefont{T.~C.} \bibnamefont{Ralph}}, \bibnamefont{and} \bibinfo{author}{\bibfnamefont{C.~M.} \bibnamefont{Caves}}, \bibinfo{journal}{Phys. Rev. X} \textbf{\bibinfo{volume}{6}}, \bibinfo{pages}{021039} (\bibinfo{year}{2016}).
+
+\bibitem[{\citenamefont{Qi et~al.}(2020)\citenamefont{Qi, Brod, Quesada, and Garc\'{\i}a-Patr\'on}}]{Qi2020}
+\bibinfo{author}{\bibfnamefont{H.}~\bibnamefont{Qi}}, \bibinfo{author}{\bibfnamefont{D.~J.} \bibnamefont{Brod}}, \bibinfo{author}{\bibfnamefont{N.}~\bibnamefont{Quesada}}, \bibnamefont{and} \bibinfo{author}{\bibfnamefont{R.}~\bibnamefont{Garc\'{\i}a-Patr\'on}}, \bibinfo{journal}{Phys. Rev. Lett.} \textbf{\bibinfo{volume}{124}}, \bibinfo{pages}{100502} (\bibinfo{year}{2020}).
+
+\bibitem[{\citenamefont{Drummond et~al.}(2022)\citenamefont{Drummond, Opanchuk, Dellios, and Reid}}]{Drummond2021}
+\bibinfo{author}{\bibfnamefont{P.~D.} \bibnamefont{Drummond}}, \bibinfo{author}{\bibfnamefont{B.}~\bibnamefont{Opanchuk}}, \bibinfo{author}{\bibfnamefont{A.}~\bibnamefont{Dellios}}, \bibnamefont{and} \bibinfo{author}{\bibfnamefont{M.~D.} \bibnamefont{Reid}}, \bibinfo{journal}{Phys. Rev. A} \textbf{\bibinfo{volume}{105}}, \bibinfo{pages}{012427} (\bibinfo{year}{2022}).
+
+\bibitem[{\citenamefont{Dellios et~al.}(2023)\citenamefont{Dellios, Reid, and Drummond}}]{Dellios2023}
+\bibinfo{author}{\bibfnamefont{A.~S.} \bibnamefont{Dellios}}, \bibinfo{author}{\bibfnamefont{M.~D.} \bibnamefont{Reid}}, \bibnamefont{and} \bibinfo{author}{\bibfnamefont{P.~D.} \bibnamefont{Drummond}}, \bibinfo{journal}{AAPPS Bulletin} \textbf{\bibinfo{volume}{33}} (\bibinfo{year}{2023}), ISSN \bibinfo{issn}{2309-4710}.
+
+\bibitem[{\citenamefont{Oh et~al.}(2023{\natexlab{b}})\citenamefont{Oh, Jiang, and Fefferman}}]{Oh2023_3}
+\bibinfo{author}{\bibfnamefont{C.}~\bibnamefont{Oh}}, \bibinfo{author}{\bibfnamefont{L.}~\bibnamefont{Jiang}}, \bibnamefont{and} \bibinfo{author}{\bibfnamefont{B.}~\bibnamefont{Fefferman}}, \bibinfo{journal}{Phys. Rev. Lett.} \textbf{\bibinfo{volume}{131}}, \bibinfo{pages}{010401} (\bibinfo{year}{2023}{\natexlab{b}}).
+
+\bibitem[{\citenamefont{Renema et~al.}(2018{\natexlab{a}})\citenamefont{Renema, Menssen, Clements, Triginer, Kolthammer, and Walmsley}}]{renema2018efficient}
+\bibinfo{author}{\bibfnamefont{J.~J.} \bibnamefont{Renema}}, \bibinfo{author}{\bibfnamefont{A.}~\bibnamefont{Menssen}}, \bibinfo{author}{\bibfnamefont{W.~R.} \bibnamefont{Clements}}, \bibinfo{author}{\bibfnamefont{G.}~\bibnamefont{Triginer}}, \bibinfo{author}{\bibfnamefont{W.~S.} \bibnamefont{Kolthammer}}, \bibnamefont{and} \bibinfo{author}{\bibfnamefont{I.~A.} \bibnamefont{Walmsley}}, \bibinfo{journal}{Phys. Rev. Lett.} \textbf{\bibinfo{volume}{120}}, \bibinfo{pages}{220502} (\bibinfo{year}{2018}{\natexlab{a}}).
+
+\bibitem[{\citenamefont{Renema et~al.}(2018{\natexlab{b}})\citenamefont{Renema, Shchesnovich, and Garcia-Patron}}]{renemaarxiv2018}
+\bibinfo{author}{\bibfnamefont{J.}~\bibnamefont{Renema}}, \bibinfo{author}{\bibfnamefont{V.}~\bibnamefont{Shchesnovich}}, \bibnamefont{and} \bibinfo{author}{\bibfnamefont{R.}~\bibnamefont{Garcia-Patron}}, \emph{\bibinfo{title}{Classical simulability of noisy boson sampling}} (\bibinfo{year}{2018}{\natexlab{b}}), \eprint{arXiv:1809.01953}.
+
+\bibitem[{\citenamefont{Aharonov et~al.}(2023)\citenamefont{Aharonov, Gao, Landau, Liu, and Vazirani}}]{Aharonov2023}
+\bibinfo{author}{\bibfnamefont{D.}~\bibnamefont{Aharonov}}, \bibinfo{author}{\bibfnamefont{X.}~\bibnamefont{Gao}}, \bibinfo{author}{\bibfnamefont{Z.}~\bibnamefont{Landau}}, \bibinfo{author}{\bibfnamefont{Y.}~\bibnamefont{Liu}}, \bibnamefont{and} \bibinfo{author}{\bibfnamefont{U.}~\bibnamefont{Vazirani}}, in \emph{\bibinfo{booktitle}{Proceedings of the 55th Annual ACM Symposium on Theory of Computing}} (\bibinfo{publisher}{Association for Computing Machinery}, \bibinfo{address}{New York, NY, USA}, \bibinfo{year}{2023}), STOC 2023, p. \bibinfo{pages}{945–957}.
+
+\bibitem[{\citenamefont{Kalai and Kindler}(2014)}]{KalaiKindler2014}
+\bibinfo{author}{\bibfnamefont{G.}~\bibnamefont{Kalai}} \bibnamefont{and} \bibinfo{author}{\bibfnamefont{G.}~\bibnamefont{Kindler}}, \emph{\bibinfo{title}{Gaussian noise sensitivity and bosonsampling}} (\bibinfo{year}{2014}), \eprint{arXiv:1409.3093}.
+
+\bibitem[{\citenamefont{Sparrow}(2018)}]{sparrow2018phd_thesis}
+\bibinfo{author}{\bibfnamefont{C.}~\bibnamefont{Sparrow}}, Ph.D. thesis, \bibinfo{school}{Imperial College London} (\bibinfo{year}{2018}).
+
+\bibitem[{\citenamefont{Marshall}(2022)}]{marshall2022distillation}
+\bibinfo{author}{\bibfnamefont{J.}~\bibnamefont{Marshall}}, \bibinfo{journal}{Phys. Rev. Lett.} \textbf{\bibinfo{volume}{129}}, \bibinfo{pages}{213601} (\bibinfo{year}{2022}).
+
+\bibitem[{\citenamefont{Hong et~al.}(1987)\citenamefont{Hong, Ou, and Mandel}}]{hong1987measurement}
+\bibinfo{author}{\bibfnamefont{C.-K.} \bibnamefont{Hong}}, \bibinfo{author}{\bibfnamefont{Z.-Y.} \bibnamefont{Ou}}, \bibnamefont{and} \bibinfo{author}{\bibfnamefont{L.}~\bibnamefont{Mandel}}, \bibinfo{journal}{Phys. Rev. Lett.} \textbf{\bibinfo{volume}{59}}, \bibinfo{pages}{2044} (\bibinfo{year}{1987}).
+
+\bibitem[{\citenamefont{Renema et~al.}(2021)\citenamefont{Renema, Wang, Qin, You, Lu, and Pan}}]{renema2021sample}
+\bibinfo{author}{\bibfnamefont{J.~J.} \bibnamefont{Renema}}, \bibinfo{author}{\bibfnamefont{H.}~\bibnamefont{Wang}}, \bibinfo{author}{\bibfnamefont{J.}~\bibnamefont{Qin}}, \bibinfo{author}{\bibfnamefont{X.}~\bibnamefont{You}}, \bibinfo{author}{\bibfnamefont{C.}~\bibnamefont{Lu}}, \bibnamefont{and} \bibinfo{author}{\bibfnamefont{J.}~\bibnamefont{Pan}}, \bibinfo{journal}{Phys. Rev. A} \textbf{\bibinfo{volume}{103}}, \bibinfo{pages}{023722} (\bibinfo{year}{2021}).
+
+\bibitem[{\citenamefont{Garc{\'{i}}a-Patr{\'{o}}n et~al.}(2019)\citenamefont{Garc{\'{i}}a-Patr{\'{o}}n, Renema, and Shchesnovich}}]{GarciaPatron2019simulatingboson}
+\bibinfo{author}{\bibfnamefont{R.}~\bibnamefont{Garc{\'{i}}a-Patr{\'{o}}n}}, \bibinfo{author}{\bibfnamefont{J.~J.} \bibnamefont{Renema}}, \bibnamefont{and} \bibinfo{author}{\bibfnamefont{V.}~\bibnamefont{Shchesnovich}}, \bibinfo{journal}{{Quantum}} \textbf{\bibinfo{volume}{3}}, \bibinfo{pages}{169} (\bibinfo{year}{2019}).
+
+\bibitem[{\citenamefont{Shchesnovich}(2014)}]{shchesnovich2014sufficient}
+\bibinfo{author}{\bibfnamefont{V.}~\bibnamefont{Shchesnovich}}, \bibinfo{journal}{Phys. Rev. A} \textbf{\bibinfo{volume}{89}}, \bibinfo{pages}{022333} (\bibinfo{year}{2014}).
+
+\bibitem[{\citenamefont{Shchesnovich}(2015)}]{shchesnovich2015partial}
+\bibinfo{author}{\bibfnamefont{V.}~\bibnamefont{Shchesnovich}}, \bibinfo{journal}{Phys. Rev. A} \textbf{\bibinfo{volume}{91}}, \bibinfo{pages}{013844} (\bibinfo{year}{2015}).
+
+\bibitem[{\citenamefont{Shaw et~al.}(2023)\citenamefont{Shaw, Jones, Yard, and Laing}}]{shaw2023errors}
+\bibinfo{author}{\bibfnamefont{R.~D.} \bibnamefont{Shaw}}, \bibinfo{author}{\bibfnamefont{A.~E.} \bibnamefont{Jones}}, \bibinfo{author}{\bibfnamefont{P.}~\bibnamefont{Yard}}, \bibnamefont{and} \bibinfo{author}{\bibfnamefont{A.}~\bibnamefont{Laing}}, \emph{\bibinfo{title}{Errors in heralded circuits for linear optical entanglement generation}} (\bibinfo{year}{2023}), \eprint{2305.08452}.
+
+\bibitem[{\citenamefont{Jerrum et~al.}(2004)\citenamefont{Jerrum, Sinclair, and Vigoda}}]{JSV_algorithm}
+\bibinfo{author}{\bibfnamefont{M.}~\bibnamefont{Jerrum}}, \bibinfo{author}{\bibfnamefont{A.}~\bibnamefont{Sinclair}}, \bibnamefont{and} \bibinfo{author}{\bibfnamefont{E.}~\bibnamefont{Vigoda}}, \bibinfo{journal}{J. ACM} \textbf{\bibinfo{volume}{51}}, \bibinfo{pages}{671–697} (\bibinfo{year}{2004}).
+
+\bibitem[{Note1()}]{Note1}
+Note1, \bibinfo{note}{the derivation in Appendix \ref {sec: derivation upper bound} is given for the more general situation as discussed in section \ref {sec: general part dist}. To consider the assumption made in Eq. (\ref {eq: sij=x+(1-x)}), we simply consider the special case where $x_i=x$ for all $i$. Then $\protect \sqrt {\protect \mathrm {M}_2}=x^2$ and Eq. (\ref {eq: upper bound}) is equal to Eq. (\ref {eq: upper bound appendix})}.
+
+\bibitem[{Note2()}]{Note2}
+Note2, \bibinfo{note}{a more realistic model would allow for the possibility of interference between parts of the wavefunction that are not covered by the target mode. In other words, $\langle \Psi _i|\Psi _j\rangle =\delta _{ij}$ in Eq. (\ref {eq: iid obb}) would no longer be true. We believe that this additional interference that is not covered by our model would add little complexity since in realistic scenario's $|\protect \sqrt {x_i x_j}|^2>>|\protect \sqrt {(1-x_i)(1-x_j)}\langle \Psi _i|\Psi _j\rangle |^2$.}
+
+\bibitem[{Note3()}]{Note3}
+Note3, \bibinfo{note}{as long as our input state is described by a mixture of polynomially many pure states, this algorithm can be used to compute the cumulative probability of measuring a particular detection outcome of interest efficiently. If the mixture contains exponentially many pure states, an approximation is needed that reduces this mixed state to a mixed state with polyonomially many terms}.
+
+\bibitem[{Note4()}]{Note4}
+Note4, \bibinfo{note}{mcLaurin's inequality can be understood as a refinement on the inequality between arithmetic and geometric means.}
+
+\bibitem[{Note5()}]{Note5}
+Note5, \bibinfo{note}{we could also express our final bound in terms of $M_1$, which is the arithmetic mean of $|x_i|^2$. This would lead to a tighter bound. However, we choose to describe our final result in terms of $M_2$ to clarify the link between the upper bound and the well-known HOM visibilities.}
+
+\bibitem[{Note6()}]{Note6}
+Note6, \bibinfo{note}{a realistic scenario in which an experimentalist would like to defend his/her claim to a quantum advantage, the experimentalist should know the quality of the photons. The experimentalist could use these qualities to figure out whether this algorithm could efficiently simulate the boson sampling experiment given an acceptable error margin.}
+
+\bibitem[{\citenamefont{Dekking et~al.}(2005)\citenamefont{Dekking, Kraaikamp, Lopuhaä, and Meester}}]{dekking_computations_2005}
+\bibinfo{author}{\bibfnamefont{F.~M.} \bibnamefont{Dekking}}, \bibinfo{author}{\bibfnamefont{C.}~\bibnamefont{Kraaikamp}}, \bibinfo{author}{\bibfnamefont{H.~P.} \bibnamefont{Lopuhaä}}, \bibnamefont{and} \bibinfo{author}{\bibfnamefont{L.~E.} \bibnamefont{Meester}}, in \emph{\bibinfo{booktitle}{A {Modern} {Introduction} to {Probability} and {Statistics}: {Understanding} {Why} and {How}}}, edited by \bibinfo{editor}{\bibfnamefont{F.~M.} \bibnamefont{Dekking}}, \bibinfo{editor}{\bibfnamefont{C.}~\bibnamefont{Kraaikamp}}, \bibinfo{editor}{\bibfnamefont{H.~P.} \bibnamefont{Lopuhaä}}, \bibnamefont{and} \bibinfo{editor}{\bibfnamefont{L.~E.} \bibnamefont{Meester}} (\bibinfo{publisher}{Springer}, \bibinfo{address}{London}, \bibinfo{year}{2005}), Springer {Texts} in {Statistics}, pp. \bibinfo{pages}{103--114}, ISBN \bibinfo{isbn}{978-1-84628-168-6}.
+
+\bibitem[{\citenamefont{Klenke}(2014)}]{klenke_moments_2014}
+\bibinfo{author}{\bibfnamefont{A.}~\bibnamefont{Klenke}}, in \emph{\bibinfo{booktitle}{Probability {Theory}: {A} {Comprehensive} {Course}}}, edited by \bibinfo{editor}{\bibfnamefont{A.}~\bibnamefont{Klenke}} (\bibinfo{publisher}{Springer}, \bibinfo{address}{London}, \bibinfo{year}{2014}), Universitext, pp. \bibinfo{pages}{101--130}, ISBN \bibinfo{isbn}{978-1-4471-5361-0}.
+
+\bibitem[{Note7()}]{Note7}
+Note7, \bibinfo{note}{note that for $j=4$, $n-j=5$ and $n-j-p=4$ these approximations already have errors below $2\%$.}
+
+\end{thebibliography}
