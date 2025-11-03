@@ -172,12 +172,13 @@ Certifies that S is a gram matrix.
 function check_is_gram_matrix(S, atol = 1e-10)
 
     for i in 1:size(S,1)
-        @argcheck S[i,i] == 1 "diagonal not 1"
+        @argcheck abs(real(S[i,i]) - 1) < atol "diagonal not 1"
+        @argcheck abs(imag(S[i,i])) < atol "diagonal not real"
     end
 
-    @argcheck S == S' "not hermitian"
+    @argcheck isapprox(S, S', atol=atol) "not hermitian"
 
-	@argcheck minimum(eigvals(S)) >= atol 
+	@argcheck minimum(real.(eigvals(S))) >= -atol "not positive semi-definite"
 
 end
 

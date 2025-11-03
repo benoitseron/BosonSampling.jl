@@ -106,3 +106,95 @@ function collect_sub_mat_perm(U)
     sub_mat = [remove_row_col(U, [], [i]) for i in 1:size(U)[2]]
     return [fast_glynn_perm(m) for m in sub_mat]
 end
+
+"""
+    gram_to_coefficients(S::Matrix; atol=1e-10)
+
+Extract internal degrees of freedom coefficients from a Gram matrix.
+
+Given a Gram matrix S where S[i,j] = ⟨photon_i, photon_j⟩, returns a matrix V
+where V[i,k] is the coefficient of photon i in the k-th internal degree of freedom.
+
+The Gram matrix can be reconstructed as: S = V * V'
+
+# Arguments
+- `S::Matrix`: n×n Gram matrix (Hermitian, positive semi-definite, diagonal = 1)
+- `atol::Float64`: Absolute tolerance for rank detection (default: 1e-10)
+
+# Returns
+- `V::Matrix`: n×r matrix where r is the detected rank, V[i,k] = coefficient of photon i in internal mode k
+
+# Algorithm
+1. Verifies that S is a valid Gram matrix
+2. Attempts Cholesky decomposition: S = L * L'
+3. If Cholesky fails (rank-deficient), falls back to eigenvalue decomposition
+4. Automatically detects effective rank by filtering near-zero columns/eigenvalues
+5. Returns V matrix representing the internal degrees of freedom
+
+# Example
+```julia
+S = rand_gram_matrix_from_orthonormal_basis(3, 2)
+V = gram_to_coefficients(S)
+S_reconstructed = V * V'  # Should equal S
+```
+"""
+function gram_to_coefficients(S::Matrix; atol=1e-10)
+    # Check that S is a valid Gram matrix
+    check_is_gram_matrix(S, atol)
+
+    n = size(S, 1)
+
+    # Attempt Cholesky decomposition: S = L * L'
+    # L is lower triangular matrix
+    chol = cholesky(S, check=false)
+
+    # Check if Cholesky decomposition succeeded
+    if chol.info != 0
+        # Cholesky failed (likely rank-deficient or numerical issues)
+        # Fall back to eigenvalue decomposition
+
+        eig = eigen(Hermitian(S))
+        eigenvals = real.(eig.values)
+        eigenvecs = eig.vectors
+
+        # Keep only positive eigenvalues above threshold
+        positive_idx = eigenvals .> atol
+
+        # V = eigenvectors * sqrt(eigenvalues)
+        V = eigenvecs[:, positive_idx] * Diagonal(sqrt.(eigenvals[positive_idx]))
+    else
+        # Cholesky succeeded
+        L_full = chol.L  # n×n lower triangular matrix
+
+        # Determine effective rank from L by finding non-zero columns
+        col_norms = [norm(L_full[:, k]) for k in 1:n]
+        r_effective = sum(col_norms .> atol)
+
+        # Extract V as n×r_effective matrix
+        V = L_full[:, 1:r_effective]
+    end
+
+    return V
+end
+
+"""
+    reconstruct_gram_matrix(V::Matrix)
+
+Reconstruct the Gram matrix from internal degrees of freedom coefficients.
+
+# Arguments
+- `V::Matrix`: n×r matrix where V[i,k] = coefficient of photon i in internal mode k
+
+# Returns
+- `S::Matrix`: n×n reconstructed Gram matrix where S[i,j] = Σₖ V[i,k] * conj(V[j,k])
+
+# Example
+```julia
+V = gram_to_coefficients(S)
+S_reconstructed = reconstruct_gram_matrix(V)
+@assert S ≈ S_reconstructed
+```
+"""
+function reconstruct_gram_matrix(V::Matrix)
+    return V * V'
+end
