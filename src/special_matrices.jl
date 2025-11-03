@@ -188,12 +188,11 @@ Returns a ``n``-by-``n`` random Gram matrix that generates orthonormal basis of 
 """
 function rand_gram_matrix_from_orthonormal_basis(n,r)
 
-	"""generates a random gram matrix with the property that the
-	generating vector basis of r vectors is orthonormal (as is
-	strangely the case in Drury's work)"""
+	"""generates a random gram matrix from n normalized random vectors
+	in an r-dimensional space"""
 
-	function normalized_random_vector(n)
-		v = rand(ComplexF64, n)
+	function normalized_random_vector(r)
+		v = rand(ComplexF64, r)
 		1/norm(v) .* v
 	end
 
@@ -201,19 +200,11 @@ function rand_gram_matrix_from_orthonormal_basis(n,r)
 		throw(ArgumentError("need rank < dim to have a non trivial result"))
 	end
 
-	generating_vectors = 0.
-	#while det(generating_vectors) ≈ 0. #check it's a basis
-	    generating_vectors = hcat([normalized_random_vector(n) for i = 1:r]...)
-	#### TODO caveat : we don't check for linear independance so there is a chance it doesn't work though highly unlikely
-	#end
+	# Generate n normalized random vectors of dimension r (r×n matrix)
+	generating_vectors = hcat([normalized_random_vector(r) for i = 1:n]...)
 
-	generating_vectors = modified_gram_schmidt(generating_vectors)
-
-	is_orthonormal(generating_vectors)
-
-	generating_vectors * generating_vectors'
-
-	error("TO BE CORRECTED, does not return proper gram matrices!!!")
+	# Return n×n Gram matrix: G[i,j] = ⟨vᵢ, vⱼ⟩
+	generating_vectors' * generating_vectors
 
 end
 
