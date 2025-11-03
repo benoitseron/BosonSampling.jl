@@ -3,10 +3,11 @@
 using Revise
 using BosonSampling
 using LinearAlgebra
+using ArgCheck
 
 # Parameters
-n = 3  # number of photons
-m = 5  # number of modes
+n = 2  # number of photons
+m = 3  # number of modes
 r = 2  # rank of Gram matrix (r < n for partial distinguishability)
 
 # Generate random Gram matrix of rank r
@@ -36,3 +37,34 @@ S_reconstructed = reconstruct_gram_matrix(V)
 println("\n✓ Successfully extracted $r_effective internal degrees of freedom from Gram matrix")
 println("✓ Gram matrix reconstruction verified")
 
+# Let's construct an interferometer W
+# It will be of size r*m and split each photon 1...n into groups
+# Each group dof_basis = 1...r represents the components of photons 1...n on the basis vector indexed by dof_basis
+# Each group has m modes. The top n < m modes are filled, one by one. Mode i correspond to the coefficient of photon i in the dof_basis
+
+r = r_effective
+
+######### to be checked!
+
+###### TODO add a check to see where the photons initially are. the code below assumes that the are in modes 1...n
+
+@argcheck is_input_in_first_modes(input)
+
+W = zeros(ComplexF64, m, r*m) # m input modes with n photons, output separates in r groups of m modes 
+
+### conventions reminder ###
+
+#   3. Scattering matrix M:
+#   index_input = fill_arrangement(input_state)
+#   index_output = fill_arrangement(output_state)
+#   M = U[index_input, index_output]  # n×n submatrix
+#     - Extracts rows corresponding to input photons
+#     - Extracts columns corresponding to output photons
+
+for l in 1:r # partial distinguishability basis 
+    for k in 1:n # photon index 
+        W[k, (l-1)*m+k] = V[k, l]
+    end
+end
+
+W

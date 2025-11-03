@@ -198,3 +198,43 @@ S_reconstructed = reconstruct_gram_matrix(V)
 function reconstruct_gram_matrix(V::Matrix)
     return V * V'
 end
+
+"""
+    is_input_in_first_modes(input::Input)
+    is_input_in_first_modes(state::Vector{Int})
+
+Check if all photons are in the first n consecutive modes (one photon per mode).
+
+Returns `true` if the input state is [1, 1, ..., 1, 0, 0, ..., 0] where there are
+n ones followed by (m-n) zeros.
+
+# Arguments
+- `input::Input`: Input state to check
+- `state::Vector{Int}`: Mode occupation vector to check
+
+# Returns
+- `Bool`: true if all photons are in first n modes (one per mode), false otherwise
+
+# Example
+```julia
+input = Input{Bosonic}(first_modes(3, 5))
+@assert is_input_in_first_modes(input) == true
+
+state = [1, 1, 1, 0, 0]
+@assert is_input_in_first_modes(state) == true
+
+state = [2, 1, 0, 0, 0]
+@assert is_input_in_first_modes(state) == false  # Not one photon per mode
+```
+"""
+function is_input_in_first_modes(state::Vector{Int})
+    n = sum(state)  # Total number of photons
+    m = length(state)  # Total number of modes
+
+    # Check if state matches [1, 1, ..., 1, 0, 0, ..., 0]
+    return state == [ones(Int, n); zeros(Int, m - n)]
+end
+
+function is_input_in_first_modes(input::Input)
+    return is_input_in_first_modes(input.r.state)
+end
