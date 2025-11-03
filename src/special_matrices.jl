@@ -198,7 +198,8 @@ function rand_gram_matrix_from_orthonormal_basis(n,r)
 	end
 
 	if r >= n
-		throw(ArgumentError("need rank < dim to have a non trivial result"))
+		# Full rank case: use full rank Gram matrix generator
+		return rand_gram_matrix(n)
 	end
 
 	# Generate n normalized random vectors of dimension r (r×n matrix)
