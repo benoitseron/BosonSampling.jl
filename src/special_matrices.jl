@@ -165,6 +165,23 @@ function permutation_matrix_special_partition_fourier(n::Int)
 end
 
 """
+
+Certifies that S is a gram matrix.
+
+"""
+function check_is_gram_matrix(S, atol = 1e-10)
+
+    for i in 1:size(S,1)
+        @argcheck S[i,i] == 1 "diagonal not 1"
+    end
+
+    @argcheck S == S' "not hermitian"
+
+	@argcheck minimum(eigvals(S)) >= atol 
+
+end
+
+"""
 	rand_gram_matrix_from_orthonormal_basis(n::Int, r::Int)
 
 Returns a ``n``-by-``n`` random Gram matrix that generates orthonormal basis of `r` vectors.
@@ -195,6 +212,8 @@ function rand_gram_matrix_from_orthonormal_basis(n,r)
 	is_orthonormal(generating_vectors)
 
 	generating_vectors * generating_vectors'
+
+	error("TO BE CORRECTED, does not return proper gram matrices!!!")
 
 end
 

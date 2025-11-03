@@ -1,6 +1,8 @@
 # there seems to have been strange bugs with the Bayesian validation, working sometimes only for highly symmetric interferometers but not for RandHaar
 # here we try to check the validity of the samplers in both cases
 
+using ArgCheck, Plots, ProgressMeter
+
 n_events = 10000
 n = 2
 m = n

@@ -166,12 +166,3 @@ Random.seed!(42)
         println("Performance: 10 samples in $(round(elapsed_time, digits=3))s")
     end
 end
-
-println("\n" * "="^60)
-println("BAYESIAN VALIDATION TEST SUMMARY")
-println("="^60)
-println("✅ Tests validate the corrected Clifford algorithm produces")
-println("   samples consistent with theoretical Bosonic distribution")
-println("✅ Algorithm shows significant differences from classical sampling")  
-println("✅ All samples are valid and algorithm performs efficiently")
-println("="^60)
