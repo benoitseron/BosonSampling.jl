@@ -49,8 +49,9 @@ r = r_effective
 ###### TODO add a check to see where the photons initially are. the code below assumes that the are in modes 1...n
 
 @argcheck is_input_in_first_modes(input)
+@argcheck m >= n
 
-W = zeros(ComplexF64, m, r*m) # m input modes with n photons, output separates in r groups of m modes 
+W = zeros(ComplexF64, r*m, r*m) # m*r input modes with n photons, output separates in r groups of m modes 
 
 ### conventions reminder ###
 
@@ -61,14 +62,41 @@ W = zeros(ComplexF64, m, r*m) # m input modes with n photons, output separates i
 #     - Extracts rows corresponding to input photons
 #     - Extracts columns corresponding to output photons
 
-for l in 1:r # partial distinguishability basis 
-    for k in 1:n # photon index 
+for l in 1:r # partial distinguishability basis
+    for k in 1:n # photon index
         W[k, (l-1)*m+k] = V[k, l]
     end
 end
 
+# Orthonormality analysis of first n rows:
+# - Row k has norm squared: Σ_l |V[k,l]|² = S[k,k] = 1 ✓
+# - Inner product of rows k₁, k₂: Σ_l V[k₁,l]*conj(V[k₂,l]) = S[k₁,k₂]
+# - Conclusion: First n rows are orthonormal iff S = Identity
+# - For partial distinguishability (S ≠ I), the first n rows are NOT orthonormal
+#
+# Problem: Cannot complete W to unitary while keeping first n rows fixed
+# unless those rows are already orthonormal.
+#
+# Possible solutions:
+# 1. Orthonormalize V first (but this changes the physics)
+# 2. Use different construction where mixing happens at a different stage
+# 3. Reconsider the expanded space approach
+
 W
 
-V
+W = incorporate_in_a_unitary(W)
 
-#### TODO but now W is not unitary... 
+@argcheck is_unitary(W)
+
+W
+
+V 
+
+# the idea is to then use the standard clifford sampler, over a larger set of modes than if the bosons were actually indistinguishable
+# and then recombine the readings at the end
+
+### TODO sampling step
+
+# once sampled, recompbine the modes as such: 
+
+# sample_physical[i] = sum(sample_enlarged[(i-1)*r + j] for j in 1:r) for i <= n  
