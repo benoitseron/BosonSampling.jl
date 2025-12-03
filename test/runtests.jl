@@ -197,5 +197,6 @@ include("tools.jl")
 	include("threshold.jl")
 	include("test_householder_integration.jl")
 	include("test_one_parameter_householder.jl")
+	include("test_sample_multiple.jl")
 
 end

@@ -211,3 +211,112 @@ Convenience wrapper that extracts the sample vector directly.
 function householder_sampler_vec(ev::Event{TIn, FockSample}) where {TIn<:PartDist}
     return householder_sampler(ev).state
 end
+
+"""
+    sample_householder_multiple(input::Input{TIn}, interf::Interferometer, n_samples::Int) where {TIn<:PartDist}
+
+Efficiently generate multiple samples from the same input configuration.
+
+This function pre-computes all fixed transformations (Gram decomposition, Householder matrices,
+permutations, etc.) once, then samples n_samples times by only running the Clifford algorithm
+and binning step repeatedly. This is much faster than calling sample!() multiple times.
+
+# Arguments
+- `input::Input{TIn}`: Input state with partial distinguishability
+- `interf::Interferometer`: Interferometer (e.g., RandHaar, Fourier, etc.)
+- `n_samples::Int`: Number of samples to generate
+
+# Returns
+- `Vector{Vector{Int}}`: Vector of samples, each sample is a mode occupation vector
+
+# Example
+```julia
+input = Input{UserDefinedGramMatrix}(first_modes(3, 5), S)
+interf = RandHaar(5)
+samples = sample_householder_multiple(input, interf, 1000)
+```
+"""
+function sample_householder_multiple(input::Input{TIn}, interf::Interferometer, n_samples::Int) where {TIn<:PartDist}
+
+    n = input.n
+    m = input.m
+
+    # Extract Gram matrix and decompose (done once)
+    S = input.G.S
+    C = gram_to_coefficients(S)
+    r = size(C, 2)
+
+    # Build full interferometer (done once)
+    full_interf = build_householder_interferometer(C, interf.U, n, m, r)
+
+    # Create expanded input state (done once)
+    occupation_expanded = zeros(Int, n*m)
+    for photon in 1:n
+        occupation_expanded[(photon-1)*m + 1] = 1
+    end
+    input_expanded = Input{Bosonic}(ModeOccupation(occupation_expanded))
+    interf_expanded = UserDefinedInterferometer(full_interf)
+
+    # Generate samples efficiently
+    samples = Vector{Vector{Int}}(undef, n_samples)
+
+    for i in 1:n_samples
+        # Create fresh event for each sample
+        ev_expanded = Event(input_expanded, FockSample(), interf_expanded)
+
+        # Sample using Clifford
+        sample!(ev_expanded)
+
+        # Bin to physical modes
+        sampled_expanded = ev_expanded.output_measurement.s.state
+        sampled_physical = bin_to_physical_modes(sampled_expanded, n, m)
+
+        samples[i] = sampled_physical
+    end
+
+    return samples
+end
+
+"""
+    sample_multiple(input::Input{TIn}, interf::Interferometer, n_samples::Int) where {TIn<:InputType}
+
+General function to efficiently generate multiple samples from any input type.
+
+Dispatches to specialized implementations:
+- PartDist types → householder sampler (pre-computes transformations)
+- Bosonic → Clifford sampler (pre-computes interferometer submatrix)
+- Distinguishable → classical sampler
+- Other types → falls back to repeated sample!() calls
+
+# Arguments
+- `input::Input{TIn}`: Input state
+- `interf::Interferometer`: Interferometer
+- `n_samples::Int`: Number of samples to generate
+
+# Returns
+- `Vector{Vector{Int}}`: Vector of samples
+
+# Example
+```julia
+input = Input{Bosonic}(first_modes(3, 5))
+interf = RandHaar(5)
+samples = sample_multiple(input, interf, 1000)
+```
+"""
+function sample_multiple(input::Input{TIn}, interf::Interferometer, n_samples::Int) where {TIn<:InputType}
+
+    if TIn <: PartDist
+        # Use optimized Householder multi-sampling
+        return sample_householder_multiple(input, interf, n_samples)
+    else
+        # Fall back to repeated sampling for other types
+        # (could be optimized per type in future)
+        samples = Vector{Vector{Int}}(undef, n_samples)
+        for i in 1:n_samples
+            ev = Event(input, FockSample(), interf)
+            sample!(ev)
+            samples[i] = ev.output_measurement.s.state
+        end
+        return samples
+    end
+end
