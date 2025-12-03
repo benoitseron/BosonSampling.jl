@@ -246,7 +246,7 @@ samples = sample_householder_multiple(input, interf, 1000, threaded=true)
 ```
 """
 function sample_householder_multiple(input::Input{TIn}, interf::Interferometer, n_samples::Int;
-                                    threaded::Bool=false) where {TIn<:PartDist}
+                                    threaded::Bool=false, show_progress::Bool=false) where {TIn<:PartDist}
 
     n = input.n
     m = input.m
@@ -287,7 +287,8 @@ function sample_householder_multiple(input::Input{TIn}, interf::Interferometer, 
         end
     else
         # Sequential sampling
-        for i in 1:n_samples
+        iter = show_progress ? ProgressBar(1:n_samples) : (1:n_samples)
+        for i in iter
             # Create fresh event for each sample
             ev_expanded = Event(input_expanded, FockSample(), interf_expanded)
 
@@ -339,11 +340,11 @@ samples = sample_multiple(input, interf, 1000, threaded=true)
 ```
 """
 function sample_multiple(input::Input{TIn}, interf::Interferometer, n_samples::Int;
-                        threaded::Bool=false) where {TIn<:InputType}
+                        threaded::Bool=false, show_progress::Bool=false) where {TIn<:InputType}
 
     if TIn <: PartDist
         # Use optimized Householder multi-sampling
-        return sample_householder_multiple(input, interf, n_samples, threaded=threaded)
+        return sample_householder_multiple(input, interf, n_samples, threaded=threaded, show_progress=show_progress)
     else
         # Fall back to repeated sampling for other types
         samples = Vector{Vector{Int}}(undef, n_samples)
@@ -355,7 +356,8 @@ function sample_multiple(input::Input{TIn}, interf::Interferometer, n_samples::I
                 samples[i] = ev.output_measurement.s.state
             end
         else
-            for i in 1:n_samples
+            iter = show_progress ? ProgressBar(1:n_samples) : (1:n_samples)
+            for i in iter
                 ev = Event(input, FockSample(), interf)
                 sample!(ev)
                 samples[i] = ev.output_measurement.s.state
