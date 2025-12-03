@@ -12,8 +12,10 @@ function sample!(ev::Event{TIn, TOut}) where {TIn<:InputType, TOut <: FockSample
         ev.output_measurement.s = ModeOccupation(classical_sampler(ev))
     elseif TIn == Bosonic
         ev.output_measurement.s = ModeOccupation(clifford_sampler_unoptimised(ev))
-    elseif TIn == OneParameterInterpolation
-        ev.output_measurement.s = ModeOccupation(noisy_sampler(ev,1))
+    elseif TIn <: PartDist
+        # All PartDist types (OneParameterInterpolation, UserDefinedGramMatrix, RandomGramMatrix)
+        # use the Householder sampler
+        ev.output_measurement.s = householder_sampler(ev)
     else
         error("not implemented")
     end
