@@ -213,7 +213,8 @@ function householder_sampler_vec(ev::Event{TIn, FockSample}) where {TIn<:PartDis
 end
 
 """
-    sample_householder_multiple(input::Input{TIn}, interf::Interferometer, n_samples::Int) where {TIn<:PartDist}
+    sample_householder_multiple(input::Input{TIn}, interf::Interferometer, n_samples::Int;
+                               threaded::Bool=false) where {TIn<:PartDist}
 
 Efficiently generate multiple samples from the same input configuration.
 
@@ -221,10 +222,13 @@ This function pre-computes all fixed transformations (Gram decomposition, Househ
 permutations, etc.) once, then samples n_samples times by only running the Clifford algorithm
 and binning step repeatedly. This is much faster than calling sample!() multiple times.
 
+With `threaded=true`, uses multi-threading to parallelize the sampling loop across available CPU cores.
+
 # Arguments
 - `input::Input{TIn}`: Input state with partial distinguishability
 - `interf::Interferometer`: Interferometer (e.g., RandHaar, Fourier, etc.)
 - `n_samples::Int`: Number of samples to generate
+- `threaded::Bool=false`: Use multi-threading for parallel sampling
 
 # Returns
 - `Vector{Vector{Int}}`: Vector of samples, each sample is a mode occupation vector
@@ -233,10 +237,16 @@ and binning step repeatedly. This is much faster than calling sample!() multiple
 ```julia
 input = Input{UserDefinedGramMatrix}(first_modes(3, 5), S)
 interf = RandHaar(5)
+
+# Sequential sampling
 samples = sample_householder_multiple(input, interf, 1000)
+
+# Parallel sampling (uses Threads.nthreads() cores)
+samples = sample_householder_multiple(input, interf, 1000, threaded=true)
 ```
 """
-function sample_householder_multiple(input::Input{TIn}, interf::Interferometer, n_samples::Int) where {TIn<:PartDist}
+function sample_householder_multiple(input::Input{TIn}, interf::Interferometer, n_samples::Int;
+                                    threaded::Bool=false) where {TIn<:PartDist}
 
     n = input.n
     m = input.m
@@ -260,25 +270,44 @@ function sample_householder_multiple(input::Input{TIn}, interf::Interferometer, 
     # Generate samples efficiently
     samples = Vector{Vector{Int}}(undef, n_samples)
 
-    for i in 1:n_samples
-        # Create fresh event for each sample
-        ev_expanded = Event(input_expanded, FockSample(), interf_expanded)
+    if threaded
+        # Parallel sampling using multi-threading
+        Threads.@threads for i in 1:n_samples
+            # Create fresh event for each sample (thread-safe)
+            ev_expanded = Event(input_expanded, FockSample(), interf_expanded)
 
-        # Sample using Clifford
-        sample!(ev_expanded)
+            # Sample using Clifford
+            sample!(ev_expanded)
 
-        # Bin to physical modes
-        sampled_expanded = ev_expanded.output_measurement.s.state
-        sampled_physical = bin_to_physical_modes(sampled_expanded, n, m)
+            # Bin to physical modes
+            sampled_expanded = ev_expanded.output_measurement.s.state
+            sampled_physical = bin_to_physical_modes(sampled_expanded, n, m)
 
-        samples[i] = sampled_physical
+            samples[i] = sampled_physical
+        end
+    else
+        # Sequential sampling
+        for i in 1:n_samples
+            # Create fresh event for each sample
+            ev_expanded = Event(input_expanded, FockSample(), interf_expanded)
+
+            # Sample using Clifford
+            sample!(ev_expanded)
+
+            # Bin to physical modes
+            sampled_expanded = ev_expanded.output_measurement.s.state
+            sampled_physical = bin_to_physical_modes(sampled_expanded, n, m)
+
+            samples[i] = sampled_physical
+        end
     end
 
     return samples
 end
 
 """
-    sample_multiple(input::Input{TIn}, interf::Interferometer, n_samples::Int) where {TIn<:InputType}
+    sample_multiple(input::Input{TIn}, interf::Interferometer, n_samples::Int;
+                   threaded::Bool=false) where {TIn<:InputType}
 
 General function to efficiently generate multiple samples from any input type.
 
@@ -292,6 +321,7 @@ Dispatches to specialized implementations:
 - `input::Input{TIn}`: Input state
 - `interf::Interferometer`: Interferometer
 - `n_samples::Int`: Number of samples to generate
+- `threaded::Bool=false`: Use multi-threading for parallel sampling
 
 # Returns
 - `Vector{Vector{Int}}`: Vector of samples
@@ -300,22 +330,36 @@ Dispatches to specialized implementations:
 ```julia
 input = Input{Bosonic}(first_modes(3, 5))
 interf = RandHaar(5)
+
+# Sequential sampling
 samples = sample_multiple(input, interf, 1000)
+
+# Parallel sampling (uses all available threads)
+samples = sample_multiple(input, interf, 1000, threaded=true)
 ```
 """
-function sample_multiple(input::Input{TIn}, interf::Interferometer, n_samples::Int) where {TIn<:InputType}
+function sample_multiple(input::Input{TIn}, interf::Interferometer, n_samples::Int;
+                        threaded::Bool=false) where {TIn<:InputType}
 
     if TIn <: PartDist
         # Use optimized Householder multi-sampling
-        return sample_householder_multiple(input, interf, n_samples)
+        return sample_householder_multiple(input, interf, n_samples, threaded=threaded)
     else
         # Fall back to repeated sampling for other types
-        # (could be optimized per type in future)
         samples = Vector{Vector{Int}}(undef, n_samples)
-        for i in 1:n_samples
-            ev = Event(input, FockSample(), interf)
-            sample!(ev)
-            samples[i] = ev.output_measurement.s.state
+
+        if threaded
+            Threads.@threads for i in 1:n_samples
+                ev = Event(input, FockSample(), interf)
+                sample!(ev)
+                samples[i] = ev.output_measurement.s.state
+            end
+        else
+            for i in 1:n_samples
+                ev = Event(input, FockSample(), interf)
+                sample!(ev)
+                samples[i] = ev.output_measurement.s.state
+            end
         end
         return samples
     end
