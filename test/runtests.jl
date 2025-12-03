@@ -195,5 +195,7 @@ include("tools.jl")
 	include("partitions.jl")
 	include("sources.jl")
 	include("threshold.jl")
+	include("test_householder_integration.jl")
+	include("test_one_parameter_householder.jl")
 
 end
