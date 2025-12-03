@@ -4,11 +4,12 @@ using Revise
 using BosonSampling
 using LinearAlgebra
 using ArgCheck
+using SparseArrays
 
 # Parameters
-n = 2  # number of photons
-m = 3  # number of modes
-r = 2  # rank of Gram matrix (r < n for partial distinguishability)
+n = 4  # number of photons
+m = 5  # number of modes
+r = 3  # rank of Gram matrix (r < n for partial distinguishability)
 
 # Generate random Gram matrix of rank r
 # This represents the overlap matrix between n photons in r-dimensional space
@@ -20,15 +21,17 @@ input = Input{UserDefinedGramMatrix}(first_modes(n, m), S)
 # Create interferometer
 interf = RandHaar(m)
 
+interf.U
+
 # Extract internal degrees of freedom from Gram matrix
 # S[i,j] = ⟨photon_i, photon_j⟩ = Σₖ V[i,k] * conj(V[j,k])
 # where V[i,k] is the k-th coefficient of photon i in the internal basis
-V = gram_to_coefficients(S)
+C = gram_to_coefficients(S)
 
-r_effective = size(V, 2)
+r_effective = size(C, 2)
 
-# Verify: reconstruct Gram matrix from V
-S_reconstructed = reconstruct_gram_matrix(V)
+# Verify: reconstruct Gram matrix from C
+S_reconstructed = reconstruct_gram_matrix(C)
 
 # Consistency Check:
 # Original S and Reconstructed S = V * V' should be equal
@@ -51,52 +54,132 @@ r = r_effective
 @argcheck is_input_in_first_modes(input)
 @argcheck m >= n
 
-W = zeros(ComplexF64, r*m, r*m) # m*r input modes with n photons, output separates in r groups of m modes 
+# Householder transformation for photon i: V_i = I - 2*C_i*C_i† (r×r matrix)
+# where C_i is the i-th row of C (representing photon i's internal structure)
+splitting_matrix(i) = Matrix{ComplexF64}(I, r, r) - 2 * C[i,:] * C[i,:]'
 
-### conventions reminder ###
+# Enlarge to m×m for compatibility with the m×m physical interferometer U
+# Only the first r×r block is non-trivial (active internal DOF)
+# The remaining (m-r) modes are just identity (inactive)
+function splitting_matrix_enlarged(i)
+    result = Matrix{ComplexF64}(I, m, m)
+    result[1:r, 1:r] = splitting_matrix(i)
+    return result
+end
 
-#   3. Scattering matrix M:
-#   index_input = fill_arrangement(input_state)
-#   index_output = fill_arrangement(output_state)
-#   M = U[index_input, index_output]  # n×n submatrix
-#     - Extracts rows corresponding to input photons
-#     - Extracts columns corresponding to output photons
+# Create block diagonal with n blocks (one per photon)
+# Each block is the m×m Householder transformation for that photon
+# Total size: n*m × n*m
+function get_all_splitting_matrices()
+    result = Matrix{ComplexF64}(I, n*m, n*m)
 
-for l in 1:r # partial distinguishability basis
-    for k in 1:n # photon index
-        W[k, (l-1)*m+k] = V[k, l]
+    for photon in 1:n
+        range_ = 1+(photon-1)*m : m+(photon-1)*m
+        result[range_, range_] = splitting_matrix_enlarged(photon)
+    end
+    result
+end
+
+splitting_interferometer = get_all_splitting_matrices()
+
+# Mode Shuffle Permutation
+# ========================
+# Purpose: Reorder modes so that modes at the same position within each block are grouped together
+#
+# Current layout (after splitting matrices): n blocks, each with m modes (one block per photon)
+#   [Block₁: modes 1...m | Block₂: modes 1...m | ... | Blockₙ: modes 1...m]
+#   Total: n*m modes
+#
+# Desired layout: Group by mode position across all blocks
+#   [Mode₁ of all blocks | Mode₂ of all blocks | ... | Modeₘ of all blocks]
+#   = [B₁M₁, B₂M₁, ..., BₙM₁, B₁M₂, B₂M₂, ..., BₙM₂, ..., B₁Mₘ, B₂Mₘ, ..., BₙMₘ]
+#
+# This allows each group to be processed by a separate copy of interferometer U
+#
+# Indexing formula:
+#   For a mode at linear position k ∈ [1, n*m]:
+#   - Block index (photon):  block = floor((k-1)/m) + 1  ∈ [1, n]
+#   - Mode in block:         mode = ((k-1) mod m) + 1    ∈ [1, m]
+#   - Old position:          k_old = (block-1)*m + mode  (row-major: block varies slowest)
+#   - New position:          k_new = (mode-1)*n + block  (column-major: block varies fastest)
+#
+# Example with n=2, m=3:
+#   Old: [B₁M₁, B₁M₂, B₁M₃, B₂M₁, B₂M₂, B₂M₃] = [1, 2, 3, 4, 5, 6]
+#   New: [B₁M₁, B₂M₁, B₁M₂, B₂M₂, B₁M₃, B₂M₃] = [1, 4, 2, 5, 3, 6]
+#
+# This is equivalent to reshape-transpose-reshape:
+#   1. View n*m linear index as (n, m) matrix in row-major order
+#   2. Transpose to (m, n)
+#   3. Flatten in row-major order
+
+function mode_shuffle_permutation()
+    P = zeros(ComplexF64, n*m, n*m)
+    for block in 1:n
+        for mode in 1:m
+            k_old = (block-1)*m + mode
+            k_new = (mode-1)*n + block
+            P[k_new, k_old] = 1.0
+        end
+    end
+    return P
+end
+
+shuffle_permutation = mode_shuffle_permutation()
+
+
+function block_diagonal_interferometers()
+    result = Matrix{ComplexF64}(I, m*n, m*n)
+
+    for pd_group in 1:n
+        range_ = 1+(pd_group-1)*m: m+(pd_group-1)*m
+        result[range_, range_] = interf.U
+    end
+    result
+end
+
+block_diagonal_interferometer = block_diagonal_interferometers()
+
+full_interferometer = shuffle_permutation' * block_diagonal_interferometer* shuffle_permutation * splitting_interferometer
+# note: we unshuffled the modes - the physical mode 1 corresponds to the first m modes summed over, etc for the rest 
+
+occupation_simulated_photons = zeros(Int, m*n)
+
+for photon in 1:n 
+    occupation_simulated_photons[(photon-1)*m + 1] = 1  
+end
+
+
+
+input_simulated = Input{Bosonic}(ModeOccupation(occupation_simulated_photons))
+interf_simulated = UserDefinedInterferometer(full_interferometer)
+
+# Sample using Clifford's algorithm for indistinguishable bosons
+# In the expanded space, photons are treated as bosonic
+output_sample = FockSample()
+ev_simulated = Event(input_simulated, output_sample, interf_simulated)
+sample!(ev_simulated)
+
+# Get the sampled output in the expanded space (n*m modes)
+sampled_expanded = ev_simulated.output_measurement.s
+
+# Convert ModeOccupation to vector for indexing
+sampled_expanded_vec = sampled_expanded.state
+
+# Binning: Collapse back to m physical modes
+# Each physical mode i corresponds to modes {i, m+i, 2m+i, ..., (n-1)m+i} in expanded space
+# Sum the photon counts from all n blocks for each mode position
+sampled_physical = zeros(Int, m)
+
+for photon_block in 1:n
+    for mode in 1:m
+        expanded_mode = (photon_block-1)*m + mode
+        sampled_physical[mode] += sampled_expanded_vec[expanded_mode]
     end
 end
 
-# Orthonormality analysis of first n rows:
-# - Row k has norm squared: Σ_l |V[k,l]|² = S[k,k] = 1 ✓
-# - Inner product of rows k₁, k₂: Σ_l V[k₁,l]*conj(V[k₂,l]) = S[k₁,k₂]
-# - Conclusion: First n rows are orthonormal iff S = Identity
-# - For partial distinguishability (S ≠ I), the first n rows are NOT orthonormal
-#
-# Problem: Cannot complete W to unitary while keeping first n rows fixed
-# unless those rows are already orthonormal.
-#
-# Possible solutions:
-# 1. Orthonormalize V first (but this changes the physics)
-# 2. Use different construction where mixing happens at a different stage
-# 3. Reconsider the expanded space approach
+sampled_physical
 
-W
+println("\nSampled output (expanded space): ", sampled_expanded)
+println("Sampled output (physical space): ", sampled_physical)
+println("Total photons (should be $n): ", sum(sampled_physical))
 
-W = incorporate_in_a_unitary(W)
-
-@argcheck is_unitary(W)
-
-W
-
-V 
-
-# the idea is to then use the standard clifford sampler, over a larger set of modes than if the bosons were actually indistinguishable
-# and then recombine the readings at the end
-
-### TODO sampling step
-
-# once sampled, recompbine the modes as such: 
-
-# sample_physical[i] = sum(sample_enlarged[(i-1)*r + j] for j in 1:r) for i <= n  
