@@ -1,0 +1,25 @@
+Package: BosonSampling
+Type: Package
+Title: Classical Boson Sampling
+Version: 0.1.3
+Date: 2021-11-07
+Authors@R: c(
+ person("Peter", "Clifford", email = "peter.clifford@jesus.ox.ac.uk", 
+ role = "aut"),
+ person("Raphaël", "Clifford", email = "clifford@cs.bris.ac.uk", 
+ role = c("cre","aut")))
+Description: Classical Boson Sampling using the algorithm of
+ Clifford and Clifford (2017) <arXiv:1706.01260>. Also provides functions for
+ generating random unitary matrices, evaluation of matrix permanents (both
+ real and complex) and evaluation of complex permanent minors.
+Maintainer: Raphaël Clifford <clifford@cs.bris.ac.uk>
+License: GPL-2
+Imports: Rcpp (>= 0.12.12)
+LinkingTo: Rcpp, RcppArmadillo
+Encoding: latin1
+NeedsCompilation: yes
+Packaged: 2021-05-12 14:36:18 UTC; Peter Clifford
+Author: Peter Clifford [aut],
+  Raphaël Clifford [cre, aut]
+Repository: CRAN
+Date/Publication: 2021-05-14 08:52:11 UTC

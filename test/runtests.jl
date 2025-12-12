@@ -198,5 +198,6 @@ include("tools.jl")
 	include("test_householder_integration.jl")
 	include("test_one_parameter_householder.jl")
 	include("test_sample_multiple.jl")
+	include("test_clifford_sampler.jl")
 
 end

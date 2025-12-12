@@ -1,0 +1,3 @@
+useDynLib(BosonSampling, .registration = TRUE)
+importFrom(Rcpp, evalCpp)
+exportPattern("^[[:alpha:]]+")

@@ -56,7 +56,9 @@ end
 
 function clifford_sampler_unoptimised(i::Input, interf::Interferometer; occupancy_vector = true)
 
-    A = interf.U[:, fill_arrangement(i)]
+    # Transpose U to match this package's scattering matrix convention
+    # See cliffords_sampler docstring for detailed explanation
+    A = Matrix{ComplexF64}(transpose(interf.U)[:, fill_arrangement(i)])
 
     clifford_unoptimised(A, i.n, occupancy_vector = occupancy_vector)
 
@@ -77,25 +79,44 @@ end
 
 Sample photons according to the [`Bosonic`](@ref) case following
 the corrected Clifford & Clifford algorithm from arXiv:2005.04214v2.
-Fixes bias issues in the original implementation, particularly for m > n cases.
+
+## Matrix Convention Note
+
+This package uses the convention where the scattering matrix is `U[input_modes, output_modes]`,
+which differs from the standard physics convention `U[output_modes, input_modes]` used in the
+original Clifford & Clifford paper (arXiv:1706.01260).
+
+The standard convention has U[i,j] = amplitude from input mode j to output mode i (columns=input, rows=output).
+This package's convention has the indices swapped: U[j,i] = amplitude from input mode j to output mode i.
+
+To ensure the sampler produces distributions consistent with `compute_probability!` and other
+functions in this package, we transpose the unitary matrix before running the Clifford algorithm.
+This makes Per(A[r,:]) match Per(scattering_matrix(U, input, output)) for any output configuration r.
+
+Both conventions give identical results for collision-free cases (where each mode has at most
+one photon), but differ when there are multiple photons in the same mode (bunching).
 """
 function cliffords_sampler(;input::Input, interf::Interferometer)
-    
+
     m = input.m
     n = input.n
 
-    # Extract relevant submatrix for the input arrangement
-    A = interf.U[:, fill_arrangement(input)]
-    
+    # IMPORTANT: Transpose U to match this package's scattering matrix convention.
+    # The Clifford algorithm (arXiv:1706.01260) uses standard convention U[output, input],
+    # but this package uses U[input, output]. Transposing ensures consistency with
+    # compute_probability! and other package functions.
+    # See scattering_matrix() in scattering.jl for the package convention.
+    A = transpose(interf.U)[:, fill_arrangement(input)]
+
     # Run corrected Clifford algorithm
-    z = corrected_clifford_algorithm(A, n)
-    
+    z = corrected_clifford_algorithm(Matrix{ComplexF64}(A), n)
+
     # Convert to mode occupation vector
     mode_occ = zeros(Int, m)
     for mode in z
         mode_occ[mode] += 1
     end
-    
+
     return mode_occ
 
 end
