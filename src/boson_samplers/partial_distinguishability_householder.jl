@@ -1,19 +1,32 @@
 """
 Partial Distinguishability Sampler using Householder Transformations
 
-Implementation based on Gram matrix decomposition approach:
-S = CC† where S is the Gram matrix of photon overlaps.
+Implementation based on the Gram matrix decomposition approach:
+S = C C* where S[i, j] is the overlap between photons i and j in their
+internal degrees of freedom. C is n×r, one row per photon, r = rank(S).
 
-Algorithm:
-1. Decompose Gram matrix S = CC† to extract internal degrees of freedom
-2. Apply Householder transformation V_i = I - 2C_iC_i† to each photon
-3. Shuffle modes to group by position across photon blocks
-4. Apply physical interferometer U to each photon's modes
-5. Use Clifford sampler in expanded n×m mode space
-6. Bin results back to m physical modes
+Algorithm (reducing to Clifford on an expanded Bosonic state):
 
-This method works for arbitrary Gram matrices and naturally handles
-different degrees of distinguishability between photon pairs.
+1. Decompose Gram matrix S = C C* (`gram_to_coefficients`).
+2. Expand the mode space to r·m modes, organised as r DOF blocks of m
+   spatial modes each. Layout is DOF-major: position (k, j) = (k-1)·m + j,
+   with k ∈ 1..r (DOF) and j ∈ 1..m (spatial mode).
+3. Place photon i at (k=1, j=σ(i)), i.e. the DOF=1 copy of its physical
+   input spatial mode σ(i).
+4. Splitting: for each photon i, apply a per-photon r×r unitary V_i on
+   the DOF coordinate at spatial mode σ(i). V_i is chosen so that its
+   first column equals C[i, :] (i.e. V_i @ e_1 = C[i, :] in physics
+   convention). Because the splitting matrix sits inside a package-
+   convention interferometer (which Clifford transposes), the sub-block
+   stored is `transpose(V_i)`.
+5. Apply r block-diagonal copies of the physical interferometer U, one
+   per DOF block. Photons within the same DOF block interfere bosonically;
+   photons in disjoint DOF blocks do not.
+6. Sample via Clifford on the expanded Bosonic state, then bin the
+   expanded outcome back to m physical modes by summing across DOF.
+
+Reduces correctly to Clifford Bosonic when r = 1 (e.g. S = ones) and to
+the classical Distinguishable sampler when r = n (e.g. S = I).
 """
 
 using LinearAlgebra
@@ -21,285 +34,198 @@ using LinearAlgebra
 """
     householder_sampler(ev::Event{TIn, FockSample}) where {TIn<:PartDist}
 
-Sample from a boson sampling experiment with partially distinguishable photons
-specified by a Gram matrix.
+Sample from a boson sampling experiment with partially distinguishable
+photons specified by a Gram matrix.
 
-Works with any PartDist input type including:
-- UserDefinedGramMatrix: Custom Gram matrix
-- OneParameterInterpolation: Single parameter x ∈ [0,1]
-- RandomGramMatrix: Random Gram matrix
-
-The Gram matrix S where S[i,j] = ⟨photon_i, photon_j⟩ specifies the overlap
-between photons in their internal degrees of freedom.
-
-Returns a ModeOccupation representing the sampled output state.
+Requires the input to have distinct occupied spatial modes (no bunching
+at input). Returns a `ModeOccupation` of the sampled output state on m
+physical modes.
 """
 function householder_sampler(ev::Event{TIn, FockSample}) where {TIn<:PartDist}
 
     input = ev.input_state
     interf = ev.interferometer
 
-    n = input.n  # number of photons
-    m = input.m  # number of modes
+    n = input.n
+    m = input.m
 
-    # Extract Gram matrix from input
-    S = input.G.S  # Extract matrix from GramMatrix wrapper
+    # Photon i is at spatial mode σ[i] (1-based); σ is the sequence of
+    # occupied input modes (same indexing as the Gram matrix rows).
+    σ = fill_arrangement(input)
+    @argcheck length(σ) == n
+    @argcheck length(unique(σ)) == n "Householder sampler requires distinct input modes (no bunched inputs)."
 
-    # Decompose Gram matrix to get coefficients: S = CC†
+    # Gram matrix S = C C* → C is n × r, r = rank(S)
+    S = input.G.S
     C = gram_to_coefficients(S)
-    r = size(C, 2)  # rank of Gram matrix (number of internal DOF)
+    r = size(C, 2)
 
-    # Build the full transformation matrix
-    full_interf = build_householder_interferometer(C, interf.U, n, m, r)
+    full_interf = build_householder_interferometer(C, interf.U, σ, n, m, r)
 
-    # Create input state in expanded space (n photons, each in first mode of its block)
-    occupation_expanded = zeros(Int, n*m)
+    occupation_expanded = zeros(Int, r * m)
     for photon in 1:n
-        occupation_expanded[(photon-1)*m + 1] = 1
+        occupation_expanded[σ[photon]] = 1        # position (k=1, j=σ[photon])
     end
 
-    # Create Event in expanded space with bosonic photons
     input_expanded = Input{Bosonic}(ModeOccupation(occupation_expanded))
     interf_expanded = UserDefinedInterferometer(full_interf)
-    output_expanded = FockSample()
-    ev_expanded = Event(input_expanded, output_expanded, interf_expanded)
+    ev_expanded = Event(input_expanded, FockSample(), interf_expanded)
 
-    # Sample using Clifford algorithm
     sample!(ev_expanded)
 
-    # Get sampled output and bin back to physical modes
     sampled_expanded = ev_expanded.output_measurement.s.state
-    sampled_physical = bin_to_physical_modes(sampled_expanded, n, m)
+    sampled_physical = bin_to_physical_modes(sampled_expanded, r, m)
 
     return ModeOccupation(sampled_physical)
 end
 
 """
-    build_householder_interferometer(C::Matrix, U::Matrix, n::Int, m::Int, r::Int)
+    build_householder_interferometer(C, U, σ, n, m, r)
 
-Build the full interferometer for the expanded mode space.
-
-Combines:
-1. Householder splitting matrices (one per photon)
-2. Mode shuffle permutation
-3. Block diagonal physical interferometers
-4. Reverse shuffle
+Build the package-convention expanded interferometer (splitting · block_diag).
 """
-function build_householder_interferometer(C::Matrix, U::Matrix, n::Int, m::Int, r::Int)
-
-    # 1. Build splitting matrices (Householder for each photon)
-    splitting_interf = build_splitting_matrices(C, n, m, r)
-
-    # 2. Build shuffle permutation
-    shuffle_perm = build_shuffle_permutation(n, m)
-
-    # 3. Build block diagonal interferometers
-    block_diag_interf = build_block_diagonal_interferometers(U, n, m)
-
-    # 4. Combine: splitting → shuffle → U → unshuffle
-    full_interf = shuffle_perm' * block_diag_interf * shuffle_perm * splitting_interf
-
-    return full_interf
+function build_householder_interferometer(C::Matrix, U::Matrix,
+                                          σ::AbstractVector{<:Integer},
+                                          n::Int, m::Int, r::Int)
+    splitting  = build_splitting_matrices(C, σ, n, m, r)
+    block_diag = build_block_diagonal_interferometers(U, m, r)
+    # Package convention: left-factor applied first. Splitting spreads each
+    # photon across DOF blocks, then block_diag applies one U per block.
+    return splitting * block_diag
 end
 
 """
-    build_splitting_matrices(C::Matrix, n::Int, m::Int, r::Int)
+    build_splitting_matrices(C, σ, n, m, r)
 
-Build block diagonal matrix with Householder transformations for each photon.
-
-For photon i, the Householder transformation is V_i = I - 2C_iC_i†
-where C_i is the i-th row of C (coefficients in internal basis).
+Block-diagonal splitting unitary on the r·m expanded space. For each
+photon i at spatial mode σ[i], acts as V_i on the DOF coordinate at
+spatial mode σ[i] (positions {(k-1)·m + σ[i] : k=1..r}); identity on
+unoccupied spatial modes.
 """
-function build_splitting_matrices(C::Matrix, n::Int, m::Int, r::Int)
-
-    result = Matrix{ComplexF64}(I, n*m, n*m)
-
+function build_splitting_matrices(C::Matrix, σ::AbstractVector{<:Integer},
+                                  n::Int, m::Int, r::Int)
+    result = Matrix{ComplexF64}(I, r * m, r * m)
     for photon in 1:n
-        # Householder matrix for this photon (r×r)
-        C_i = C[photon, :]
-        V_i = Matrix{ComplexF64}(I, r, r) - 2 * C_i * C_i'
-
-        # Enlarge to m×m (only first r×r block is non-trivial)
-        V_i_enlarged = Matrix{ComplexF64}(I, m, m)
-        V_i_enlarged[1:r, 1:r] = V_i
-
-        # Place in block diagonal position
-        range_start = (photon-1)*m + 1
-        range_end = photon*m
-        result[range_start:range_end, range_start:range_end] = V_i_enlarged
+        j = σ[photon]
+        V_i = unitary_with_first_column(ComplexF64.(C[photon, :]))
+        positions = [(k - 1) * m + j for k in 1:r]
+        # Stored transposed: the surrounding matrix is package-convention
+        # (M[in, out]), so the sub-block's first row must equal C[i, :].
+        result[positions, positions] = transpose(V_i)
     end
-
     return result
 end
 
 """
-    build_shuffle_permutation(n::Int, m::Int)
+    build_block_diagonal_interferometers(U, m, r)
 
-Build permutation matrix that reorders modes from photon-major to mode-major ordering.
-
-Before: [Photon₁: modes 1...m | Photon₂: modes 1...m | ... | Photonₙ: modes 1...m]
-After:  [Mode₁: photons 1...n | Mode₂: photons 1...n | ... | Modeₘ: photons 1...n]
+Build r copies of U on the diagonal of an (r·m)×(r·m) matrix (one per DOF
+block). Columns 1..m = block 1, m+1..2m = block 2, etc.
 """
-function build_shuffle_permutation(n::Int, m::Int)
-
-    P = zeros(ComplexF64, n*m, n*m)
-
-    for photon in 1:n
-        for mode in 1:m
-            k_old = (photon-1)*m + mode  # Position in photon-major order
-            k_new = (mode-1)*n + photon  # Position in mode-major order
-            P[k_new, k_old] = 1.0
-        end
+function build_block_diagonal_interferometers(U::Matrix, m::Int, r::Int)
+    result = zeros(ComplexF64, r * m, r * m)
+    for k in 1:r
+        rng = (k - 1) * m + 1 : k * m
+        result[rng, rng] = U
     end
-
-    return P
-end
-
-"""
-    build_block_diagonal_interferometers(U::Matrix, n::Int, m::Int)
-
-Build block diagonal matrix with n copies of the m×m interferometer U.
-
-Each photon gets its own copy of U acting on its m modes.
-In the shuffled basis, this creates an interleaved block structure.
-"""
-function build_block_diagonal_interferometers(U::Matrix, n::Int, m::Int)
-
-    result = zeros(ComplexF64, n*m, n*m)
-
-    for photon in 1:n
-        for mode_i in 1:m
-            for mode_j in 1:m
-                # In shuffled basis: (photon, mode) is at position (mode-1)*n + photon
-                row = (mode_i-1)*n + photon
-                col = (mode_j-1)*n + photon
-                result[row, col] = U[mode_i, mode_j]
-            end
-        end
-    end
-
     return result
 end
 
 """
-    bin_to_physical_modes(sampled_expanded::Vector{Int}, n::Int, m::Int)
+    unitary_with_first_column(c)
 
-Collapse the expanded space (n*m modes) back to physical modes (m modes).
-
-Each physical mode i corresponds to modes {i, m+i, 2m+i, ..., (n-1)m+i}
-in the expanded space. Sum photon counts across all photon blocks.
+Return an r×r unitary V with V[:, 1] = c (expects ||c|| ≈ 1). Built via
+QR of M = [c | e_{k≠i_drop}] and a phase correction so V[:, 1] equals c
+exactly. Only the first column is load-bearing for the sampler; the
+remaining columns just provide a unitary completion.
 """
-function bin_to_physical_modes(sampled_expanded::Vector{Int}, n::Int, m::Int)
+function unitary_with_first_column(c::AbstractVector{ComplexF64})
+    r = length(c)
+    if r == 1
+        return reshape(ComplexF64[c[1]], 1, 1)
+    end
+    i_drop = argmax(abs.(c))
+    M = zeros(ComplexF64, r, r)
+    M[:, 1] = c
+    j = 1
+    for k in 1:r
+        k == i_drop && continue
+        j += 1
+        M[k, j] = 1.0 + 0.0im
+    end
+    Q, _ = qr(M)
+    V = Matrix{ComplexF64}(Q)
+    phase = c[i_drop] / V[i_drop, 1]
+    V[:, 1] .*= phase
+    return V
+end
 
+"""
+    bin_to_physical_modes(sampled_expanded, r, m)
+
+Collapse the r·m expanded occupation vector back to m physical modes by
+summing across DOF blocks: physical mode j = Σ_k expanded[(k-1)·m + j].
+"""
+function bin_to_physical_modes(sampled_expanded::Vector{Int}, r::Int, m::Int)
     sampled_physical = zeros(Int, m)
-
-    for photon in 1:n
-        for mode in 1:m
-            expanded_mode = (photon-1)*m + mode
-            sampled_physical[mode] += sampled_expanded[expanded_mode]
-        end
+    for k in 1:r, j in 1:m
+        sampled_physical[j] += sampled_expanded[(k - 1) * m + j]
     end
-
     return sampled_physical
 end
 
 """
-    householder_sampler_vec(ev::Event{TIn, FockSample}) where {TIn<:PartDist}
+    householder_sampler_vec(ev) -> Vector{Int}
 
-Convenience wrapper that extracts the sample vector directly.
+Convenience wrapper that returns the sampled mode-occupation vector.
 """
 function householder_sampler_vec(ev::Event{TIn, FockSample}) where {TIn<:PartDist}
     return householder_sampler(ev).state
 end
 
 """
-    sample_householder_multiple(input::Input{TIn}, interf::Interferometer, n_samples::Int;
-                               threaded::Bool=false) where {TIn<:PartDist}
+    sample_householder_multiple(input, interf, n_samples; threaded=false, show_progress=false)
 
-Efficiently generate multiple samples from the same input configuration.
-
-This function pre-computes all fixed transformations (Gram decomposition, Householder matrices,
-permutations, etc.) once, then samples n_samples times by only running the Clifford algorithm
-and binning step repeatedly. This is much faster than calling sample!() multiple times.
-
-With `threaded=true`, uses multi-threading to parallelize the sampling loop across available CPU cores.
-
-# Arguments
-- `input::Input{TIn}`: Input state with partial distinguishability
-- `interf::Interferometer`: Interferometer (e.g., RandHaar, Fourier, etc.)
-- `n_samples::Int`: Number of samples to generate
-- `threaded::Bool=false`: Use multi-threading for parallel sampling
-
-# Returns
-- `Vector{Vector{Int}}`: Vector of samples, each sample is a mode occupation vector
-
-# Example
-```julia
-input = Input{UserDefinedGramMatrix}(first_modes(3, 5), S)
-interf = RandHaar(5)
-
-# Sequential sampling
-samples = sample_householder_multiple(input, interf, 1000)
-
-# Parallel sampling (uses Threads.nthreads() cores)
-samples = sample_householder_multiple(input, interf, 1000, threaded=true)
-```
+Efficiently generate `n_samples` samples for a fixed `(input, interf)`.
+Pre-computes the Gram decomposition, splitting, and block-diagonal U
+once, then repeatedly calls Clifford on the expanded state.
 """
 function sample_householder_multiple(input::Input{TIn}, interf::Interferometer, n_samples::Int;
-                                    threaded::Bool=false, show_progress::Bool=false) where {TIn<:PartDist}
-
+                                     threaded::Bool=false, show_progress::Bool=false) where {TIn<:PartDist}
     n = input.n
     m = input.m
 
-    # Extract Gram matrix and decompose (done once)
+    σ = fill_arrangement(input)
+    @argcheck length(σ) == n
+    @argcheck length(unique(σ)) == n "Householder sampler requires distinct input modes (no bunched inputs)."
+
     S = input.G.S
     C = gram_to_coefficients(S)
     r = size(C, 2)
 
-    # Build full interferometer (done once)
-    full_interf = build_householder_interferometer(C, interf.U, n, m, r)
+    full_interf = build_householder_interferometer(C, interf.U, σ, n, m, r)
 
-    # Create expanded input state (done once)
-    occupation_expanded = zeros(Int, n*m)
+    occupation_expanded = zeros(Int, r * m)
     for photon in 1:n
-        occupation_expanded[(photon-1)*m + 1] = 1
+        occupation_expanded[σ[photon]] = 1
     end
     input_expanded = Input{Bosonic}(ModeOccupation(occupation_expanded))
     interf_expanded = UserDefinedInterferometer(full_interf)
 
-    # Generate samples efficiently
     samples = Vector{Vector{Int}}(undef, n_samples)
 
     if threaded
-        # Parallel sampling using multi-threading
         Threads.@threads for i in 1:n_samples
-            # Create fresh event for each sample (thread-safe)
             ev_expanded = Event(input_expanded, FockSample(), interf_expanded)
-
-            # Sample using Clifford
             sample!(ev_expanded)
-
-            # Bin to physical modes
-            sampled_expanded = ev_expanded.output_measurement.s.state
-            sampled_physical = bin_to_physical_modes(sampled_expanded, n, m)
-
-            samples[i] = sampled_physical
+            samples[i] = bin_to_physical_modes(ev_expanded.output_measurement.s.state, r, m)
         end
     else
-        # Sequential sampling
         iter = show_progress ? ProgressBar(1:n_samples) : (1:n_samples)
         for i in iter
-            # Create fresh event for each sample
             ev_expanded = Event(input_expanded, FockSample(), interf_expanded)
-
-            # Sample using Clifford
             sample!(ev_expanded)
-
-            # Bin to physical modes
-            sampled_expanded = ev_expanded.output_measurement.s.state
-            sampled_physical = bin_to_physical_modes(sampled_expanded, n, m)
-
-            samples[i] = sampled_physical
+            samples[i] = bin_to_physical_modes(ev_expanded.output_measurement.s.state, r, m)
         end
     end
 
@@ -307,62 +233,33 @@ function sample_householder_multiple(input::Input{TIn}, interf::Interferometer, 
 end
 
 """
-    sample_multiple(input::Input{TIn}, interf::Interferometer, n_samples::Int;
-                   threaded::Bool=false) where {TIn<:InputType}
+    sample_multiple(input, interf, n_samples; threaded=false, show_progress=false)
 
-General function to efficiently generate multiple samples from any input type.
-
-Dispatches to specialized implementations:
-- PartDist types → householder sampler (pre-computes transformations)
-- Bosonic → Clifford sampler (pre-computes interferometer submatrix)
-- Distinguishable → classical sampler
-- Other types → falls back to repeated sample!() calls
-
-# Arguments
-- `input::Input{TIn}`: Input state
-- `interf::Interferometer`: Interferometer
-- `n_samples::Int`: Number of samples to generate
-- `threaded::Bool=false`: Use multi-threading for parallel sampling
-
-# Returns
-- `Vector{Vector{Int}}`: Vector of samples
-
-# Example
-```julia
-input = Input{Bosonic}(first_modes(3, 5))
-interf = RandHaar(5)
-
-# Sequential sampling
-samples = sample_multiple(input, interf, 1000)
-
-# Parallel sampling (uses all available threads)
-samples = sample_multiple(input, interf, 1000, threaded=true)
-```
+Dispatches to specialised batch samplers:
+- PartDist inputs → `sample_householder_multiple` (pre-computes expansion).
+- Other input types → repeated `sample!()` calls.
 """
 function sample_multiple(input::Input{TIn}, interf::Interferometer, n_samples::Int;
-                        threaded::Bool=false, show_progress::Bool=false) where {TIn<:InputType}
-
+                         threaded::Bool=false, show_progress::Bool=false) where {TIn<:InputType}
     if TIn <: PartDist
-        # Use optimized Householder multi-sampling
-        return sample_householder_multiple(input, interf, n_samples, threaded=threaded, show_progress=show_progress)
-    else
-        # Fall back to repeated sampling for other types
-        samples = Vector{Vector{Int}}(undef, n_samples)
-
-        if threaded
-            Threads.@threads for i in 1:n_samples
-                ev = Event(input, FockSample(), interf)
-                sample!(ev)
-                samples[i] = ev.output_measurement.s.state
-            end
-        else
-            iter = show_progress ? ProgressBar(1:n_samples) : (1:n_samples)
-            for i in iter
-                ev = Event(input, FockSample(), interf)
-                sample!(ev)
-                samples[i] = ev.output_measurement.s.state
-            end
-        end
-        return samples
+        return sample_householder_multiple(input, interf, n_samples,
+                                           threaded=threaded, show_progress=show_progress)
     end
+
+    samples = Vector{Vector{Int}}(undef, n_samples)
+    if threaded
+        Threads.@threads for i in 1:n_samples
+            ev = Event(input, FockSample(), interf)
+            sample!(ev)
+            samples[i] = ev.output_measurement.s.state
+        end
+    else
+        iter = show_progress ? ProgressBar(1:n_samples) : (1:n_samples)
+        for i in iter
+            ev = Event(input, FockSample(), interf)
+            sample!(ev)
+            samples[i] = ev.output_measurement.s.state
+        end
+    end
+    return samples
 end
