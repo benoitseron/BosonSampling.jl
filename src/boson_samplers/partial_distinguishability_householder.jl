@@ -2,12 +2,18 @@
 Partial Distinguishability Sampler using Householder Transformations
 
 Implementation based on the Gram matrix decomposition approach:
-S = C C* where S[i, j] is the overlap between photons i and j in their
-internal degrees of freedom. C is n×r, one row per photon, r = rank(S).
+S[i, j] = ⟨ψ_i | ψ_j⟩ is the overlap between photons i and j in their
+internal degrees of freedom. Using V = conj(gram_to_coefficients(S)) gives
+V with V V† = conj(S), so that |ψ_i⟩ = Σ_k V[i, k] |k⟩ reproduces the
+physics-convention overlaps ⟨ψ_i|ψ_j⟩ = Σ_k conj(V[i,k]) V[j,k] = S[i,j].
+V is n×r, one row per photon, r = rank(S). For real S this is a no-op
+(conj(C) = C); for complex Hermitian S the conjugation is required to
+avoid sampling from the distribution corresponding to S^T = conj(S).
 
 Algorithm (reducing to Clifford on an expanded Bosonic state):
 
-1. Decompose Gram matrix S = C C* (`gram_to_coefficients`).
+1. Decompose the Gram matrix via `gram_to_coefficients` and take V = conj(C)
+   so that V encodes photon internal states in physics convention.
 2. Expand the mode space to r·m modes, organised as r DOF blocks of m
    spatial modes each. Layout is DOF-major: position (k, j) = (k-1)·m + j,
    with k ∈ 1..r (DOF) and j ∈ 1..m (spatial mode).
@@ -15,7 +21,7 @@ Algorithm (reducing to Clifford on an expanded Bosonic state):
    input spatial mode σ(i).
 4. Splitting: for each photon i, apply a per-photon r×r unitary V_i on
    the DOF coordinate at spatial mode σ(i). V_i is chosen so that its
-   first column equals C[i, :] (i.e. V_i @ e_1 = C[i, :] in physics
+   first column equals V[i, :] (i.e. V_i @ e_1 = V[i, :] in physics
    convention). Because the splitting matrix sits inside a package-
    convention interferometer (which Clifford transposes), the sub-block
    stored is `transpose(V_i)`.
@@ -55,12 +61,15 @@ function householder_sampler(ev::Event{TIn, FockSample}) where {TIn<:PartDist}
     @argcheck length(σ) == n
     @argcheck length(unique(σ)) == n "Householder sampler requires distinct input modes (no bunched inputs)."
 
-    # Gram matrix S = C C* → C is n × r, r = rank(S)
+    # Gram matrix decomposition. gram_to_coefficients returns C with C C† = S.
+    # We want internal states |ψ_i⟩ = Σ_k V[i, k] |k⟩ such that
+    # ⟨ψ_i | ψ_j⟩ = S[i, j] (physics convention), which requires V V† = conj(S).
+    # V = conj(C) satisfies that. For real S this is a no-op.
     S = input.G.S
-    C = gram_to_coefficients(S)
-    r = size(C, 2)
+    V = conj(gram_to_coefficients(S))
+    r = size(V, 2)
 
-    full_interf = build_householder_interferometer(C, interf.U, σ, n, m, r)
+    full_interf = build_householder_interferometer(V, interf.U, σ, n, m, r)
 
     occupation_expanded = zeros(Int, r * m)
     for photon in 1:n
@@ -200,10 +209,10 @@ function sample_householder_multiple(input::Input{TIn}, interf::Interferometer, 
     @argcheck length(unique(σ)) == n "Householder sampler requires distinct input modes (no bunched inputs)."
 
     S = input.G.S
-    C = gram_to_coefficients(S)
-    r = size(C, 2)
+    V = conj(gram_to_coefficients(S))
+    r = size(V, 2)
 
-    full_interf = build_householder_interferometer(C, interf.U, σ, n, m, r)
+    full_interf = build_householder_interferometer(V, interf.U, σ, n, m, r)
 
     occupation_expanded = zeros(Int, r * m)
     for photon in 1:n

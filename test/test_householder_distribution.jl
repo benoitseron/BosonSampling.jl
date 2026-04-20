@@ -211,6 +211,55 @@ end
 end
 
 # ---------------------------------------------------------------------------
+# T5b — complex Gram matrix through a SYMMETRIC but non-Hermitian unitary.
+# Whereas T5 uses a real `s`, T5b uses a complex Gram matrix with a
+# non-trivial triangle phase: the 3-mode balanced Fourier tritter acting on
+#
+#     G(φ) = [ 1       m       m·e^{-iφ};
+#              m       1        m        ;
+#              m·e^{iφ} m        1        ]
+#
+# with m = 0.5 (always PSD, min eigenvalue ≈ 0.07 at φ = π) and
+# φ ∈ {π/6, π/3, π/2}. Regression test: before the 2026-04-20 fix, the
+# sampler used V[i,:] = C[i,:] (with C C† = S), which produces photon
+# states whose pairwise overlaps are conj(S) rather than S, so the
+# sampled distribution corresponded to conj(G) instead of G. The HOM /
+# random-Haar tests above all use real Gram matrices, so the bug was
+# invisible there (conj is a no-op). A symmetric unitary like the Fourier
+# tritter preserves the phase sensitivity, which is why the failure
+# surfaces here. Fix: V = conj(gram_to_coefficients(S)).
+# ---------------------------------------------------------------------------
+@testset "T5b: complex Gram via symmetric Fourier tritter" begin
+    Random.seed!(SEED)
+    ω = exp(2π * im / 3)
+    F3 = (1 / sqrt(3)) * ComplexF64[1 1    1   ;
+                                    1 ω    ω^2 ;
+                                    1 ω^2  ω   ]
+    # Fourier tritter is symmetric (F3 == transpose(F3)) but NOT Hermitian,
+    # so any transpose-induced convention differences would show up here.
+    @test F3 ≈ transpose(F3)
+    @test !(F3 ≈ adjoint(F3))
+    interf = UserDefinedInterferometer(F3)
+
+    m = 0.5                              # keeps G PSD for every φ
+    N = 80_000
+    for φ in (0.0, π/6, π/3, π/2)
+        # Triangle-gauged Gram: two real edges + one complex edge carrying φ.
+        G = ComplexF64[1.0          m            m*exp(-im*φ);
+                       m            1.0          m            ;
+                       m*exp(im*φ)  m            1.0          ]
+        @test minimum(real.(eigvals(Hermitian(G)))) > -1e-10   # PSD sanity
+
+        input = Input{UserDefinedGramMatrix}(first_modes(3, 3), G)
+        outcomes, probs = exact_distribution(input, interf)
+        samples = draw_householder(input, interf, N)
+        tvd = empirical_tvd(samples, outcomes, probs)
+        println("T5b φ=$(round(φ, digits=3))  TVD = $(round(tvd, digits=4))")
+        @test tvd < 0.03
+    end
+end
+
+# ---------------------------------------------------------------------------
 # T6 — structural check on `build_householder_interferometer`. Whatever
 # convention is intended, the output MUST be unitary; else the
 # downstream Clifford call is meaningless. This is a pure linear-algebra
