@@ -43,7 +43,7 @@ end
 
 Saves a OneLoopData. Recompiles the interferometer to make sure it is the right one.
 """
-function JLD.save(data::OneLoopData; path_to_file::String = "data/one_loop/")
+function JLD2.save(data::OneLoopData; path_to_file::String = "data/one_loop/")
  
     build_loop!(data) # making sure the interferometer is up to date
 
@@ -53,6 +53,6 @@ function JLD.save(data::OneLoopData; path_to_file::String = "data/one_loop/")
 
     data.certification_data = nothing
 
-    save(path_to_file * "$(data.name).jld", "data", data)
+    JLD2.save(path_to_file * "$(data.name).jld2", "data", data)
 
 end

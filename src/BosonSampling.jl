@@ -32,7 +32,7 @@ using SimpleTraits
 using Parameters
 using UnPack
 using Dates
-using JLD
+using JLD2
 using DelimitedFiles
 using ColorSchemes
 
@@ -63,6 +63,7 @@ include("boson_samplers/classical_sampler.jl")
 include("boson_samplers/cliffords_sampler.jl")
 include("boson_samplers/partial_distinguishability_sampler.jl")
 include("boson_samplers/partial_distinguishability_householder.jl")
+include("boson_samplers/mixed_partial_distinguishability_sampler.jl")
 include("boson_samplers/methods.jl")
 include("boson_samplers/metropolis_sampler.jl")
 include("boson_samplers/noisy_sampler.jl")
