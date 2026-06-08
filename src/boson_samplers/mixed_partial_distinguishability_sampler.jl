@@ -148,6 +148,18 @@ function mixed_partial_distinguishability_sampler(ρ_list::AbstractVector{<:Abst
 end
 
 """
+    mixed_partial_distinguishability_sampler(ev::Event{MixedDensityMatrices, FockSample})
+        -> ModeOccupation
+
+Event-based entry point used by `sample!`. Reads the per-photon density
+matrices from the input's Gram matrix and draws one exact sample.
+"""
+function mixed_partial_distinguishability_sampler(ev::Event{MixedDensityMatrices, TOut}) where {TOut <: FockSample}
+    input = ev.input_state
+    return mixed_partial_distinguishability_sampler(input.G.density_matrices, input.r, ev.interferometer)
+end
+
+"""
     sample_mixed_multiple(ρ_list, r::ModeOccupation, interf::Interferometer,
                           n_samples::Int; threaded=false, show_progress=false)
         -> Vector{Vector{Int}}

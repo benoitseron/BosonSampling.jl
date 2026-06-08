@@ -12,7 +12,7 @@ using Dierckx
 using LinearAlgebra
 using PrettyTables
 using LaTeXStrings
-using JLD
+using JLD2
 using AutoHashEquals
 using LinearRegression
 using DataStructures

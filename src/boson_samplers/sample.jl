@@ -12,8 +12,12 @@ function sample!(ev::Event{TIn, TOut}) where {TIn<:InputType, TOut <: FockSample
         ev.output_measurement.s = ModeOccupation(classical_sampler(ev))
     elseif TIn == Bosonic
         ev.output_measurement.s = ModeOccupation(cliffords_sampler(ev))
+    elseif TIn == MixedDensityMatrices
+        # Mixed internal states (per-photon density matrices): convex mixture
+        # of pure partially distinguishable configurations.
+        ev.output_measurement.s = mixed_partial_distinguishability_sampler(ev)
     elseif TIn <: PartDist
-        # All PartDist types (OneParameterInterpolation, UserDefinedGramMatrix, RandomGramMatrix)
+        # All other PartDist types (OneParameterInterpolation, UserDefinedGramMatrix, RandomGramMatrix)
         # use the Householder sampler
         ev.output_measurement.s = householder_sampler(ev)
     else

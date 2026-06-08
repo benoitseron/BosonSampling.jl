@@ -1,6 +1,6 @@
 using BosonSampling
 using Test
-using JLD
+using JLD2
 # using Plots
 
 ### scattering ###

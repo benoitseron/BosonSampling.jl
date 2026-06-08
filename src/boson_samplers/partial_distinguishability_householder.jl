@@ -250,6 +250,11 @@ Dispatches to specialised batch samplers:
 """
 function sample_multiple(input::Input{TIn}, interf::Interferometer, n_samples::Int;
                          threaded::Bool=false, show_progress::Bool=false) where {TIn<:InputType}
+    if TIn == MixedDensityMatrices
+        return sample_mixed_multiple(input.G.density_matrices, input.r, interf, n_samples,
+                                     threaded=threaded, show_progress=show_progress)
+    end
+
     if TIn <: PartDist
         return sample_householder_multiple(input, interf, n_samples,
                                            threaded=threaded, show_progress=show_progress)

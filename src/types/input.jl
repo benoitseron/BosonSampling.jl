@@ -47,6 +47,20 @@ struct UserDefinedGramMatrix <: PartDist
 end
 
 """
+Model of partially distinguishable photons whose internal (distinguishability)
+degrees of freedom are *mixed* states, described by one density matrix ``ρ_i``
+per photon (all expressed in a shared internal basis). Sampled exactly as a
+convex mixture of pure partially distinguishable configurations; see
+[`mixed_partial_distinguishability_sampler`](@ref).
+
+The per-photon density matrices are stored in the [`GramMatrix`](@ref)'s
+`density_matrices` field; the `S` field is a placeholder (a fresh Gram matrix
+is drawn from the mixture on every sample).
+"""
+struct MixedDensityMatrices <: PartDist
+end
+
+"""
 Model of distinguishable photons FockState.
 """
 struct Distinguishable <: InputType
@@ -201,16 +215,17 @@ struct GramMatrix{T<:InputType}
     rank::Union{Int,Nothing}
     distinguishability_param::Union{Real,Nothing}
     generating_vectors::OrthonormalBasis
+    density_matrices::Union{Nothing, Vector{Matrix{ComplexF64}}}
 
     function GramMatrix{T}(n::Int) where {T<:InputType}
         if T == Bosonic
-            return new{T}(n, ones(ComplexF64,n,n), nothing, nothing, OrthonormalBasis())
+            return new{T}(n, ones(ComplexF64,n,n), nothing, nothing, OrthonormalBasis(), nothing)
         elseif T == Distinguishable
-            return new{T}(n, Matrix{ComplexF64}(I,n,n), nothing, nothing, OrthonormalBasis())
+            return new{T}(n, Matrix{ComplexF64}(I,n,n), nothing, nothing, OrthonormalBasis(), nothing)
         elseif T == RandomGramMatrix
-            return new{T}(n, rand_gram_matrix(n), nothing, nothing, OrthonormalBasis())
+            return new{T}(n, rand_gram_matrix(n), nothing, nothing, OrthonormalBasis(), nothing)
         elseif T == Undef
-            return new{T}(n, Matrix{ComplexF64}(undef,n,n), nothing, nothing, OrthonormalBasis())
+            return new{T}(n, Matrix{ComplexF64}(undef,n,n), nothing, nothing, OrthonormalBasis(), nothing)
         else
             error("type ", T, " not implemented")
         end
@@ -218,7 +233,7 @@ struct GramMatrix{T<:InputType}
 
     function GramMatrix{T}(n::Int, distinguishability_param::Real) where {T<:InputType}
         if T == OneParameterInterpolation
-            return new{T}(n, gram_matrix_one_param(n,distinguishability_param), nothing, distinguishability_param, OrthonormalBasis())
+            return new{T}(n, gram_matrix_one_param(n,distinguishability_param), nothing, distinguishability_param, OrthonormalBasis(), nothing)
         else
             T in [Bosonic,Distinguishable,RandomGramMatrix,Undef] ? error("S matrix should not be specified for type ", T) : error("type ", T, " not implemented")
         end
@@ -226,9 +241,22 @@ struct GramMatrix{T<:InputType}
 
     function GramMatrix{T}(n::Int, S::Matrix) where {T<:InputType}
         if T == UserDefinedGramMatrix
-            return new{T}(n, S, nothing, nothing, OrthonormalBasis())
+            return new{T}(n, S, nothing, nothing, OrthonormalBasis(), nothing)
         else
             T in [Bosonic,Distinguishable,RandomGramMatrix,Undef] ? error("S matrix should not be specified for type ", T) : error("type ", T, " not implemented")
+        end
+    end
+
+    function GramMatrix{T}(n::Int, density_matrices::Vector{<:AbstractMatrix}) where {T<:InputType}
+        if T == MixedDensityMatrices
+            length(density_matrices) == n || error("expected ", n, " density matrices, got ", length(density_matrices))
+            ρs = [Matrix{ComplexF64}(ρ) for ρ in density_matrices]
+            # S is a placeholder: a fresh Gram matrix is drawn from the mixture
+            # on every sample (see mixed_partial_distinguishability_sampler).
+            S = Matrix{ComplexF64}(I, n, n)
+            return new{T}(n, S, nothing, nothing, OrthonormalBasis(), ρs)
+        else
+            error("density matrices should not be specified for type ", T)
         end
     end
 
@@ -280,6 +308,14 @@ struct Input{T<:InputType}
     function Input{T}(r::ModeOccupation, S::Matrix) where {T<:InputType}
         if T == UserDefinedGramMatrix
             return new{T}(r, r.n, r.m, GramMatrix{T}(r.n,S), nothing)
+        else
+            error("type ", T, " not implemented")
+        end
+    end
+
+    function Input{T}(r::ModeOccupation, density_matrices::Vector{<:AbstractMatrix}) where {T<:InputType}
+        if T == MixedDensityMatrices
+            return new{T}(r, r.n, r.m, GramMatrix{T}(r.n, density_matrices), nothing)
         else
             error("type ", T, " not implemented")
         end

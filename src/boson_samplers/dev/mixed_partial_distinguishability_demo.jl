@@ -130,3 +130,42 @@ let
     println("TVD(empirical, exact) = $(round(d_tv, digits=4))")
     println(d_tv < 0.01 ? "✅ PASS (matches exact mixed law)" : "❌ FAIL")
 end
+
+# ---- Test C: Input{MixedDensityMatrices} via the standard Event/sample! flow -
+
+println()
+println("=" ^ 60)
+println("TEST C — Input{MixedDensityMatrices} + sample! must match exact law")
+println("=" ^ 60)
+
+let
+    n, m, d = 2, 3, 2
+    r = first_modes(n, m)
+    interf = RandHaar(m)
+    N = 300_000
+
+    e0 = ComplexF64[1, 0]; e1 = ComplexF64[0, 1]
+    plus = (e0 + e1) / sqrt(2); minus = (e0 - e1) / sqrt(2)
+    ρ1 = 0.7 * (e0 * e0') + 0.3 * (e1 * e1')
+    ρ2 = 0.6 * (plus * plus') + 0.4 * (minus * minus')
+    ρ_list = [ρ1, ρ2]
+
+    input = Input{MixedDensityMatrices}(r, ρ_list)
+
+    outputs = ModeOccupation.(all_mode_configurations(n, m; only_photon_number_conserving = true))
+    p_exact = exact_mixed_distribution(eigendecompose_density_matrices(ρ_list), r, interf, outputs)
+
+    # one sample via sample!(ev)
+    ev = Event(input, FockSample(), interf)
+    BosonSampling.sample!(ev)   # qualify: StatsBase also exports `sample!`
+    println("single sample!(ev) output: ", ev.output_measurement.s.state)
+
+    # batch via sample_multiple dispatch on the input type
+    samples = [s for s in sample_multiple(input, interf, N)]
+    p_emp = empirical_distribution(samples, outputs)
+
+    d_tv = tvd(p_emp, p_exact)
+    println("n=$n, m=$m, d=$d, samples=$N (via sample_multiple)")
+    println("TVD(empirical, exact) = $(round(d_tv, digits=4))")
+    println(d_tv < 0.01 ? "✅ PASS (Event/sample! path matches exact law)" : "❌ FAIL")
+end
