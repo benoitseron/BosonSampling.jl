@@ -69,6 +69,7 @@ include("boson_samplers/metropolis_sampler.jl")
 include("boson_samplers/noisy_sampler.jl")
 include("boson_samplers/sample.jl")
 include("boson_samplers/gaussian_sampler.jl")
+include("boson_samplers/one_way_function.jl")
 
 include("distributions/noisy_distribution.jl")
 include("distributions/theoretical_distribution.jl")
