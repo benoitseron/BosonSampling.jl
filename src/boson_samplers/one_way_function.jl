@@ -39,7 +39,7 @@
 #        BIAS on Ŝ(x₀) (not negligible; catastrophic for power-of-two encoding
 #        bases).  FIXED: the proposal is now evaluated with ≳bits(K) precision
 #        (BigFloat) for K>2⁵², which reaches the exact mode and removes the bias.
-#        See numerical_precision_analysis.md §5 and encoding_base_anomaly.tex.
+#        See docs/publication/one_way_function/numerical_precision.md §5.
 #
 # F64-D  Normalization divisor: Z is divided by Float64(N).
 #        Introduces multiplicative bias (1 ± ε_mach) on Ŝ(x₀), which
@@ -50,7 +50,7 @@
 #
 # With the F64-C proposal evaluated at adequate precision (see below), all
 # approximation errors are negligible vs. the MC statistical error O(log²N / M).
-# See numerical_precision_analysis.md for details.
+# See docs/publication/one_way_function/numerical_precision.md for details.
 # ═══════════════════════════════════════════════════════════════════════
 
 # ─── Glynn single-sample estimator ────────────────────────────────────
@@ -166,8 +166,8 @@ end
 # UNIQUE integer in [1,K].  A Float64 proxy (~53-bit mantissa) cannot do this for
 # K>2⁵²: it reaches only a sparse, ~2⁵³-point lattice of k, sampling the wrong
 # discrete distribution q'(k)≠q(k) and biasing the importance-weighted estimator
-# (catastrophically for power-of-two encoding bases; see encoding_base_anomaly.tex
-# and numerical_precision_analysis.md §5).  We keep the fast Float64 path for
+# (catastrophically for power-of-two encoding bases; see
+# docs/publication/one_way_function/numerical_precision.md §5).  We keep the fast Float64 path for
 # K≤2⁵² (exact, all integers reachable) and use a ≳bits(K)-precision BigFloat
 # proxy above it.
 function _sample_reciprocal(K::Integer)

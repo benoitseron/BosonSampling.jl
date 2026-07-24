@@ -2,8 +2,7 @@
 # One-way function via boson sampling — tests
 # ═══════════════════════════════════════════════════════════════════════
 # The estimator lives in src/boson_samplers/one_way_function.jl and is compiled
-# into BosonSampling, so no include of the source is needed here (contrast with
-# the standalone one_way_function_numerics repo).  BosonSampling auto-exports
+# into BosonSampling, so no include of the source is needed here.  BosonSampling auto-exports
 # every module identifier (see the loop at the end of src/BosonSampling.jl), so
 # `using BosonSampling` brings the whole API — including internals such as
 # `_harmonic`, `_compute_N`, `_glynn_fused!` — into scope.

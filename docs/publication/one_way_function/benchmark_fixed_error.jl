@@ -1,6 +1,6 @@
 # How long to get ONE value of S(x0) at FIXED statistical error ε?
 #
-# S(x0) is the mean of M i.i.d. samples Z (estimate_S, src/main.jl:394).
+# S(x0) is the mean of M i.i.d. samples Z (estimate_S, src/boson_samplers/one_way_function.jl).
 # MC standard error = sqrt(Var Z / M).  To reach absolute error ε:
 #
 #       M_required = Var(Z) / ε²

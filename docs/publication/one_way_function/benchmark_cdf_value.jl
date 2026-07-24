@@ -1,6 +1,6 @@
 # Benchmark: cost of generating ONE value of the cumulative function S(x0).
 #
-# S(x0) is computed by estimate_S (src/main.jl:394) via M Monte-Carlo samples,
+# S(x0) is computed by estimate_S (src/boson_samplers/one_way_function.jl) via M Monte-Carlo samples,
 # each an O(m·n) fused-Glynn evaluation. This script isolates the wall-clock
 # cost of a single estimate_S call and confirms the two scaling laws:
 #   (1) linear in M           (the MC budget)

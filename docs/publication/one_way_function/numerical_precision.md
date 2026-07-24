@@ -96,7 +96,7 @@ The bias grows with $\mathrm{bits}(N) = m\log_2 b$ and is **catastrophic for pow
 
 The proposal $k=\lfloor (K{+}1)^v\rfloor$ is now evaluated with $\gtrsim \mathrm{bits}(K)$ precision (`BigFloat` via `setprecision`) whenever $K > 2^{52}$, in **both** `_sample_reciprocal` (Int64/Int128) and `_sample_reciprocal!` (BigInt). At that precision $\lfloor\cdot\rfloor$ resolves the exact integer mode, so $q'(k)=q(k)$ and the estimator is unbiased again. The fast Float64 path is retained for $K \leq 2^{52}$ (already exact). Cost is one high-precision `pow` per sample, comparable to the per-sample BigInt arithmetic already performed.
 
-**Verification.** With the fix, the four cases above return $\widehat S = 0.49, 0.49, 0.53, 0.43$ (all within MC noise of the truth), and the full test suite (2272 tests) passes. The earlier-suspected "power-of-two resonance" was entirely this sampler bug; see `encoding_base_anomaly.tex`.
+**Verification.** With the fix, the four cases above return $\widehat S = 0.49, 0.49, 0.53, 0.43$ (all within MC noise of the truth), and the full test suite (2272 tests) passes. The earlier-suspected "power-of-two resonance" was entirely this sampler bug.
 
 ### Formal status
 
@@ -125,4 +125,4 @@ Verified with `@code_warntype`: the inner function shows no `Union` type instabi
 | Fourier sampling | **exact** for $K \leq 2^{52}$ (Float64) | $n+m \lesssim 35$ | zero |
 | Fourier sampling | **exact** for $K > 2^{52}$ (BigFloat, $\gtrsim$bits$(K)$) | BigInt regime | negligible ($\lesssim 2^{-16}$) |
 
-**Conclusion.** The Fourier-mode proposal is evaluated at precision sufficient to resolve the exact integer mode in every regime (Float64 for $K\leq2^{52}$, BigFloat above), so the sampler is unbiased and the only remaining error is the Monte Carlo variance $O(\log^2 N / M)$. *Historical note:* before this fix the Float64 proposal biased $\widehat S(x_0)$ at large $N$ — severely for power-of-two encoding bases — which earlier surfaced as a spurious "resonance" spike in the sample-budget figure (§ `encoding_base_anomaly.tex`).
+**Conclusion.** The Fourier-mode proposal is evaluated at precision sufficient to resolve the exact integer mode in every regime (Float64 for $K\leq2^{52}$, BigFloat above), so the sampler is unbiased and the only remaining error is the Monte Carlo variance $O(\log^2 N / M)$. *Historical note:* before this fix the Float64 proposal biased $\widehat S(x_0)$ at large $N$ — severely for power-of-two encoding bases — which earlier surfaced as a spurious "resonance" spike in the sample-budget figure.

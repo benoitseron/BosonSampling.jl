@@ -30,10 +30,10 @@ using LaTeXStrings
 # is all that's needed — src/boson_samplers/one_way_function.jl.
 
 # The fast Clifford & Clifford 2018 boson sampler (CCSamplerWorkspace, cc_sample!)
-# now lives in src/main.jl so both this figure and validate_sampling.jl share it.
+# now lives in src/boson_samplers/one_way_function.jl so both this figure and validate_sampling.jl share it.
 
 # ────────────────────────────────────────────────────────────────────
-# Plot defaults (CLAUDE.md global rule on Plots.jl margins)
+# Plot defaults (generous margins so axis labels are not clipped)
 # ────────────────────────────────────────────────────────────────────
 default(
     size           = (720, 460),
