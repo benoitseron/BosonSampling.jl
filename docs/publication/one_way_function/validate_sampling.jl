@@ -16,9 +16,7 @@
 #                                 of estimates fall within ±ε of exact S?
 
 using LinearAlgebra, Random, Printf, Statistics
-using BosonSampling
-using BosonSampling: estimate_S, SamplingContext, _compute_N, f_value, z_samples,
-    CCSamplerWorkspace, cc_sample!
+using BosonSampling  # OWF estimator is compiled in & auto-exported
 using Permanents: ryser
 using Plots, LaTeXStrings
 

@@ -10,12 +10,10 @@
 # Reproducible paper figures and speed tests live in
 # docs/publication/one_way_function/ (see numerical_precision.md for the
 # floating-point precision model referenced by the F64-<X> tags below).
-
-# Public API.  Lower-level internals (`_harmonic`, `_compute_N`,
-# `_sample_reciprocal`, …) are intentionally NOT exported; the test suite and
-# the docs/publication scripts reach them via explicit `using BosonSampling: …`.
-export find_most_probable_bin, estimate_S, estimate_time, estimate_time_to_precision,
-       z_samples, SamplingContext, CCSamplerWorkspace, cc_sample!
+#
+# No `export` here: BosonSampling re-exports every module identifier via the
+# auto-export loop at the end of src/BosonSampling.jl, so `using BosonSampling`
+# already brings the whole API (and internals) into scope.
 
 # ═══════════════════════════════════════════════════════════════════════
 # Floating-point precision model

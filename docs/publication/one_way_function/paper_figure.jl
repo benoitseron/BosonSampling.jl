@@ -25,10 +25,9 @@ using Permanents: ryser
 using StatsBase
 using Plots
 using LaTeXStrings
-
-# The OWF estimator is compiled into BosonSampling (src/boson_samplers/one_way_function.jl).
-using BosonSampling: estimate_S, find_most_probable_bin, SamplingContext, _compute_N,
-    bin_edges, unrank_composition, f_value, z_samples, CCSamplerWorkspace, cc_sample!
+# The OWF estimator (estimate_S, find_most_probable_bin, z_samples, cc_sample!, …)
+# is compiled into BosonSampling and auto-exported, so `using BosonSampling` above
+# is all that's needed — src/boson_samplers/one_way_function.jl.
 
 # The fast Clifford & Clifford 2018 boson sampler (CCSamplerWorkspace, cc_sample!)
 # now lives in src/main.jl so both this figure and validate_sampling.jl share it.

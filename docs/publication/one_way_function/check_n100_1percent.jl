@@ -27,8 +27,7 @@
 # n_verify × M_req verification cost, which at the bulk x0 = N/2 alone runs ~6+ min.
 
 using LinearAlgebra, Statistics, Printf
-using BosonSampling
-using BosonSampling: estimate_S, SamplingContext, _compute_N
+using BosonSampling  # OWF estimator is compiled in & auto-exported
 
 fmt(s) = s < 1 ? @sprintf("%.0f ms", s*1000) : @sprintf("%.2f s", s)
 
