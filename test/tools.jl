@@ -60,10 +60,15 @@ end
             @test rank(S) == r
         end
 
-        @testset "Error handling" begin
-            # Should throw error when r >= n
-            @test_throws ArgumentError rand_gram_matrix_from_orthonormal_basis(3, 3)
-            @test_throws ArgumentError rand_gram_matrix_from_orthonormal_basis(3, 4)
+        @testset "Full-rank case (r >= n)" begin
+            # When r >= n the function falls back to a full-rank Gram matrix
+            # (rand_gram_matrix), rather than erroring.
+            for (n, r) in [(3, 3), (3, 4)]
+                S = rand_gram_matrix_from_orthonormal_basis(n, r)
+                @test size(S) == (n, n)
+                @test S ≈ S' atol=1e-10
+                @test rank(S) == n
+            end
         end
 
         @testset "Gram matrix properties" begin
