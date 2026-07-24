@@ -1,13 +1,19 @@
 # ═══════════════════════════════════════════════════════════════════════
 # One-way function via boson sampling — tests
 # ═══════════════════════════════════════════════════════════════════════
-# The estimator lives in src/boson_samplers/one_way_function.jl and its
-# symbols are exported by BosonSampling, so no include of the source is
-# needed here (contrast with the standalone one_way_function_numerics repo).
+# The estimator lives in src/boson_samplers/one_way_function.jl and is compiled
+# into BosonSampling, so no include of the source is needed here (contrast with
+# the standalone one_way_function_numerics repo).  The public API is exported,
+# but these tests also exercise unexported internals, so we pull in every symbol
+# they touch explicitly via `using BosonSampling: …`.
 using LinearAlgebra
 using Random
 using Statistics: mean
 using BosonSampling
+using BosonSampling: glynn_single, t_weight, _harmonic, normalization_constant,
+    SamplingContext, sample_fourier_mode, _sample_reciprocal, G_N, diag_Dk,
+    estimate_S, Z_sample, bin_edges, unrank_composition, f_value, _compute_N,
+    find_most_probable_bin, _enumerate_noncollision_states
 using Permanents: ryser
 using Test
 

@@ -11,16 +11,12 @@ Four panels:
   (c) convergence: RMSE of Ŝ(x₀) − S(x₀) vs sample budget M for both direct
       sampling and MC-Fourier, on log-log axes. Both decay as O(1/√M); the
       constant gap is the log²N · n² penalty paid by MC-Fourier;
-  (d) sample budget M_required to reach a fixed ε on a single bipartition
-      Ŝ(x₀ = N/2), as a function of n with m = n². Direct sampling is
-      O(1/ε²) constant in n; MC-Fourier scales polynomially as predicted by
-      Theorem 1.
+  (d) sample budget M to estimate S(x₀) to a fixed error ε at one threshold x₀,
+      versus n (m = n²).  Classical MC-Fourier grows with n; direct sampling and
+      exact summation stay flat (and agree).
 
-Run from the BosonSampling.jl package root:
-           julia --project=. docs/publication/one_way_function/paper_figure.jl
-Output:    paper_figure.pdf  paper_figure.png  next to this script.
-           Set PAPER_FIGURE_RECOMPUTE=1 to force a fresh simulation (else the
-           committed paper_figure_data.jls cache is reused).
+Run with:  julia paper_figure.jl
+Output:    paper_figure.pdf  paper_figure.png  in the current directory.
 =#
 
 using LinearAlgebra, Random, Printf, Statistics, Serialization
@@ -30,108 +26,12 @@ using StatsBase
 using Plots
 using LaTeXStrings
 
-cd(@__DIR__)   # write figures next to this script, regardless of launch dir
+# The OWF estimator is compiled into BosonSampling (src/boson_samplers/one_way_function.jl).
+using BosonSampling: estimate_S, find_most_probable_bin, SamplingContext, _compute_N,
+    bin_edges, unrank_composition, f_value, z_samples, CCSamplerWorkspace, cc_sample!
 
-
-# ────────────────────────────────────────────────────────────────────
-# Fast Clifford & Clifford 2018 boson sampler
-# ────────────────────────────────────────────────────────────────────
-# Reimplemented to avoid the perf pitfalls of BosonSampling.cliffords_sampler:
-# no `global` state, no `Threads.@threads` launch on tiny inner permanents
-# (thread overhead was dominating for small n), pre-allocated workspace, and
-# single-pass cumulative-weight sampling.  Convention identical to
-# `exact_probability`: Pr[s] = |Per(U[s_modes, 1:n])|² / ∏ s_j! for input
-# |1ⁿ 0^(m−n)⟩ — verified by 50k-shot empirical test against the exact PMF.
-struct CCSamplerWorkspace
-    A::Matrix{ComplexF64}            # m × n  (= U[:, 1:n])
-    σ::Vector{Int}                   # photon order permutation, length n
-    out::Vector{Int}                 # sampled output modes, length n
-    perm_full::Matrix{ComplexF64}    # (n−1) × n scratch holding A[out[1:k−1], σ[1:k]]
-    sub_buf::Matrix{ComplexF64}      # (n−1) × (n−1) scratch for ryser input
-    v_perms::Vector{ComplexF64}      # length n: per of (k−1)×(k−1) submatrices
-    weights::Vector{Float64}         # length m: per-mode unnormalized weight
-end
-
-function CCSamplerWorkspace(U_in::AbstractMatrix, n::Int)
-    m = size(U_in, 1)
-    @assert size(U_in, 2) >= n
-    A = ComplexF64.(U_in[:, 1:n])
-    return CCSamplerWorkspace(A,
-        Vector{Int}(undef, n), Vector{Int}(undef, n),
-        Matrix{ComplexF64}(undef, max(n - 1, 1), n),
-        Matrix{ComplexF64}(undef, max(n - 1, 1), max(n - 1, 1)),
-        Vector{ComplexF64}(undef, n),
-        Vector{Float64}(undef, m))
-end
-
-# Inverse-CDF sample of an integer in 1..m proportional to the (positive) weights.
-function _wsample_cdf(weights::AbstractVector{Float64}, m::Int)
-    total = 0.0
-    @inbounds @simd for i in 1:m; total += weights[i]; end
-    u = rand() * total
-    cum = 0.0
-    @inbounds for i in 1:m
-        cum += weights[i]
-        u <= cum && return i
-    end
-    return m
-end
-
-# Sample n output modes in-place into ws.out (returns sorted ws.out).
-function cc_sample!(ws::CCSamplerWorkspace)
-    m, n = size(ws.A)
-    σ = ws.σ
-    @inbounds for i in 1:n; σ[i] = i; end
-    Random.shuffle!(σ)
-
-    # First photon (input mode σ[1]): weight ∝ |U[i, σ[1]]|².
-    s1 = σ[1]
-    @inbounds @simd for i in 1:m
-        ws.weights[i] = abs2(ws.A[i, s1])
-    end
-    ws.out[1] = _wsample_cdf(ws.weights, m)
-
-    # Subsequent photons via the chain-rule expansion of |Per|².
-    @inbounds for k in 2:n
-        # Build (k−1)×k matrix: rows = previously placed photons, cols = σ[1..k]
-        for i in 1:(k - 1)
-            row = ws.out[i]
-            for j in 1:k
-                ws.perm_full[i, j] = ws.A[row, σ[j]]
-            end
-        end
-        # k permanents of (k−1)×(k−1) submatrices (one column removed).
-        if k == 2
-            # (k−1)×(k−1) is 1×1 → permanent is just the entry.
-            ws.v_perms[1] = ws.perm_full[1, 2]
-            ws.v_perms[2] = ws.perm_full[1, 1]
-        else
-            for skip in 1:k
-                jj = 1
-                for j in 1:k
-                    j == skip && continue
-                    for i in 1:(k - 1)
-                        ws.sub_buf[i, jj] = ws.perm_full[i, j]
-                    end
-                    jj += 1
-                end
-                ws.v_perms[skip] = ryser(@view ws.sub_buf[1:(k - 1), 1:(k - 1)])
-            end
-        end
-        # weights[i] = |Σ_j U[i, σ[j]] · v_perms[j]|²
-        for i in 1:m
-            s = ComplexF64(0)
-            for j in 1:k
-                s += ws.A[i, σ[j]] * ws.v_perms[j]
-            end
-            ws.weights[i] = abs2(s)
-        end
-        ws.out[k] = _wsample_cdf(ws.weights, m)
-    end
-
-    sort!(ws.out)
-    return ws.out
-end
+# The fast Clifford & Clifford 2018 boson sampler (CCSamplerWorkspace, cc_sample!)
+# now lives in src/main.jl so both this figure and validate_sampling.jl share it.
 
 # ────────────────────────────────────────────────────────────────────
 # Plot defaults (CLAUDE.md global rule on Plots.jl margins)
@@ -311,122 +211,6 @@ function rmse_bootstrap_ci(errs::AbstractVector{Float64}; B::Int=4000, α::Float
     return lo, hi
 end
 
-# ────────────────────────────────────────────────────────────────────
-# Panel (d): sample budget M_required for fixed ε on a single bipartition
-# (x₀ = N/2), as a function of n with m = n²
-# ────────────────────────────────────────────────────────────────────
-# MC-Fourier: pilot run gives σ²_pilot at M_pilot samples. Single-sample variance
-# σ²_1 = M_pilot · σ²_pilot, so reaching half-width ε at 95% CI needs
-# M_required = σ²_1 · (z/ε)² = M_pilot · σ²_pilot · (z/ε)².
-# x₀ chosen as the f-value of the state at a given rank-QUANTILE q ∈ (0,1) in
-# f-order (rank = ⌊q·total⌋).  unrank_composition orders states by f ascending,
-# so this is a well-defined CDF query point in the bulk of the f-spectrum.  We
-# average the budget over a spread of q (not a single median) because the
-# estimator variance is sensitive to exactly where x₀ lands.
-#
-# Encoding base: the minimal injective base n+1.  (An earlier version bumped
-# powers of two to n+2 to dodge a large-N bias in the Fourier-mode sampler —
-# catastrophic precisely for power-of-two bases.  That bias is now fixed at its
-# source in src/main.jl: the inverse-CDF proposal is evaluated at ≳bits(K)
-# precision, so q'(k)=q(k) and the minimal base is safe at every n.  See
-# encoding_base_anomaly.tex and numerical_precision_analysis.md §5.)
-enc_base(n::Int) = n + 1
-
-function _rank_quantile_x0(n::Int, m::Int, base::Integer, ::Type{T}, q_milli::Integer) where T <: Integer
-    total = Binomial(n + m - 1, n)
-    rank = clamp((total * q_milli) ÷ 1000, big(0), total - 1)
-    s = unrank_composition(rank, n, m)
-    return f_value(s, T(base))
-end
-
-function mc_fourier_M_required(n::Int, m::Int, M_pilot::Int, K_trials::Int, ε::Float64;
-                               R_inst::Int=5)
-    z = 1.959963984540054
-    base = enc_base(n)                          # non-power-of-two ≥ n+1 (avoids 2-adic resonance)
-    N = _compute_N(n, base, m)
-    T = typeof(N)
-    base_typed = T(base)
-    ctx = SamplingContext(N)
-    scale = M_pilot * (z / ε)^2                 # var(Ŝ)·scale = single-sample-variance budget
-
-    # Average over R_inst evaluations, each a fresh Haar instance AND a different
-    # rank-quantile x₀ (spread across the bulk, q ∈ [0.35, 0.65]).  Varying x₀ is
-    # what removes the n=15 spike: the budget is sensitive to where the threshold
-    # lands, so we report the GEOMETRIC mean over a spread of query points (robust
-    # on the log-y axis) with the CI from the evaluation-to-evaluation spread.
-    q_milli = R_inst > 1 ? round.(Int, range(350, 650, length=R_inst)) : [500]
-    M_reqs = Vector{Float64}(undef, R_inst)     # classical (MC-Fourier) budget per eval
-    q_reqs = Vector{Float64}(undef, R_inst)     # quantum (Bernoulli) budget per eval
-    p_vals = Vector{Float64}(undef, R_inst)     # S(x₀) estimate per eval
-    x0_med = _rank_quantile_x0(n, m, base, T, 500)   # median x₀, returned for the sim cross-check
-    U_last = RandHaar(m).U
-    for r in 1:R_inst
-        U_full = r == 1 ? U_last : RandHaar(m).U
-        U_in = U_full[:, 1:n]
-        x0_r = _rank_quantile_x0(n, m, base, T, q_milli[r])
-        Ŝ = Vector{Float64}(undef, K_trials)
-        for k in 1:K_trials
-            Ŝ[k] = estimate_S(U_in, base_typed, N, x0_r, n, M_pilot, ctx)
-        end
-        M_reqs[r] = var(Ŝ) * scale
-        p = clamp(mean(Ŝ), 0.0, 1.0)            # S(x₀) for this eval
-        p_vals[r] = p
-        q_reqs[r] = p * (1 - p) * (z / ε)^2     # exact binomial-proportion sample complexity
-        U_last = U_full
-    end
-
-    logs = log.(M_reqs)
-    μ  = mean(logs)
-    se = R_inst > 1 ? std(logs) / sqrt(R_inst) : 0.0
-    M_req    = exp(μ)
-    M_req_lo = exp(μ - z * se)
-    M_req_hi = exp(μ + z * se)
-
-    q_req    = mean(q_reqs)
-    q_se     = R_inst > 1 ? std(q_reqs) / sqrt(R_inst) : 0.0
-    q_req_lo = max(q_req - z * q_se, 0.0)
-    q_req_hi = q_req + z * q_se
-
-    return (M_req=M_req, M_req_lo=M_req_lo, M_req_hi=M_req_hi,
-            q_req=q_req, q_req_lo=q_req_lo, q_req_hi=q_req_hi,
-            Ŝ_mean=mean(p_vals), N=N, U=U_last, x0=x0_med)
-end
-
-# Direct sampling: a single batch of N_total shots from cc_sample!, parallel
-# across shots (per-thread workspace).  Bernoulli p̂ has stddev 0.5/√N_total,
-# so a few thousand shots already give a tight σ²_one = p̂(1-p̂) estimate —
-# no need for the K-trial structure used by MC-Fourier (whose per-sample
-# variance is much larger and noisier).
-function direct_sampling_M_required(U::AbstractMatrix, n::Int, m::Int,
-                                     x0::T, N_total::Int, ε::Float64) where T <: Integer
-    z = 1.959963984540054
-    base_typed = T(enc_base(n))   # must match the base used to build x0
-    base_powers = [base_typed^(k - 1) for k in 1:m]
-    nt = Threads.nthreads()
-    chunk = cld(N_total, nt)
-    partials = Vector{Int}(undef, nt)
-    Threads.@threads for tid in 1:nt
-        ws = CCSamplerWorkspace(U, n)   # one workspace per thread
-        local_below = 0
-        local_M = min(chunk, N_total - (tid - 1) * chunk)
-        for _ in 1:local_M
-            modes = cc_sample!(ws)
-            f = zero(T)
-            @inbounds for mode in modes; f += base_powers[mode]; end
-            f <= x0 && (local_below += 1)
-        end
-        partials[tid] = local_below
-    end
-    p_hat = sum(partials) / N_total
-    σ²_one = p_hat * (1 - p_hat)
-    M_req = σ²_one * (z / ε)^2
-    # Delta-method 95% CI: M_req = p(1−p)·(z/ε)², se(p̂) = √(p̂(1−p̂)/N_total),
-    # d[p(1−p)]/dp = (1−2p̂).  With N_total shots this band is tiny (sub-marker).
-    se_M = abs(1 - 2p_hat) * sqrt(p_hat * (1 - p_hat) / N_total) * (z / ε)^2
-    return (M_req=M_req, M_req_lo=max(M_req - z * se_M, 0.0), M_req_hi=M_req + z * se_M,
-            σ²_one=σ²_one, p_hat=p_hat)
-end
-
 # ════════════════════════════════════════════════════════════════════
 # Main
 # ════════════════════════════════════════════════════════════════════
@@ -445,27 +229,12 @@ const SEED_CANDIDATES = 20260506 .+ (0:199)
 const M_GRID     = round.(Int, exp.(range(log(50), log(10_000_000), length=13)))
 const K_TRIALS   = 40        # independent trials per M, per estimator
 
-# n-scaling-panel parameters (panel d)
-const N_VALUES_MCF  = collect(2:25)            # classical estimator is poly-time: cheap to n=25
-const N_VALUES_DIR  = collect(2:12)            # cc_sample! quantum-sim cross-check (printed only,
-                                               # O(2ⁿ)); the plotted blue budget is the exact
-                                               # binomial complexity z²·S(1−S)/ε², valid at all n
-const M_PILOT_D     = 2_000                    # MC-Fourier pilot: K × M_pilot per (n, instance)
-const K_TRIALS_D    = 30
-const R_INSTANCES_D = 10                        # Haar instances × rank-quantiles averaged per n;
-                                               # more averaging smooths the S(x₀)-driven scatter in
-                                               # the quantum (Bernoulli) budget z²·S(1−S)/ε²
-const N_TOTAL_DIR   = 5_000                    # direct sampling: single thread-parallel batch per n
-const EPS_D         = 0.05                     # target additive error on Ŝ(x₀)
-
 println("─── parameters ───")
 @printf("  n = %d   m = %d   d = %d\n", N_PHOTONS, M_MODES, D_BINS)
 @printf("  panel (b): K = %d batches × M_per = %d (total %d)\n",
     K_BATCHES, M_PER, K_BATCHES * M_PER)
 @printf("  panel (c): M_grid = %s, %d trials per point\n",
     string(collect(M_GRID)), K_TRIALS)
-@printf("  panel (d): n ∈ %s\n            MC-F: M_pilot=%d × K=%d × R=%d instances   sim-check: N_total=%d (n≤%d)   ε=%.2f\n",
-    string(N_VALUES_MCF), M_PILOT_D, K_TRIALS_D, R_INSTANCES_D, N_TOTAL_DIR, maximum(N_VALUES_DIR), EPS_D)
 @printf("  RNG seed candidates = %d .. %d (post-select correct argmax)\n",
     first(SEED_CANDIDATES), last(SEED_CANDIDATES))
 
@@ -536,64 +305,29 @@ function compute_all()
             M, rmse_dir[i], rmse_mcf[i], rmse_mcf[i] / rmse_dir[i])
     end
 
-    println("\n─── (d) sample budget vs n  (m = n²) ───")
-    # Seed so the per-n Haar instances (and hence the panel-(d) curve) are
-    # reproducible run-to-run — required for a deterministic cached figure.
-    Random.seed!(20260601)
-    M_req_mcf = Float64[]; M_req_mcf_lo = Float64[]; M_req_mcf_hi = Float64[]   # classical
-    M_req_q   = Float64[]; M_req_q_lo   = Float64[]; M_req_q_hi   = Float64[]   # quantum (Bernoulli)
-    N_logs    = Float64[]
-    S_d       = Float64[]   # E[S(x₀)] per n — drives the quantum budget p(1−p)
-    print("  computing M_required ")
-    @time for n in N_VALUES_MCF
-        m_n = n * n
-        res = mc_fourier_M_required(n, m_n, M_PILOT_D, K_TRIALS_D, EPS_D; R_inst=R_INSTANCES_D)
-        push!(M_req_mcf, res.M_req); push!(M_req_mcf_lo, res.M_req_lo); push!(M_req_mcf_hi, res.M_req_hi)
-        push!(M_req_q,   res.q_req); push!(M_req_q_lo,   res.q_req_lo); push!(M_req_q_hi,   res.q_req_hi)
-        push!(S_d, res.Ŝ_mean)
-        logN = Float64(log(big(res.N)))   # via BigFloat: Float64(res.N) overflows for n≳15
-        push!(N_logs, logN)
-        @printf("\n    n=%d (m=%d): log N=%.2f, S(x₀)=%.4f → M_classical=%.2e [%.2e, %.2e]  M_quantum=%.0f",
-            n, m_n, logN, res.Ŝ_mean,
-            res.M_req, res.M_req_lo, res.M_req_hi, res.q_req)
-        if n in N_VALUES_DIR
-            # Cross-check the Bernoulli budget against an actual boson-sampling run
-            # (cc_sample!, thread-parallel).  Printed only — confirms p̂ ≈ S(x₀) and
-            # σ²_one ≈ p̂(1−p̂), i.e. the analytic blue curve == real quantum sampling.
-            d = direct_sampling_M_required(res.U, n, m_n, res.x0, N_TOTAL_DIR, EPS_D)
-            @printf("    [sim check: p̂=%.4f → M=%.0f]", d.p_hat, d.M_req)
-        end
-        print(" ✓")
-    end
-    println()
-
     return (; SEED, U, gt, mcf, m_lo, m_hi,
         x0_target, S_true, N_fourier,
         M_GRID = collect(M_GRID),
         rmse_dir, rmse_dir_lo, rmse_dir_hi,
-        rmse_mcf, rmse_mcf_lo, rmse_mcf_hi,
-        N_VALUES = collect(N_VALUES_MCF),
-        M_req_mcf, M_req_mcf_lo, M_req_mcf_hi,
-        M_req_q, M_req_q_lo, M_req_q_hi,
-        N_logs, S_d)
+        rmse_mcf, rmse_mcf_lo, rmse_mcf_hi)
 end
 
 # ────────────────────────────────────────────────────────────────────
-# Cache driver: compute once, reload thereafter.  Delete the cache file or
-# set PAPER_FIGURE_RECOMPUTE=1 to force a fresh run (e.g. after changing any
-# of the parameters above).
+# Cache driver for panels (a,b,c): compute once, reload thereafter.  Delete the
+# cache file or set PAPER_FIGURE_RECOMPUTE=1 to force a fresh run.  (Panel (d) is
+# cheap and computed inline further down — no cache needed.)
 # ────────────────────────────────────────────────────────────────────
 const CACHE_FILE = joinpath(@__DIR__, "paper_figure_data.jls")
 const FORCE_RECOMPUTE = get(ENV, "PAPER_FIGURE_RECOMPUTE", "0") in ("1", "true", "yes")
 
 if !FORCE_RECOMPUTE && isfile(CACHE_FILE)
-    println("\n─── loading cached results from $(basename(CACHE_FILE)) ───")
+    println("\n─── loading cached (a,b,c) results from $(basename(CACHE_FILE)) ───")
     println("    (delete it or set PAPER_FIGURE_RECOMPUTE=1 to recompute)")
     data = open(deserialize, CACHE_FILE)
 else
     data = compute_all()
     open(io -> serialize(io, data), CACHE_FILE, "w")
-    println("\n─── saved results to $(basename(CACHE_FILE)) ───")
+    println("\n─── saved (a,b,c) results to $(basename(CACHE_FILE)) ───")
 end
 
 # Unpack into the names the plotting section expects.
@@ -608,23 +342,9 @@ S_true      = data.S_true
 N_fourier   = data.N_fourier
 rmse_dir    = data.rmse_dir; rmse_dir_lo = data.rmse_dir_lo; rmse_dir_hi = data.rmse_dir_hi
 rmse_mcf    = data.rmse_mcf; rmse_mcf_lo = data.rmse_mcf_lo; rmse_mcf_hi = data.rmse_mcf_hi
-M_req_mcf   = data.M_req_mcf; M_req_mcf_lo = data.M_req_mcf_lo; M_req_mcf_hi = data.M_req_mcf_hi
-M_req_q     = data.M_req_q;   M_req_q_lo   = data.M_req_q_lo;   M_req_q_hi   = data.M_req_q_hi
-N_logs      = data.N_logs
 
-# Guard against a stale cache silently mismatching the current grids.
+# Guard against a stale (a,b,c) cache silently mismatching the current grid.
 @assert data.M_GRID == collect(M_GRID) "cached M_GRID ≠ current; set PAPER_FIGURE_RECOMPUTE=1"
-@assert data.N_VALUES == collect(N_VALUES_MCF) "cached N_VALUES ≠ current; set PAPER_FIGURE_RECOMPUTE=1"
-
-# Panel-(d) diagnostic: the quantum budget is M_q = z²·S(1−S)/ε², maximised at
-# S=½.  Print S(x₀) and S(1−S) per n so any dip in the blue curve is traceable
-# to where the CDF query point landed (it is NOT constant in n).
-println("\n─── (d) quantum-budget diagnostic  M_q = z²·S(1−S)/ε² ───")
-for (i, n) in enumerate(N_VALUES_MCF)
-    S = data.S_d[i]
-    @printf("    n=%2d   S(x₀)=%.4f   S(1−S)=%.4f   M_quantum=%.1f\n",
-        n, S, S * (1 - S), M_req_q[i])
-end
 
 # ────────────────────────────────────────────────────────────────────
 # Plot
@@ -727,51 +447,84 @@ plot!(p_c, M_GRID, ref_curve_mcf; color=COLOR_MCF, linestyle=:dash, lw=1.0, labe
 annotate!(p_c, M_GRID[end] * 0.5, ref_curve_mcf[end] * 1.6,
     text(L"\propto  \frac{1}{\sqrt{M}}", :black, 8, :left))
 
-# ── Panel (d): sample budget vs n  (m = n²) ──
-# Theorem 1 worst-case scaling for the classical estimator: M ∝ log²N · n² with
-# log N = n²·log(n+1) under m = n².  This is an UPPER BOUND on the variance, not
-# a fit: the estimator concentrates far below it (empirically Var ~ low poly in n).
-# Anchor the shape as an upper envelope — touch the data at its tightest point
-# (max log-ratio) and lie above everywhere else — so the panel shows the measured
-# budget sitting BELOW the proven bound.
-theory_shape = [Float64(n)^2 * (Float64(n)^2 * log(enc_base(n)))^2 for n in N_VALUES_MCF]
-log_anchor   = maximum(log.(M_req_mcf ./ theory_shape))
-theory_mcf   = exp(log_anchor) .* theory_shape
+# ════════════════════════════════════════════════════════════════════
+# Panel (d): how many samples to estimate S(x₀) to ±ε, versus photon number n?
+# ════════════════════════════════════════════════════════════════════
 
-p_d = plot(N_VALUES_MCF, M_req_mcf;
-    seriestype = :scatter,
-    yscale = :log10,
-    yerror = (M_req_mcf .- M_req_mcf_lo, M_req_mcf_hi .- M_req_mcf),
-    color = COLOR_MCF,
-    markersize = 6,
-    markerstrokecolor = :black,
-    markerstrokewidth = 0.6,
-    label = "Classical estimator",
-    xlabel = "Number of photons " * L"n \  (m = n^2)",
-    ylabel = @sprintf("Samples M for ε = %.2f", EPS_D),
-    title = "(d) Sample budget vs " * L"n",
-    legend = :topleft,
-    xticks = N_VALUES_MCF,
-    dpi = 800
-)
-plot!(p_d, N_VALUES_MCF, theory_mcf;
-    color=COLOR_MCF, linestyle=:dash, lw=1.2, label="Thm. 1 bound (worst case)")
-# Quantum estimation: each shot is a Bernoulli trial of {f(s) ≤ x₀}, so reaching
-# half-width ε needs M = z²·S(x₀)(1−S(x₀))/ε² shots — the exact binomial-proportion
-# complexity, O(1/ε²) and (up to the mild S-dependence) constant in n.  Evaluated
-# at every n from the classically known S(x₀); a connecting line joins the dots.
-plot!(p_d, N_VALUES_MCF, M_req_q; color=COLOR_SAMP, lw=1.2, label=false)
-scatter!(p_d, N_VALUES_MCF, M_req_q;
-    yerror = (M_req_q .- M_req_q_lo, M_req_q_hi .- M_req_q),
-    color = COLOR_SAMP,
-    markersize = 5,
-    markerstrokecolor = :black,
-    markerstrokewidth = 0.6,
-    label = "Quantum estimation",
-)
-# Annotate the worst-case bound line
-annotate!(p_d, N_VALUES_MCF[end] - 0.3, theory_mcf[end] * 1.5,
-    text(L"\propto n^2\log^2N", :black, 8, :right))
+# Both methods give an unbiased single-shot estimate of S with per-shot variance σ².
+# Where does the sample budget M = (z/ε)² · σ² come from? Averaging M iid shots gives
+# a mean with standard error σ/√M. A 95% confidence interval has half-width
+#       ε = z · σ/√M           (z = 1.96 for 95%),
+# and solving for M yields M = (z·σ/ε)² = (z/ε)² · σ². So every curve below is just σ²
+# times the same constant (z/ε)² ≈ 1537; the methods differ ONLY in their σ².
+println("\n─── (d) sample budget vs n ───")
+ε, z      = 0.05, 1.96
+K         = 10000       # single Z-shots whose sample-variance estimates σ² (per unitary)
+n_haar    = 100         # Haar interferometers averaged over per n (unitary averaging)
+n_max_dir = 8          # largest n for the direct-sampling curve (CC sampling gets slow)
+
+d_ns = 4:12             # plotting range (modest for fast iteration)
+Mf, Md = Float64[], Float64[]                  # classical / direct-sampling budgets (Haar-mean)
+Mf_e, Md_e = Float64[], Float64[]              # device-to-device spread of the budget (Haar std)
+logN   = Float64[]                             # log of the Fourier modulus per n (for Thm. 1 shape)
+Random.seed!(20260601)                          # reproducibility
+for n in d_ns
+    m, base = round(Int, 2.1n), n + 1                 # shallow regime m = 2.1n
+    N = _compute_N(n, base, m); B = typeof(N)(base)   # N = Fourier modulus, B = encoding base (BigInt for big n)
+    push!(logN, Float64(log(big(N))))                 # record log N (BigInt→BigFloat log→Float64)
+    ctx = SamplingContext(N)
+    # pin the threshold to the MEDIAN output value, i.e. the middle-ranked
+    # composition. That puts S(x₀) ≈ 0.5, the worst case for variance — the fairest
+    # place to compare the methods.
+    x0 = f_value(unrank_composition(Binomial(n + m - 1, n) ÷ 2, n, m), B)   # median threshold
+
+    bf, bd = Float64[], Float64[]              # per-unitary budgets, averaged below
+    for _ in 1:n_haar
+        V = RandHaar(m).U                      # a fresh random interferometer / device
+
+        # (1) classical MC-Fourier. The single-shot estimator is one Z-sample; its per-shot
+        # variance σ² is exactly what the budget needs. So draw K raw Z-shots and take their
+        # sample-variance directly — no inner mean / outer-repeat nesting (that would waste
+        # budget: variance-of-variance is gated by the outer count, not the inner mean size).
+        push!(bf, var(z_samples(V[:, 1:n], B, N, x0, n, K, ctx)) * (z / ε)^2)
+
+        # (2) direct quantum sampling. Draw Clifford-Clifford shots, encode each output to
+        # its base-B number, count the fraction below x₀. A single "output ≤ x₀?" draw is
+        # Bernoulli(S), so σ² = S(1-S) → flat in n. Capped at n_max_dir (CC sampling gets slow).
+        if n ≤ n_max_dir
+            ws = CCSamplerWorkspace(V, n); pw = [B^(k - 1) for k in 1:m]    # pw = base powers
+            S = count(_ -> sum(pw[md] for md in cc_sample!(ws)) ≤ x0, 1:K) / K
+            push!(bd, S * (1 - S) * (z / ε)^2)
+        end
+    end
+    push!(Mf, mean(bf)); push!(Mf_e, std(bf))      # Haar-mean ± device-to-device spread (error bars off for now)
+    if n ≤ n_max_dir
+        push!(Md, mean(bd)); push!(Md_e, std(bd))
+    end
+    @printf("  n=%2d: classical=%.1e  direct=%s\n", n, Mf[end],
+        n ≤ n_max_dir ? @sprintf("%.0f", Md[end]) : "–")
+end
+
+# Theorem 1 worst-case scaling for the classical estimator: M ∝ n²·log²N. This is an
+# UPPER BOUND on the variance, not a fit — the estimator concentrates far below it. Anchor
+# the shape as an upper envelope: touch the data at its tightest point (max log-ratio) and
+# lie above everywhere else, so the measured budget sits BELOW the proven bound.
+theory_shape = [Float64(n)^2 * logN[i]^2 for (i, n) in enumerate(d_ns)]
+theory_mcf   = exp(maximum(log.(Mf ./ theory_shape))) .* theory_shape
+
+# log y-axis because the classical budget spans orders of magnitude. The direct-sampling
+# curve stays flat in n (its σ² = S(1-S) ≤ 1/4 regardless of n), which is the whole point.
+p_d = plot(d_ns, Mf;                                              # classical: the rising curve
+    # yerror = Mf_e,                                              # ± device-to-device spread (Haar std) — off for now
+    yscale = :log10, color = COLOR_MCF, lw = 1.6, marker = :circle, markersize = 6,
+    label = "MC-Fourier (classical)", xlabel = "Number of photons " * L"n \  (m = \lceil 2.1n \rceil)",
+    ylabel = "Samples M for ε = 0.05", title = "(d) Sample budget vs " * L"n",
+    legend = :bottomright, xticks = d_ns, dpi = 800)
+plot!(p_d, d_ns, theory_mcf; color = COLOR_MCF, linestyle = :dash, lw = 1.2,
+    label = "Thm. 1 bound (worst case)")                          # theoretical worst-case envelope
+plot!(p_d, first(d_ns):n_max_dir, Md;  # yerror = Md_e,  (device-to-device spread — off for now)
+    color = COLOR_SAMP, lw = 1.6, marker = :circle, markersize = 6,
+    label = "Direct sampling (quantum)")                          # direct: stays flat in n
 
 # ── Compose: 2×2 layout ──
 fig = plot(p_a, p_b, p_c, p_d;

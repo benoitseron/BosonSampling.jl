@@ -28,6 +28,7 @@
 
 using LinearAlgebra, Statistics, Printf
 using BosonSampling
+using BosonSampling: estimate_S, SamplingContext, _compute_N
 
 fmt(s) = s < 1 ? @sprintf("%.0f ms", s*1000) : @sprintf("%.2f s", s)
 

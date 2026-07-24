@@ -11,6 +11,12 @@
 # docs/publication/one_way_function/ (see numerical_precision.md for the
 # floating-point precision model referenced by the F64-<X> tags below).
 
+# Public API.  Lower-level internals (`_harmonic`, `_compute_N`,
+# `_sample_reciprocal`, …) are intentionally NOT exported; the test suite and
+# the docs/publication scripts reach them via explicit `using BosonSampling: …`.
+export find_most_probable_bin, estimate_S, estimate_time, estimate_time_to_precision,
+       z_samples, SamplingContext, CCSamplerWorkspace, cc_sample!
+
 # ═══════════════════════════════════════════════════════════════════════
 # Floating-point precision model
 # ═══════════════════════════════════════════════════════════════════════
@@ -515,6 +521,147 @@ function _estimate_S_bigint(U_in::AbstractMatrix, base::BigInt, N::BigInt,
         partials[tid] = local_total
     end
     return real(sum(partials) / M)
+end
+
+# Raw single-shot samples: returns the vector of K individual real Z-estimates that
+# estimate_S would otherwise average away. Use this to estimate the per-shot variance
+# σ² = Var(one Z-sample) directly — one sample-variance over K shots is far cheaper than
+# nesting an inner mean inside outer repeats (see paper_figure.jl panel (d)).
+function z_samples(U_in::AbstractMatrix, base::T, N::T,
+                   x0::T, n::Int, K::Int, ctx::SamplingContext{T}) where T <: Integer
+    m = size(U_in, 1)
+    out = Vector{Float64}(undef, K)
+    nt = Threads.nthreads()
+    chunk = cld(K, nt)
+    Threads.@threads for tid in 1:nt
+        buf = Vector{eltype(U_in)}(undef, m)
+        x = Vector{Int}(undef, n)
+        for i in ((tid - 1) * chunk + 1):min(tid * chunk, K)
+            out[i] = real(_Z_sample!(buf, x, U_in, base, N, x0, ctx))
+        end
+    end
+    return out
+end
+
+# BigInt specialization (mirrors _estimate_S_bigint's per-thread workspace).
+function z_samples(U_in::AbstractMatrix, base::BigInt, N::BigInt,
+                   x0::BigInt, n::Int, K::Int, ctx::SamplingContext{BigInt})
+    m = size(U_in, 1)
+    Nf = Float64(N); x0f = Float64(x0); half = ctx.half
+    x0p1_mod_N = mod(x0 + 1, N)
+    out = Vector{Float64}(undef, K)
+    nt = Threads.nthreads()
+    chunk = cld(K, nt)
+    Threads.@threads for tid in 1:nt
+        buf = Vector{eltype(U_in)}(undef, m)
+        x = Vector{Int}(undef, n)
+        ws = _BigIntWork()
+        for i in ((tid - 1) * chunk + 1):min(tid * chunk, K)
+            out[i] = real(_Z_sample_bigint!(buf, x, U_in, base, N, half, Nf,
+                                            x0f, x0p1_mod_N, ctx, ws))
+        end
+    end
+    return out
+end
+
+# ────────────────────────────────────────────────────────────────────
+# Fast Clifford & Clifford 2018 boson sampler
+# ────────────────────────────────────────────────────────────────────
+# Reimplemented to avoid the perf pitfalls of BosonSampling.cliffords_sampler:
+# no `global` state, no `Threads.@threads` launch on tiny inner permanents
+# (thread overhead was dominating for small n), pre-allocated workspace, and
+# single-pass cumulative-weight sampling.  Convention identical to
+# `exact_probability`: Pr[s] = |Per(U[s_modes, 1:n])|² / ∏ s_j! for input
+# |1ⁿ 0^(m−n)⟩ — verified by 50k-shot empirical test against the exact PMF.
+struct CCSamplerWorkspace
+    A::Matrix{ComplexF64}            # m × n  (= U[:, 1:n])
+    σ::Vector{Int}                   # photon order permutation, length n
+    out::Vector{Int}                 # sampled output modes, length n
+    perm_full::Matrix{ComplexF64}    # (n−1) × n scratch holding A[out[1:k−1], σ[1:k]]
+    sub_buf::Matrix{ComplexF64}      # (n−1) × (n−1) scratch for ryser input
+    v_perms::Vector{ComplexF64}      # length n: per of (k−1)×(k−1) submatrices
+    weights::Vector{Float64}         # length m: per-mode unnormalized weight
+end
+
+function CCSamplerWorkspace(U_in::AbstractMatrix, n::Int)
+    m = size(U_in, 1)
+    @assert size(U_in, 2) >= n
+    A = ComplexF64.(U_in[:, 1:n])
+    return CCSamplerWorkspace(A,
+        Vector{Int}(undef, n), Vector{Int}(undef, n),
+        Matrix{ComplexF64}(undef, max(n - 1, 1), n),
+        Matrix{ComplexF64}(undef, max(n - 1, 1), max(n - 1, 1)),
+        Vector{ComplexF64}(undef, n),
+        Vector{Float64}(undef, m))
+end
+
+# Inverse-CDF sample of an integer in 1..m proportional to the (positive) weights.
+function _wsample_cdf(weights::AbstractVector{Float64}, m::Int)
+    total = 0.0
+    @inbounds @simd for i in 1:m; total += weights[i]; end
+    u = rand() * total
+    cum = 0.0
+    @inbounds for i in 1:m
+        cum += weights[i]
+        u <= cum && return i
+    end
+    return m
+end
+
+# Sample n output modes in-place into ws.out (returns sorted ws.out).
+function cc_sample!(ws::CCSamplerWorkspace)
+    m, n = size(ws.A)
+    σ = ws.σ
+    @inbounds for i in 1:n; σ[i] = i; end
+    Random.shuffle!(σ)
+
+    # First photon (input mode σ[1]): weight ∝ |U[i, σ[1]]|².
+    s1 = σ[1]
+    @inbounds @simd for i in 1:m
+        ws.weights[i] = abs2(ws.A[i, s1])
+    end
+    ws.out[1] = _wsample_cdf(ws.weights, m)
+
+    # Subsequent photons via the chain-rule expansion of |Per|².
+    @inbounds for k in 2:n
+        # Build (k−1)×k matrix: rows = previously placed photons, cols = σ[1..k]
+        for i in 1:(k - 1)
+            row = ws.out[i]
+            for j in 1:k
+                ws.perm_full[i, j] = ws.A[row, σ[j]]
+            end
+        end
+        # k permanents of (k−1)×(k−1) submatrices (one column removed).
+        if k == 2
+            # (k−1)×(k−1) is 1×1 → permanent is just the entry.
+            ws.v_perms[1] = ws.perm_full[1, 2]
+            ws.v_perms[2] = ws.perm_full[1, 1]
+        else
+            for skip in 1:k
+                jj = 1
+                for j in 1:k
+                    j == skip && continue
+                    for i in 1:(k - 1)
+                        ws.sub_buf[i, jj] = ws.perm_full[i, j]
+                    end
+                    jj += 1
+                end
+                ws.v_perms[skip] = ryser(@view ws.sub_buf[1:(k - 1), 1:(k - 1)])
+            end
+        end
+        # weights[i] = |Σ_j U[i, σ[j]] · v_perms[j]|²
+        for i in 1:m
+            s = ComplexF64(0)
+            for j in 1:k
+                s += ws.A[i, σ[j]] * ws.v_perms[j]
+            end
+            ws.weights[i] = abs2(s)
+        end
+        ws.out[k] = _wsample_cdf(ws.weights, m)
+    end
+
+    sort!(ws.out)
+    return ws.out
 end
 
 # Legacy interface (for testing).

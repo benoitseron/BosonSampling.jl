@@ -19,8 +19,8 @@ land here regardless of launch directory:
 julia --project=. docs/publication/one_way_function/paper_figure.jl
 #   PAPER_FIGURE_RECOMPUTE=1 forces a fresh simulation.
 
-# variance-scaling figure (Var(Z) vs n, power-law fit)
-JULIA_NUM_THREADS=8 julia --project=. docs/publication/one_way_function/variance_scaling_clean.jl
+# sampling-validation figure (estimator vs exact ground truth + direct CC sampling)
+JULIA_NUM_THREADS=8 julia --project=. docs/publication/one_way_function/validate_sampling.jl
 
 # speed tests (print-only, no file output)
 JULIA_NUM_THREADS=8 julia --project=. docs/publication/one_way_function/benchmark_cdf_value.jl
@@ -34,7 +34,7 @@ JULIA_NUM_THREADS=24 julia --project=. docs/publication/one_way_function/check_n
 |---|---|
 | `paper_figure.jl` | `paper_figure.pdf` / `.png` — the 4-panel paper figure |
 | `paper_figure_data.jls` | serialized simulation cache for `paper_figure.jl` |
-| `variance_scaling_clean.jl` | `variance_scaling_clean.pdf` / `.png` and `variance_vs_n.pdf` / `.png` |
+| `validate_sampling.jl` | `validate_sampling.png` — estimator vs exact CDF and direct Clifford & Clifford sampling |
 | `benchmark_cdf_value.jl` | wall-clock cost of one `S(x0)` value vs `M` and `m·n` |
 | `benchmark_fixed_error.jl` | cost of one `S(x0)` value at fixed statistical error `ε` |
 | `check_n100_1percent.jl` | verified cost of one `S(x0)` value at `n=m=100`, `ε=1%` |
