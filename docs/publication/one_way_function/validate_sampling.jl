@@ -18,6 +18,7 @@
 using LinearAlgebra, Random, Printf, Statistics
 using BosonSampling  # OWF estimator is compiled in & auto-exported
 using Permanents: ryser
+using Combinatorics: multiexponents
 using Plots, LaTeXStrings
 
 default(
@@ -32,20 +33,8 @@ COLOR_MCF = RGB(0.85, 0.40, 0.10)   # Monte-Carlo estimates
 COLOR_EX  = RGB(0.20, 0.45, 0.70)   # exact ground truth
 
 # ── exact ground truth helpers (lifted from paper_figure.jl / runtests.jl) ──
-function enumerate_all_outputs(m::Int, n::Int)
-    results = Vector{Vector{Int}}()
-    _enum_all!(results, Int[], m, n)
-    return results
-end
-function _enum_all!(results, current, m, n_remaining)
-    if length(current) == m
-        n_remaining == 0 && push!(results, copy(current))
-        return
-    end
-    for s in 0:n_remaining
-        push!(current, s); _enum_all!(results, current, m, n_remaining - s); pop!(current)
-    end
-end
+# Weak compositions of n photons into m modes = Combinatorics.multiexponents.
+enumerate_all_outputs(m::Int, n::Int) = collect(multiexponents(m, n))
 # Pr[s] = |Per(U[out_cols, 1:n])|² / ∏ sⱼ!  for input |1ⁿ0^{m-n}⟩
 function exact_probability(U::AbstractMatrix, n::Int, output::Vector{Int})
     out_cols = Int[]

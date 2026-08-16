@@ -22,6 +22,7 @@ Output:    paper_figure.pdf  paper_figure.png  in the current directory.
 using LinearAlgebra, Random, Printf, Statistics, Serialization
 using BosonSampling
 using Permanents: ryser
+using Combinatorics: multiexponents
 using StatsBase
 using Plots
 using LaTeXStrings
@@ -53,23 +54,8 @@ default(
 # ────────────────────────────────────────────────────────────────────
 # Helpers (lifted from test/runtests.jl so this script is self-contained)
 # ────────────────────────────────────────────────────────────────────
-function enumerate_all_outputs(m::Int, n::Int)
-    results = Vector{Vector{Int}}()
-    _enum_all!(results, Int[], m, n)
-    return results
-end
-
-function _enum_all!(results, current, m, n_remaining)
-    if length(current) == m
-        n_remaining == 0 && push!(results, copy(current))
-        return
-    end
-    for s in 0:n_remaining
-        push!(current, s)
-        _enum_all!(results, current, m, n_remaining - s)
-        pop!(current)
-    end
-end
+# Weak compositions of n photons into m modes = Combinatorics.multiexponents.
+enumerate_all_outputs(m::Int, n::Int) = collect(multiexponents(m, n))
 
 # Pr[s] = |Per(U_sub)|^2 / ∏ s_i!  for input |1^n 0^{m-n}⟩
 function exact_probability(U::AbstractMatrix, n::Int, output::Vector{Int})

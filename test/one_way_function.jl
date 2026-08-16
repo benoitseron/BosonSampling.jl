@@ -10,31 +10,18 @@ using LinearAlgebra
 using Random
 using Statistics: mean, std
 using BosonSampling
+using Combinatorics: multiexponents
 using Permanents: ryser
 using Test
 
 # ═══════════════════════════════════════════════════════════════════════
 # Helper: enumerate ALL output configs (including collisions)
 # ═══════════════════════════════════════════════════════════════════════
-function enumerate_all_outputs(m::Int, n::Int)
-    results = Vector{Vector{Int}}()
-    _enum_all!(results, Int[], m, n)
-    return results
-end
-
-function _enum_all!(results, current, m, n_remaining)
-    if length(current) == m
-        if n_remaining == 0
-            push!(results, copy(current))
-        end
-        return
-    end
-    for s in 0:n_remaining
-        push!(current, s)
-        _enum_all!(results, current, m, n_remaining - s)
-        pop!(current)
-    end
-end
+# These are the weak compositions of n photons into m modes, i.e. exactly
+# Combinatorics.multiexponents(m, n) — no need to re-implement the recursion
+# (Combinatorics is already a dependency of BosonSampling).  Callers either sort
+# by f-value or index by state, so the enumeration order is immaterial.
+enumerate_all_outputs(m::Int, n::Int) = collect(multiexponents(m, n))
 
 # Exact boson sampling probability Pr[output] for input |1,1,...,1,0,...,0⟩
 # Formula: Pr[s] = |Per(U_sub)|^2 / (s_1! ... s_m!)
@@ -206,26 +193,46 @@ end
         end
     end
 
-    # 2c. _harmonic matches exact sum for moderate k
+    # 2c. _harmonic matches exact sum for moderate k (exact branch, k ≤ 10_000)
     @testset "_harmonic accuracy" begin
         for k in [1, 10, 100, 1000, 5000]
             exact = sum(1.0 / i for i in 1:k)
             @test abs(_harmonic(k) - exact) < 1e-12
         end
-        # Asymptotic branch: verify relative accuracy for large k
-        for k in [20_000, 100_000, 1_000_000]
-            h = _harmonic(k)
-            # H_k ~ ln(k) + γ, so it should be positive and growing
-            @test h > log(k)
-            @test h < log(k) + 1.0
-        end
     end
 
-    # 2d. normalization_constant matches direct sum for small N
+    # 2c'. Asymptotic branch (k > 10_000) tested on its own against an exact
+    #      high-precision reference.  This is the branch that carries the
+    #      efficiency claim — we cannot sum H_k directly at the k the algorithm
+    #      actually uses — so it needs a tight check rather than a sanity bound.
+    #      (A window like log(k) < h < log(k)+1 is ~6e15× wider than the true
+    #      error and passes with every correction term of the expansion deleted.)
+    @testset "_harmonic asymptotic branch" begin
+        for k in [10_001, 20_000, 100_000, 1_000_000]
+            exact = Float64(sum(BigFloat(1) / i for i in 1:k))   # ≈0.35 s at k=1e6
+            @test abs(_harmonic(k) - exact) <= 1e-14 * exact
+        end
+        # Continuity across the branch switch at k = 10_000: the exact branch and
+        # the asymptotic branch must agree where they meet, H_{k+1} = H_k + 1/(k+1).
+        @test abs((_harmonic(10_001) - _harmonic(10_000)) - 1 / 10_001) < 1e-13
+    end
+
+    # 2d. normalization_constant matches direct sum — small N (exact branch)
     @testset "normalization_constant matches direct sum" begin
         for N in [3, 10, 17, 50, 100, 500]
             direct = sum(t_weight(k, N) for k in 0:N-1)
             @test abs(normalization_constant(N) - direct) < 1e-10
+        end
+    end
+
+    # 2d'. normalization_constant when BOTH harmonic terms take the asymptotic
+    #      branch, i.e. N÷2 - 1 > 10_000 ⟺ N ≥ 20_004.  Nothing above exercised
+    #      this: the largest N tested was 500, giving H_249 from the exact branch.
+    @testset "normalization_constant in the asymptotic regime" begin
+        for N in [20_005, 25_001, 100_001]
+            @test N ÷ 2 - 1 > 10_000            # confirm we are past the switch
+            direct = sum(t_weight(k, N) for k in 0:N-1)
+            @test abs(normalization_constant(N) - direct) <= 1e-12 * direct
         end
     end
 
@@ -328,6 +335,40 @@ end
             end
         end
     end
+
+    # 3e. Large N, where G_N can no longer be checked by direct summation and the
+    #     Float64 approximations actually bite: the _cispi2 supplementary-angle
+    #     branch (r > N/2), the _mulmod overflow guard, and the near-cancellation
+    #     of 1 - e^{iθ} for small θ.  Everything above used N ≤ 55, so none of
+    #     these paths were exercised.  Reference is the same closed form evaluated
+    #     at 256-bit precision with the phase reduced mod N exactly (BigInt), so
+    #     the comparison isolates the Float64 error.
+    #     Covers all three integer types: Int64, Int128, BigInt.
+    @testset "large N vs high-precision reference" begin
+        function gn_reference(k, x0, N)
+            setprecision(BigFloat, 256) do
+                r_num = mod(big(k) * (big(x0) + 1), big(N))   # exact integer reduction
+                r_den = mod(big(k), big(N))
+                twopi = 2 * BigFloat(π)
+                θn = twopi * BigFloat(r_num) / BigFloat(N)
+                θd = twopi * BigFloat(r_den) / BigFloat(N)
+                ComplexF64((1 - Complex(cos(θn), sin(θn))) /
+                           (1 - Complex(cos(θd), sin(θd))))
+            end
+        end
+
+        for N in [10^6, 10^9, 10^12, 10^15, Int128(10)^25, big(10)^40]
+            for k in [1, 2, 7, N ÷ 3, N ÷ 2, N - 3, N - 1]
+                for x0 in [0, 1, N ÷ 7, N ÷ 2, N - 1]
+                    got  = G_N(oftype(N, k), oftype(N, x0), N)
+                    want = gn_reference(k, x0, N)
+                    # Measured worst case over this grid is 5.7e-9 (at N=1e9, where
+                    # 1-cos θ ~ θ²/2 cancels hardest); a genuine bug is O(1).
+                    @test abs(got - want) <= 1e-7 * max(1.0, abs(want))
+                end
+            end
+        end
+    end
 end
 
 
@@ -376,9 +417,9 @@ end
 
 
 # ═══════════════════════════════════════════════════════════════════════
-# TEST 5: Characteristic function identity (THE KEY THEOREM)
+# TEST 5: Characteristic function identity
 # φ(k) = Per(U_in† D_k U_in) = E_{s~D_U}[exp(-2πik f(s)/N)]  (Eq. 12)
-# Now using base-(n+1) weights for collision-full regime.
+# Now using base-(n+1) weights for the regime including collisions.
 # ═══════════════════════════════════════════════════════════════════════
 @testset "Characteristic function identity (Eq. 12)" begin
 
@@ -678,7 +719,7 @@ end
         @test f_value([0, 0, 0, 5], 6) == 5 * 216  # 5 * 6^3
     end
 
-    # 9h. Collision-full f-values are all distinct (injectivity of base-(n+1) encoding)
+    # 9h. f-values of all states (collisions included) are distinct (injectivity of base-(n+1) encoding)
     @testset "f-values of all states are distinct" begin
         for (n, m) in [(2, 3), (2, 4), (3, 4), (3, 5)]
             base = n + 1
@@ -727,7 +768,7 @@ end
 
 # ═══════════════════════════════════════════════════════════════════════
 # TEST 11: Full pipeline — bin probabilities vs exact (small instance)
-# Now using collision-full regime with (n+1)^k weights.
+# Now including collisions, with (n+1)^k weights.
 # ═══════════════════════════════════════════════════════════════════════
 @testset "Full pipeline: bin probabilities" begin
 
@@ -884,6 +925,62 @@ end
 
         @test abs(gly_fused - gly_legacy) < 1e-10 * max(1.0, abs(gly_legacy))
     end
+
+    # 13d. The K > 2^52 branch of _sample_reciprocal — the high-precision proposal.
+    #      Nothing else in the suite reaches it (every other test has K ≤ 2^52), yet
+    #      it is the branch the whole large-N regime samples through.  Check the
+    #      realised law is the intended q(k) ∝ 1/k by comparing the empirical CDF
+    #      against H_x / H_K at several scales.
+    #      NB this pins the distribution, not the reachability of individual modes;
+    #      the mode-resolution measurement lives in numerical_precision.md §5.
+    @testset "_sample_reciprocal above 2^52" begin
+        Random.seed!(1)
+        for K in [Int128(2)^53 + 12345, big(2)^70]
+            @test K > Int128(2)^52                # confirm we take the BigFloat branch
+            ns = 40_000
+            draws = [_sample_reciprocal(K) for _ in 1:ns]
+            @test all(d -> 1 <= d <= K, draws)
+            @test eltype(draws) == typeof(K)      # type is preserved
+            HK = _harmonic(K)
+            for frac in [2, 8, 32, 1024]
+                x = K ÷ frac
+                empirical = count(<=(x), draws) / ns
+                target = _harmonic(x) / HK
+                # ~0.004 observed at ns=40k; MC error alone is ~1/√ns ≈ 0.005
+                @test abs(empirical - target) < 0.02
+            end
+        end
+    end
+
+    # 13e. End-to-end BigInt estimator path against exact ground truth.
+    #      _Z_sample_bigint! re-derives the estimator with a different factorisation
+    #      from the generic path (the ρ/(1-e^{iB}) → ±i/2π limit), and together with
+    #      _glynn_fused_bigint!, _sample_fourier_mode!, _BigIntWork and _ratio it was
+    #      never executed by the suite.  Forcing a SamplingContext{BigInt} on a small
+    #      instance runs all of it where the exact CDF is still computable.
+    @testset "BigInt estimator path matches exact CDF" begin
+        Random.seed!(4242)
+        n, m = 2, 5
+        U = RandHaar(m).U
+        Uout = permutedims(U)                     # kernel orientation [output, input]
+        base = n + 1
+        N = n * base^(m - 1) + 1
+        omega = [Float64(base^(i - 1)) for i in 1:m]
+        U_in = Uout[:, 1:n]
+
+        ctx_big = SamplingContext(big(N))
+        @test ctx_big isa SamplingContext{BigInt}
+
+        M = 400_000
+        for x0 in [N ÷ 4, N ÷ 2, 3N ÷ 4]
+            S_exact = exact_cdf(Uout, n, m, omega, x0)
+            S_i64 = estimate_S(U_in, base, N, x0, n, M, SamplingContext(N))
+            S_big = estimate_S(U_in, big(base), big(N), big(x0), n, M, ctx_big)
+            # Both paths estimate the same quantity; MC error at M=4e5 is ~2e-3.
+            @test abs(S_big - S_exact) < 0.02
+            @test abs(S_big - S_i64) < 0.02
+        end
+    end
 end
 
 
@@ -892,7 +989,7 @@ end
 # ═══════════════════════════════════════════════════════════════════════
 @testset "Clifford & Clifford sampler and z_samples" begin
 
-    # 14a. Every cc_sample! output is a valid collision-full configuration
+    # 14a. Every cc_sample! output is a valid configuration (collisions included)
     @testset "cc_sample! output validity" begin
         Random.seed!(7)
         n, m = 3, 6
@@ -914,7 +1011,7 @@ end
         n, m = 2, 3
         U = RandHaar(m).U
         Uout = permutedims(U)                      # reference helper wants [output, input]
-        states = enumerate_all_outputs(m, n)       # all C(n+m-1,n) collision-full outputs
+        states = enumerate_all_outputs(m, n)       # all C(n+m-1,n) outputs, collisions included
         idx = Dict(s => i for (i, s) in enumerate(states))
 
         K = 200_000

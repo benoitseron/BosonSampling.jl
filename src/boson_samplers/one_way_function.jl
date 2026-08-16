@@ -430,7 +430,7 @@ end
 # x0p1_mod_N = mod(x0 + 1, N), precomputed once per estimate_S call.
 function _Z_sample_bigint!(buf::AbstractVector, x::Vector{Int},
                             U_in::AbstractMatrix, base::BigInt, N::BigInt,
-                            half::BigInt, Nf::Float64, x0f::Float64,
+                            half::BigInt, Nf::Float64,
                             x0p1_mod_N::BigInt,
                             ctx::SamplingContext{BigInt}, ws::_BigIntWork)
     _sample_fourier_mode!(ws, ctx)
@@ -507,17 +507,15 @@ function estimate_S(U_in::AbstractMatrix, base::T, N::T,
 end
 
 # BigInt specialization: zero per-sample allocation via preallocated workspace.
+# Written directly in the method body — unlike find_most_probable_bin, whose
+# _compute_N returns Union{Int64,Int128,BigInt} and genuinely needs a function
+# barrier, every argument here is already concretely typed, so an inner
+# _estimate_S_bigint would add a call layer with no specialization benefit.
 function estimate_S(U_in::AbstractMatrix, base::BigInt, N::BigInt,
                     x0::BigInt, n::Int, M::Int, ctx::SamplingContext{BigInt})
-    _estimate_S_bigint(U_in, base, N, x0, n, M, ctx)
-end
-
-function _estimate_S_bigint(U_in::AbstractMatrix, base::BigInt, N::BigInt,
-                             x0::BigInt, n::Int, M::Int, ctx::SamplingContext{BigInt})
     C = eltype(U_in)
     m = size(U_in, 1)
     Nf = Float64(N)    # F64-A,D: precomputed; used for phases and normalization
-    x0f = Float64(x0)  # F64-D: only used in G_N(0) = x0+1 shortcut
     half = ctx.half
     x0p1_mod_N = mod(x0 + 1, N)  # precompute once (not per-sample)
     nt = Threads.nthreads()
@@ -531,7 +529,7 @@ function _estimate_S_bigint(U_in::AbstractMatrix, base::BigInt, N::BigInt,
         local_M = min(chunk, M - (tid - 1) * chunk)
         for _ in 1:local_M
             local_total += _Z_sample_bigint!(buf, x, U_in, base, N, half, Nf,
-                                              x0f, x0p1_mod_N, ctx, ws)
+                                              x0p1_mod_N, ctx, ws)
         end
         partials[tid] = local_total
     end
@@ -562,7 +560,7 @@ end
 function z_samples(U_in::AbstractMatrix, base::BigInt, N::BigInt,
                    x0::BigInt, n::Int, K::Int, ctx::SamplingContext{BigInt})
     m = size(U_in, 1)
-    Nf = Float64(N); x0f = Float64(x0); half = ctx.half
+    Nf = Float64(N); half = ctx.half
     x0p1_mod_N = mod(x0 + 1, N)
     out = Vector{Float64}(undef, K)
     nt = Threads.nthreads()
@@ -573,7 +571,7 @@ function z_samples(U_in::AbstractMatrix, base::BigInt, N::BigInt,
         ws = _BigIntWork()
         for i in ((tid - 1) * chunk + 1):min(tid * chunk, K)
             out[i] = real(_Z_sample_bigint!(buf, x, U_in, base, N, half, Nf,
-                                            x0f, x0p1_mod_N, ctx, ws))
+                                            x0p1_mod_N, ctx, ws))
         end
     end
     return out
