@@ -33,12 +33,14 @@
 #        exactly in the estimator Z = Gly·G_N/(N·q(k)).
 #        No bias contribution.
 #
-# F64-C  Fourier-mode proposal: k = floor((K+1)^v).  A Float64 proxy resolves
-#        only ~53 bits, so for K>2⁵² it reaches a sparse lattice of modes and
-#        samples the WRONG discrete distribution q'(k)≠q(k) — a real, deterministic
-#        BIAS on Ŝ(x₀) (not negligible; catastrophic for power-of-two encoding
-#        bases).  FIXED: the proposal is now evaluated with ≳bits(K) precision
-#        (BigFloat) for K>2⁵², which reaches the exact mode and removes the bias.
+# F64-C  Fourier-mode proposal: k = floor((K+1)^v).  Drawing v as a Float64 gives
+#        only 53 random bits, so for K>2⁵² the proposal reaches a sparse lattice of
+#        modes and samples the WRONG discrete distribution q'(k)≠q(k) — a real,
+#        deterministic BIAS on Ŝ(x₀) (not negligible; catastrophic for power-of-two
+#        encoding bases).  Raising the precision of the pow alone does NOT fix this:
+#        the limit is the entropy of v, not the arithmetic.  FIXED: for K>2⁵² both v
+#        and the pow use BigFloat at bits(K)+32, leaving a residual
+#        |q'(k)/q(k) − 1| ≲ ln(K+1)·2⁻³², far below the MC error.
 #        See docs/publication/one_way_function/numerical_precision.md §5.
 #
 # F64-D  Normalization divisor: Z is divided by Float64(N).
@@ -162,14 +164,24 @@ end
 
 # Sample an integer k ∈ {1,...,K} with probability ∝ 1/k using the inverse-CDF
 # proxy floor((K+1)^v), v~U[0,1] (CDF F_Y(k)=log(k+1)/log(K+1)), plus rejection
-# (Eq. 18-21).  The proxy must be evaluated with enough precision to resolve a
-# UNIQUE integer in [1,K].  A Float64 proxy (~53-bit mantissa) cannot do this for
-# K>2⁵²: it reaches only a sparse, ~2⁵³-point lattice of k, sampling the wrong
-# discrete distribution q'(k)≠q(k) and biasing the importance-weighted estimator
-# (catastrophically for power-of-two encoding bases; see
-# docs/publication/one_way_function/numerical_precision.md §5).  We keep the fast Float64 path for
-# K≤2⁵² (exact, all integers reachable) and use a ≳bits(K)-precision BigFloat
-# proxy above it.
+# (Eq. 18-21).  Getting q'(k)=q(k) needs BOTH of:
+#   (i)  enough PRECISION in the pow, to resolve a unique integer in [1,K], and
+#   (ii) enough ENTROPY in v, so that every k ∈ [1,K] is reachable at all.
+# (ii) is the binding constraint and is a property of the RNG draw, not of the
+# arithmetic: v = rand() yields a Float64 with only 53 random bits, so the proxy
+# hits at most 2⁵³ distinct values of k no matter how precisely (K+1)^v is
+# evaluated.  For K>2⁵² that is a sparse lattice — measured at K=2⁶⁰, two
+# adjacent Float64 draws land 3512 modes apart — so the sampler draws from
+# q'(k)≠q(k) while the estimator still divides by the intended q(k), a real
+# deterministic bias (catastrophic for power-of-two encoding bases; see
+# docs/publication/one_way_function/numerical_precision.md §5).
+# Fix: above 2⁵² draw v itself as a BigFloat at `prec` bits (rand(BigFloat)
+# honours the ambient precision), which satisfies (i) and (ii) together.
+# The mode k occupies a v-interval of width ≥ 1/((K+1)·ln(K+1)), which then holds
+# ≥ 2^HEADROOM/ln(K+1) grid points, so |q'(k)/q(k) − 1| ≲ ln(K+1)·2^-HEADROOM
+# (≈1.6e-7 even at K=2¹⁰⁰⁰) rather than O(1).
+const _RECIP_PREC_HEADROOM = 32
+
 function _sample_reciprocal(K::Integer)
     T = typeof(K)
     if K <= (one(K) << 52)          # Float64 exact: every integer in [1,K] reachable
@@ -181,11 +193,11 @@ function _sample_reciprocal(K::Integer)
             rand() <= log(2) / (kf * log1p(1.0 / kf)) && return k
         end
     else                            # K>2⁵²: resolve the exact mode with full precision
-        prec = ndigits(K, base = 2) + 16
+        prec = ndigits(K, base = 2) + _RECIP_PREC_HEADROOM
         return setprecision(BigFloat, prec) do
             Kp1 = BigFloat(K) + 1
             while true
-                v = rand()
+                v = rand(BigFloat)  # prec random bits — NOT rand(), see note above
                 k = clamp(floor(T, Kp1^v), oneunit(T), K)
                 kf = Float64(k)
                 acc = isfinite(kf) ? log(2) / (kf * log1p(1.0 / kf)) : 0.6931471805599453
@@ -346,11 +358,11 @@ function _sample_reciprocal!(out::BigInt, K::BigInt)
             rand() <= log(2) / (kf * log1p(1.0 / kf)) && return out
         end
     else                            # K>2⁵²: ≳bits(K)-precision proxy resolves the exact mode
-        prec = ndigits(K, base = 2) + 16
+        prec = ndigits(K, base = 2) + _RECIP_PREC_HEADROOM
         return setprecision(BigFloat, prec) do
             Kp1 = BigFloat(K) + 1
             while true
-                v = rand()
+                v = rand(BigFloat)  # prec random bits — NOT rand(), see _sample_reciprocal
                 Base.GMP.MPZ.set!(out, floor(BigInt, Kp1^v))
                 out < 1   && Base.GMP.MPZ.set_si!(out, 1)
                 out > K   && Base.GMP.MPZ.set!(out, K)
@@ -468,6 +480,11 @@ function _Z_sample_bigint!(buf::AbstractVector, x::Vector{Int},
 end
 
 # ─── Estimate cumulative distribution S(x0) ──────────────────────────
+# NOTE ON CONVENTION.  Unlike the user-facing `find_most_probable_bin`/
+# `CCSamplerWorkspace`, which take U in the package convention U[input, output]
+# and transpose internally, `estimate_S` and `z_samples` are the kernel: they take
+# the already-sliced m×n matrix `U_in` in the A[output, input] orientation.
+# From a package interferometer that is `transpose(interf.U)[:, 1:n]`.
 # Generic path for Int64 / Int128.  BigInt dispatches to zero-alloc specialization below.
 function estimate_S(U_in::AbstractMatrix, base::T, N::T,
                     x0::T, n::Int, M::Int, ctx::SamplingContext{T}) where T <: Integer
@@ -568,11 +585,19 @@ end
 # Reimplemented to avoid the perf pitfalls of BosonSampling.cliffords_sampler:
 # no `global` state, no `Threads.@threads` launch on tiny inner permanents
 # (thread overhead was dominating for small n), pre-allocated workspace, and
-# single-pass cumulative-weight sampling.  Convention identical to
-# `exact_probability`: Pr[s] = |Per(U[s_modes, 1:n])|² / ∏ s_j! for input
-# |1ⁿ 0^(m−n)⟩ — verified by 50k-shot empirical test against the exact PMF.
+# single-pass cumulative-weight sampling.
+#
+# MATRIX CONVENTION.  `CCSamplerWorkspace(U, n)` takes U in the PACKAGE
+# convention U[input, output] — the same matrix `cliffords_sampler` and
+# `compute_probability!` consume (see scattering_matrix() in src/scattering.jl,
+# which indexes U[index_input, index_output]).  The kernel below works in the
+# standard boson-sampling orientation A[output, input], so the constructor
+# transposes; do NOT pre-transpose at the call site.  For input |1ⁿ 0^(m−n)⟩ this
+# gives Pr[s] = |Per(transpose(U)[s_modes, 1:n])|² / ∏ s_j!, matching
+# `compute_probability!` on the same interferometer — pinned by the
+# "convention matches compute_probability!" test in test/one_way_function.jl.
 struct CCSamplerWorkspace
-    A::Matrix{ComplexF64}            # m × n  (= U[:, 1:n])
+    A::Matrix{ComplexF64}            # m × n, A[output, input] (= transpose(U)[:, 1:n])
     σ::Vector{Int}                   # photon order permutation, length n
     out::Vector{Int}                 # sampled output modes, length n
     perm_full::Matrix{ComplexF64}    # (n−1) × n scratch holding A[out[1:k−1], σ[1:k]]
@@ -581,10 +606,11 @@ struct CCSamplerWorkspace
     weights::Vector{Float64}         # length m: per-mode unnormalized weight
 end
 
-function CCSamplerWorkspace(U_in::AbstractMatrix, n::Int)
-    m = size(U_in, 1)
-    @assert size(U_in, 2) >= n
-    A = ComplexF64.(U_in[:, 1:n])
+function CCSamplerWorkspace(U::AbstractMatrix, n::Int)
+    m = size(U, 2)
+    @assert size(U, 1) >= n "U must have at least n rows (U is indexed [input, output])"
+    # U[input, output] → A[output, input]; the first n inputs carry the photons.
+    A = ComplexF64.(transpose(U)[:, 1:n])
     return CCSamplerWorkspace(A,
         Vector{Int}(undef, n), Vector{Int}(undef, n),
         Matrix{ComplexF64}(undef, max(n - 1, 1), n),
@@ -592,6 +618,10 @@ function CCSamplerWorkspace(U_in::AbstractMatrix, n::Int)
         Vector{ComplexF64}(undef, n),
         Vector{Float64}(undef, m))
 end
+
+# Convenience method: take the interferometer directly (same rationale as
+# find_most_probable_bin(::Interferometer, ...) below).
+CCSamplerWorkspace(interf::Interferometer, n::Int) = CCSamplerWorkspace(interf.U, n)
 
 # Inverse-CDF sample of an integer in 1..m proportional to the (positive) weights.
 function _wsample_cdf(weights::AbstractVector{Float64}, m::Int)
@@ -740,6 +770,9 @@ function _compute_N(n::Int, base::Int, m::Int)
 end
 
 # ─── Full algorithm: find the most probable bin (Corollary 1) ─────────
+# `U` is in the PACKAGE convention U[input, output] (see CCSamplerWorkspace above
+# and scattering_matrix() in src/scattering.jl); it is transposed internally to the
+# A[output, input] orientation the estimator kernel works in.
 function find_most_probable_bin(U::AbstractMatrix, m::Int, n::Int, d::Int;
                                 M::Int=10000)
     base = n + 1
@@ -748,6 +781,11 @@ function find_most_probable_bin(U::AbstractMatrix, m::Int, n::Int, d::Int;
     N_fourier = _compute_N(n, base, m)
     return _find_most_probable_bin(U, m, n, d, M, N_fourier)
 end
+
+# Convenience method: take the interferometer directly, as every other sampler in
+# src/boson_samplers/ does, so the convention cannot be got wrong at the call site.
+find_most_probable_bin(interf::Interferometer, m::Int, n::Int, d::Int; M::Int=10000) =
+    find_most_probable_bin(interf.U, m, n, d; M=M)
 
 # Function barrier: fully specialized for concrete integer type T.
 function _find_most_probable_bin(U::AbstractMatrix, m::Int, n::Int, d::Int, M::Int,
@@ -759,7 +797,7 @@ function _find_most_probable_bin(U::AbstractMatrix, m::Int, n::Int, d::Int, M::I
     edges = bin_edges(total_states, d)
 
     ctx = SamplingContext(N_fourier)
-    U_in = U[:, 1:n]
+    U_in = transpose(U)[:, 1:n]   # U[input, output] → U_in[output, input]
 
     # Estimate CDF S(x_j) at each bin boundary via unranking
     S_values = Vector{Float64}(undef, d + 1)

@@ -94,13 +94,15 @@ The bias grows with $\mathrm{bits}(N) = m\log_2 b$ and is **catastrophic for pow
 
 ### Fix (implemented)
 
-The proposal $k=\lfloor (K{+}1)^v\rfloor$ is now evaluated with $\gtrsim \mathrm{bits}(K)$ precision (`BigFloat` via `setprecision`) whenever $K > 2^{52}$, in **both** `_sample_reciprocal` (Int64/Int128) and `_sample_reciprocal!` (BigInt). At that precision $\lfloor\cdot\rfloor$ resolves the exact integer mode, so $q'(k)=q(k)$ and the estimator is unbiased again. The fast Float64 path is retained for $K \leq 2^{52}$ (already exact). Cost is one high-precision `pow` per sample, comparable to the per-sample BigInt arithmetic already performed.
+Whenever $K > 2^{52}$, **both** the random draw $v$ and the pow are done in `BigFloat` at $\mathrm{bits}(K)+32$, in **both** `_sample_reciprocal` (Int64/Int128) and `_sample_reciprocal!` (BigInt). The fast Float64 path is retained for $K \leq 2^{52}$ (already exact). Cost is one high-precision `pow` per sample, comparable to the per-sample BigInt arithmetic already performed.
+
+Both halves matter, and the **entropy of $v$ is the binding one**. Raising only the *precision* of the pow does not help: $v=\texttt{rand()}$ is a Float64 carrying just 53 random bits, so the proposal takes at most $2^{53}$ distinct values of $k$ however exactly $(K{+}1)^v$ is evaluated. Measured at $K=2^{60}$, two adjacent Float64 draws land **3512 modes apart**, so $>99.9\%$ of the modes in the top binade stay unreachable and $q'(k)\neq q(k)$ regardless of `setprecision`. Drawing $v$ with `rand(BigFloat)` — which honours the ambient precision — is what makes every mode reachable; the same measurement with a BigFloat $v$ gives a mode gap of $0$, i.e. many draws land on each mode.
 
 **Verification.** With the fix, the four cases above return $\widehat S = 0.49, 0.49, 0.53, 0.43$ (all within MC noise of the truth), and the full test suite (2272 tests) passes. The earlier-suspected "power-of-two resonance" was entirely this sampler bug.
 
 ### Formal status
 
-For $N \leq 2^{53}$: provably unbiased (all modes reachable, Float64 proposal exact). For $N > 2^{53}$: unbiased to the working precision $\gtrsim\mathrm{bits}(K)$ of the BigFloat proposal (residual $\lesssim 2^{-16}$ probability of a $\pm1$-mode misresolution, statistically harmless).
+For $N \leq 2^{53}$: provably unbiased (all modes reachable, Float64 proposal exact). For $N > 2^{53}$: every mode is reachable, and the residual comes from discretising $v$ on a $2^{-\mathrm{prec}}$ grid rather than from misresolving the mode. The narrowest mode interval has width $\geq 1/((K{+}1)\ln(K{+}1))$, so it receives $\geq 2^{32}/\ln(K{+}1)$ grid points and $|q'(k)/q(k) - 1| \lesssim \ln(K{+}1)\,2^{-32}$ — about $1.6\times10^{-7}$ even at $K=2^{1000}$, orders of magnitude below the MC error $O(\log^2 N/\sqrt M)$.
 
 ---
 
@@ -123,6 +125,6 @@ Verified with `@code_warntype`: the inner function shows no `Union` type instabi
 | Glynn product | $\leq (2m+n)\varepsilon_\mathrm{mach}$ | All $N$ | negligible |
 | MC accumulation | $\leq \varepsilon_\mathrm{mach} \log^2 N$ | All $N$ | negligible |
 | Fourier sampling | **exact** for $K \leq 2^{52}$ (Float64) | $n+m \lesssim 35$ | zero |
-| Fourier sampling | **exact** for $K > 2^{52}$ (BigFloat, $\gtrsim$bits$(K)$) | BigInt regime | negligible ($\lesssim 2^{-16}$) |
+| Fourier sampling | $\lesssim \ln(K{+}1)2^{-32}$ relative for $K > 2^{52}$ (BigFloat $v$ **and** pow, bits$(K){+}32$) | BigInt regime | negligible |
 
-**Conclusion.** The Fourier-mode proposal is evaluated at precision sufficient to resolve the exact integer mode in every regime (Float64 for $K\leq2^{52}$, BigFloat above), so the sampler is unbiased and the only remaining error is the Monte Carlo variance $O(\log^2 N / M)$. *Historical note:* before this fix the Float64 proposal biased $\widehat S(x_0)$ at large $N$ — severely for power-of-two encoding bases — which earlier surfaced as a spurious "resonance" spike in the sample-budget figure.
+**Conclusion.** In every regime the Fourier-mode proposal draws $v$ with — and evaluates the pow at — enough bits that all $K$ modes are reachable and $q'(k)$ matches $q(k)$ to $\lesssim\ln(K{+}1)2^{-32}$ (exactly, for $K\leq2^{52}$), so the only material error is the Monte Carlo variance $O(\log^2 N / M)$. *Historical note:* before this fix the Float64 proposal biased $\widehat S(x_0)$ at large $N$ — severely for power-of-two encoding bases — which earlier surfaced as a spurious "resonance" spike in the sample-budget figure.

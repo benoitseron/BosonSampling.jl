@@ -83,7 +83,10 @@ Kcc = 20000                           # Clifford-Clifford shots (drawn once, reu
 
 # Direct quantum sampling is threshold-independent: draw Kcc shots ONCE, encode each
 # to its base-B f-value, then every S_cc(x₀) is just a fraction below x₀.
-ws  = CCSamplerWorkspace(V, n); pw = [B^(k - 1) for k in 1:m]
+# This script works in the kernel orientation V[output, input] (see exact_probability
+# above); CCSamplerWorkspace is user-facing and takes the package convention
+# V[input, output], so hand it the transpose to stay on the same device.
+ws  = CCSamplerWorkspace(permutedims(V), n); pw = [B^(k - 1) for k in 1:m]
 fcc = [sum(pw[md] for md in cc_sample!(ws)) for _ in 1:Kcc]
 
 ranks_a = unique(round.(Int, range(1, total, length = 13)))
@@ -147,6 +150,6 @@ vline!(p_b, [-ε, ε]; color = :black, ls = :dash, lw = 1, label = L"\pm ε")
 
 fig = plot(p_a, p_b; layout = (1, 2), size = (1200, 460),
     bottom_margin = 7 * Plots.mm, left_margin = 9 * Plots.mm)
-savefig(fig, "validate_sampling.pdf")
-savefig(fig, "validate_sampling.png")
+savefig(fig, joinpath(@__DIR__, "validate_sampling.pdf"))
+savefig(fig, joinpath(@__DIR__, "validate_sampling.png"))
 println("\nsaved validate_sampling.pdf and validate_sampling.png")

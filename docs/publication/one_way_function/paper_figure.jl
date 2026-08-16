@@ -123,8 +123,13 @@ end
 # ────────────────────────────────────────────────────────────────────
 function mc_fourier_batches(U, m, n, d, K, M_per)
     rows = zeros(K, d)
+    # This script works throughout in the kernel orientation U[output, input] (the
+    # one its local `exact_probability` above assumes).  find_most_probable_bin is a
+    # user-facing entry point and takes the PACKAGE convention U[input, output], so
+    # hand it the transpose to keep it on the same device as the ground truth.
+    Upkg = permutedims(U)
     for k in 1:K
-        _, bp = find_most_probable_bin(U, m, n, d; M=M_per)
+        _, bp = find_most_probable_bin(Upkg, m, n, d; M=M_per)
         rows[k, :] .= bp
     end
     means = vec(mean(rows; dims=1))
@@ -159,8 +164,9 @@ function direct_sampling_rmse(U::AbstractMatrix, n::Int, m::Int,
     # Trials are independent → run them across threads (deep M up to 1e7 makes the
     # single-thread loop the panel-(c) bottleneck).  One workspace per trial; cc_sample!
     # draws from the task-local RNG, so this is thread-safe.
+    Upkg = permutedims(U)   # kernel [output,input] → package [input,output]; see mc_fourier_batches
     Threads.@threads for k in 1:K
-        ws = CCSamplerWorkspace(U, n)
+        ws = CCSamplerWorkspace(Upkg, n)
         below = 0
         for _ in 1:M
             modes = cc_sample!(ws)
@@ -475,7 +481,10 @@ for n in d_ns
     # pin the threshold to the MEDIAN output value, i.e. the middle-ranked
     # composition. That puts S(x₀) ≈ 0.5, the worst case for variance — the fairest
     # place to compare the methods.
-    x0 = f_value(unrank_composition(Binomial(n + m - 1, n) ÷ 2, n, m), B)   # median threshold
+    # NOTE: lowercase `binomial` (Base, exact BigInt).  Capital `Binomial` is
+    # Distributions.Binomial — a distribution constructor, not a binomial
+    # coefficient; see the shadowing warning at the top of one_way_function.jl.
+    x0 = f_value(unrank_composition(binomial(big(n + m - 1), big(n)) ÷ 2, n, m), B)   # median threshold
 
     bf, bd = Float64[], Float64[]              # per-unitary budgets, averaged below
     for _ in 1:n_haar
@@ -491,7 +500,8 @@ for n in d_ns
         # its base-B number, count the fraction below x₀. A single "output ≤ x₀?" draw is
         # Bernoulli(S), so σ² = S(1-S) → flat in n. Capped at n_max_dir (CC sampling gets slow).
         if n ≤ n_max_dir
-            ws = CCSamplerWorkspace(V, n); pw = [B^(k - 1) for k in 1:m]    # pw = base powers
+            # permutedims: V is kernel-oriented here, CCSamplerWorkspace takes package convention
+            ws = CCSamplerWorkspace(permutedims(V), n); pw = [B^(k - 1) for k in 1:m]    # pw = base powers
             S = count(_ -> sum(pw[md] for md in cc_sample!(ws)) ≤ x0, 1:K) / K
             push!(bd, S * (1 - S) * (z / ε)^2)
         end
@@ -535,8 +545,8 @@ fig = plot(p_a, p_b, p_c, p_d;
     top_margin = 6 * Plots.mm,
 )
 
-savefig(fig, "paper_figure.pdf")
-savefig(fig, "paper_figure.png")
+savefig(fig, joinpath(@__DIR__, "paper_figure.pdf"))
+savefig(fig, joinpath(@__DIR__, "paper_figure.png"))
 println("saved paper_figure.pdf and paper_figure.png")
 
 display(fig)
